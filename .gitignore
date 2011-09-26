@@ -1,2 +1,4 @@
+build/
 .classpath
 .project
+incomplete.*

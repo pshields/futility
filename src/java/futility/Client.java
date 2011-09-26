@@ -1,10 +1,5 @@
-/*
- * Lab #2 Submission
- * Author: Patrick Shields
- * Course: Software Engineering I
- * Institution: University of Kansas
- * Semester: Fall 2011
-*/
+package futility;
+
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -28,14 +23,15 @@ public class Client {
     private int playerNum;
     private int port;
     private DatagramSocket socket;
+    private String teamName;
     private char teamSide;
     private int time;
 
-    public static void main(String[] args) {
-        Client client = new Client();
-        client.connect();
-        client.play();
-        client.quit();
+    public Client(String[] args) {
+        if (args.length > 0)
+        {
+            teamName = args[0];
+        }
     }
 
     public void connect() {
@@ -46,7 +42,7 @@ public class Client {
             socket = new DatagramSocket();
 
             // Initialize client
-            send("(init TeamPatrick (version 15.0))");
+            send(String.format("(init %s (version 15.0))", teamName));
         } catch (UnknownHostException e) {
             e.printStackTrace();
         } catch (SocketException e) {
