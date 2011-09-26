@@ -1,17 +1,32 @@
 #!/bin/bash
 # Team management tasks
 
-# `./manage.sh start` starts the team
-if [ "$1" = "start" ]; then
+function start_team() {
   for (( i=1; i<=12; i++ )); do
-    echo "Starting Player #$i..."
-    java Client &
+    echo "Starting Player #$i on team $1..."
+    java Client $1 &
   done
+}
 
-# `./manage.sh stop` stops the team
-elif [ "$1" = "stop" ]; then
+function stop_players() {
   for PID in `ps -ef | grep "java Client" | grep -v grep | awk '{print $2}'`; do
     echo "Stopping player with pid $PID..."
     kill $PID
   done
-fi
+}
+
+case "$1" in
+  compete)
+    start_team "futility"
+    start_team "adversary"
+    ;;
+  start)
+    start_team "futility"
+    ;;
+  stop)
+    stop_players
+    ;;
+  *)
+    echo $"Usage: $0 {compete|start|stop}"
+    exit 1
+esac
