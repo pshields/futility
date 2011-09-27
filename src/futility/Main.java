@@ -16,6 +16,20 @@ public class Main {
     public static void main(String[] args) {
         Client client = new Client();
         client.start();
+//        try {
+//            RoboClient client = new RoboClient(teamName, host);
+//            client.init();
+//            client.startListening();
+//            client.startWriting();          
+//            //TODO be preparted to take stop commands from standard input
+//
+//        } catch (UnknownHostException e) {
+//            e.printStackTrace();
+//        } catch (SocketException e) {
+//            e.printStackTrace();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
     }
 
 }
