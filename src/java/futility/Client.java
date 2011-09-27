@@ -7,63 +7,51 @@ import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 
+import futility.Commands;
+
 public class Client {
-    private final int INIT_PORT = 6000;
-    private final int MSG_SIZE = 4096;
     private double ballDistance;
     private double ballAngle;
     private boolean canKickBall;
     private boolean canSeeBall;
     private boolean canSeeGoal;
+    private Commands commands = new Commands();
     private double goalAngle;
     private double goalDistance;
-    private InetAddress host;
+    
     private String lastMessageTypeParsed;
     private char opponentTeamSide;
     private int playerNum;
     private int port;
+    private Server server = new Server();
+    private Settings settings = new Settings();
     private DatagramSocket socket;
     private String teamName;
     private char teamSide;
     private int time;
 
-    public Client(String[] args) {
-        if (args.length > 0)
-        {
-            teamName = args[0];
-        }
+    public Client() {
+        String[] initArgs = {settings.TEAM_NAME, settings.SOCCER_SERVER_VERSION};
+        server.send(commands.INIT, initArgs);
+    }
+    public void dash(Double power) {
+        String[] args = {power.toString()};
+        server.send(commands.DASH, args);
     }
 
-    public void connect() {
-        try {
-            // Set up server connection
-            host = InetAddress.getByName("localhost");
-            port = INIT_PORT;
-            socket = new DatagramSocket();
-
-            // Initialize client
-            send(String.format("(init %s (version 15.0))", teamName));
-        } catch (UnknownHostException e) {
-            e.printStackTrace();
-        } catch (SocketException e) {
-            e.printStackTrace();
-        }
+    public void dash(Double power, Double direction) {
+        String[] args = {power.toString(), direction.toString()};
+        server.send(commands.DASH, args);
     }
 
-    public void dash(double power) {
-        send(String.format("(dash %f)", power));
+    public void kick(Double power) {
+        String[] args = {power.toString()};
+        server.send(commands.KICK, args);
     }
 
-    public void dash(double power, double direction) {
-        send(String.format("(dash %f %f)", power, direction));
-    }
-
-    public void kick(double power) {
-        send(String.format("(kick %f)", power));
-    }
-
-    public void kick(double power, double direction) {
-        send(String.format("(kick %f %f)", power, direction));
+    public void kick(Double power, Double direction) {
+        String[] args = {power.toString(), direction.toString()};
+        server.send(commands.KICK);
     }
 
     public void parse(String message) {
@@ -127,32 +115,12 @@ public class Client {
 
     public void play() {
         while (true) {
-            parse(receive());
+            parse(server.receive());
             if (timeToRespond()) {
                 respond();
                 resetKnowledge();
             }
         }
-    }
-
-    public void quit() {
-        send("(bye)");
-        socket.close();
-    }
-
-    public String receive() {
-        byte[] buffer = new byte[MSG_SIZE];
-        DatagramPacket packet = new DatagramPacket(buffer, MSG_SIZE);
-        try {
-            socket.receive(packet);
-            if (port == INIT_PORT) {
-                port = packet.getPort();
-            }
-        }
-        catch (IOException e) {
-            System.err.println("socket receiving error " + e);
-        }
-        return new String(buffer);
     }
 
     public void resetKnowledge() {
@@ -167,10 +135,10 @@ public class Client {
         double power = Math.min(100, 10 + ballDistance * 20);
         if (canKickBall) {
             if (canSeeGoal) {
-                kick(100, goalAngle);
+                kick(100.0, goalAngle);
             }
             else {
-                dash(30, 90);
+                dash(30.0, 90.0);
             }
         }
         else if (canSeeBall) {
@@ -191,24 +159,17 @@ public class Client {
         }
         else {
             if (ballAngle > 0) {
-                turn(7);
+                turn(7.0);
             }
             else {
-                turn(-7);
+                turn(-7.0);
             }
         }
     }
 
-    private void send(String message)
+    public void start()
     {
-        byte[] buffer = message.getBytes();
-        DatagramPacket packet = new DatagramPacket(buffer, buffer.length, host, port);
-        try {
-            socket.send(packet);
-        }
-        catch (IOException e) {
-            System.err.println("socket sending error " + e);
-        }
+        play();
     }
 
     private boolean timeToRespond() {
@@ -220,7 +181,8 @@ public class Client {
         }
     }
 
-    private void turn(double direction) {
-        send(String.format("(turn %f)\0", direction));
+    private void turn(Double direction) {
+        String[] args = {direction.toString()};
+        server.send(commands.TURN, args);
     }
  }

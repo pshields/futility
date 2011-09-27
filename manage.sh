@@ -4,9 +4,7 @@
 function start_team() {
   for (( i=1; i<=12; i++ )); do
     echo "Starting Player #$i on team $1..."
-    cd build/
-    java futility.Main $1 &
-    cd ..;
+    java -classpath /usr/local/lib/java/commons-lang3-3.0.1/commons-lang3-3.0.1.jar:build/ futility.Main $1 &
   done
 }
 
