@@ -1,3 +1,5 @@
+// Not currently in use. See Server.send() for current code.
+
 package futility;
 
 public class ActionItem{

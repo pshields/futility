@@ -1,3 +1,4 @@
+// Not currently in use. May be integrated into Client class.
 package futility;
 
 import java.io.IOException;

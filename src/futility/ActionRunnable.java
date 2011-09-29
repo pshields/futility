@@ -9,6 +9,9 @@ public class ActionRunnable implements Runnable {
 		mClient = client;
 	}
 	
+	/**
+	 * Respond during the current timestep
+	 */
 	@Override
 	public void run() {
         mClient.respond();

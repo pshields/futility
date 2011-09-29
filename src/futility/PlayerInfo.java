@@ -1,3 +1,5 @@
+// Not currently in use. Player info is currently handled directly in Client class.
+
 package futility;
 
 import java.util.LinkedList;

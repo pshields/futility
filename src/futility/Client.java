@@ -1,11 +1,6 @@
 package futility;
 
-import java.io.IOException;
-import java.net.DatagramPacket;
 import java.net.DatagramSocket;
-import java.net.InetAddress;
-import java.net.SocketException;
-import java.net.UnknownHostException;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
@@ -38,7 +33,7 @@ public class Client {
         mTeamName = teamName;
         String[] initArgs = {mTeamName, String.format("(version %s)", settings.SOCCER_SERVER_VERSION)};
         server.send(commands.INIT, initArgs);
-        // Start reading
+        // Start reading input from the server
         mActionExecutor = new ScheduledThreadPoolExecutor(2);
         mActionExecutor.setContinueExistingPeriodicTasksAfterShutdownPolicy(false);
         mListening = true;
@@ -47,15 +42,15 @@ public class Client {
             @Override
             public void run() {
                 while(mListening){
-                    final String incoming = server.receive();
-                    parse(incoming);
+                    parse(server.receive());
                 }
             }
         });
         t.start();
-        // Start reading
+        // Start sending commands back to the server
         mActionExecutor.scheduleAtFixedRate(new ActionRunnable(this), 0, 100, TimeUnit.MILLISECONDS);
     }
+ 
     public void dash(Double power) {
         String[] args = {power.toString()};
         server.send(commands.DASH, args);
@@ -176,19 +171,6 @@ public class Client {
             else {
                 turn(-7.0);
             }
-        }
-    }
-    
-    public void start(){
-        mActionExecutor.scheduleAtFixedRate(new ActionRunnable(this), 0, 100, TimeUnit.MILLISECONDS);
-    }
-
-    private boolean timeToRespond() {
-        if (lastMessageTypeParsed.equals("sense_body")) {
-            return true;
-        }
-        else {
-            return false;
         }
     }
 
