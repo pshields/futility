@@ -14,8 +14,12 @@ public class Main {
      * @param args Command-line arguments.
      */
     public static void main(String[] args) {
-        Client client = new Client();
-        client.start();
+        String teamName = "futility";
+        if (args.length > 0)
+        {
+            teamName = args[0];
+        }
+        Client client = new Client(teamName);
 //        try {
 //            RoboClient client = new RoboClient(teamName, host);
 //            client.init();

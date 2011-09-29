@@ -74,11 +74,11 @@ public class RoboClient {
 		stopListening();
 	}
 	
-	public void startWriting(){
+	//public void startWriting(){
 		//warning calling this function more than once is a bad thing
 		//should add a safty net to ensure that doesn't happen
-		mActionExecutor.scheduleAtFixedRate(new ActionRunnable(this), 0, 100, TimeUnit.MILLISECONDS);
-	}
+		//mActionExecutor.scheduleAtFixedRate(new ActionRunnable(this), 0, 100, TimeUnit.MILLISECONDS);
+	//}
 	
 	public void sendActions() {
 		//can send 3 actions at a time

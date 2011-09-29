@@ -1,7 +1,5 @@
 package futility;
 
-import org.apache.commons.lang3.StringUtils;
-
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -57,6 +55,7 @@ public class Server {
      */
     public void send(String message)
     {
+        //System.out.println(message);
         byte[] buffer = message.getBytes();
         DatagramPacket packet = new DatagramPacket(buffer, buffer.length, host, port);
         try {
@@ -72,7 +71,10 @@ public class Server {
      * It will be properly formatted for free!
      */
     public void send(String command, String[] args) {
-        send(String.format("(%s %s)", command, StringUtils.join(args, " ")));
+        String arg_text = "";
+        for (String arg : args) {
+            arg_text += ' ' + arg;
+        }
+        send(String.format("(%s%s)\0", command, arg_text));
     }
-
 }

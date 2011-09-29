@@ -6,6 +6,8 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import futility.Commands;
 
@@ -18,21 +20,41 @@ public class Client {
     private Commands commands = new Commands();
     private double goalAngle;
     private double goalDistance;
-    
+    private PlayerInfo mInfo;
+    private boolean mListening;
     private String lastMessageTypeParsed;
     private char opponentTeamSide;
     private int playerNum;
     private int port;
+    private ScheduledThreadPoolExecutor mActionExecutor;
     private Server server = new Server();
     private Settings settings = new Settings();
     private DatagramSocket socket;
-    private String teamName;
+    private String mTeamName;
     private char teamSide;
     private int time;
 
-    public Client() {
-        String[] initArgs = {settings.TEAM_NAME, settings.SOCCER_SERVER_VERSION};
+    public Client(String teamName) {
+        mTeamName = teamName;
+        String[] initArgs = {mTeamName, String.format("(version %s)", settings.SOCCER_SERVER_VERSION)};
         server.send(commands.INIT, initArgs);
+        // Start reading
+        mActionExecutor = new ScheduledThreadPoolExecutor(2);
+        mActionExecutor.setContinueExistingPeriodicTasksAfterShutdownPolicy(false);
+        mListening = true;
+        Thread t = new Thread(new Runnable() {
+
+            @Override
+            public void run() {
+                while(mListening){
+                    final String incoming = server.receive();
+                    parse(incoming);
+                }
+            }
+        });
+        t.start();
+        // Start reading
+        mActionExecutor.scheduleAtFixedRate(new ActionRunnable(this), 0, 100, TimeUnit.MILLISECONDS);
     }
     public void dash(Double power) {
         String[] args = {power.toString()};
@@ -51,7 +73,7 @@ public class Client {
 
     public void kick(Double power, Double direction) {
         String[] args = {power.toString(), direction.toString()};
-        server.send(commands.KICK);
+        server.send(commands.KICK, args);
     }
 
     public void parse(String message) {
@@ -113,16 +135,6 @@ public class Client {
         }
     }
 
-    public void play() {
-        while (true) {
-            parse(server.receive());
-            if (timeToRespond()) {
-                respond();
-                resetKnowledge();
-            }
-        }
-    }
-
     public void resetKnowledge() {
         canKickBall = false;
         canSeeBall = false;
@@ -166,10 +178,9 @@ public class Client {
             }
         }
     }
-
-    public void start()
-    {
-        play();
+    
+    public void start(){
+        mActionExecutor.scheduleAtFixedRate(new ActionRunnable(this), 0, 100, TimeUnit.MILLISECONDS);
     }
 
     private boolean timeToRespond() {

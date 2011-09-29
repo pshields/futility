@@ -2,16 +2,16 @@ package futility;
 
 public class ActionRunnable implements Runnable {
 
-	private RoboClient mClient;
+	private Client mClient;
 //	private Timer mTimer;
 	
-	public ActionRunnable(RoboClient client){
+	public ActionRunnable(Client client){
 		mClient = client;
 	}
 	
 	@Override
 	public void run() {
-		mClient.sendActions();
+        mClient.respond();
+        mClient.resetKnowledge();
 	}
-
 }
