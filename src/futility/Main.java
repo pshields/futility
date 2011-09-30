@@ -14,12 +14,7 @@ public class Main {
      * @param args Command-line arguments.
      */
     public static void main(String[] args) {
-        String teamName = "futility";
-        if (args.length > 0)
-        {
-            teamName = args[0];
-        }
-        Client client = new Client(teamName);
+        Client client = new Client(args);
 // Below are sections of Tom's and Nathan's respective main functions.
 // They can be integrated here to some extent.
 //        try {

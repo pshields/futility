@@ -14,7 +14,7 @@ public class ActionRunnable implements Runnable {
 	 */
 	@Override
 	public void run() {
-        mClient.respond();
+        mClient.act();
         mClient.resetKnowledge();
 	}
 }

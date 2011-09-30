@@ -1,40 +1,79 @@
 package futility;
 
+import java.io.IOException;
+import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.net.InetAddress;
+import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import futility.Commands;
 
 public class Client {
-    private double ballDistance;
-    private double ballAngle;
-    private boolean canKickBall;
-    private boolean canSeeBall;
-    private boolean canSeeGoal;
-    private Commands commands = new Commands();
-    private double goalAngle;
-    private double goalDistance;
-    private PlayerInfo mInfo;
-    private boolean mListening;
-    private String lastMessageTypeParsed;
-    private char opponentTeamSide;
-    private int playerNum;
-    private int port;
-    private ScheduledThreadPoolExecutor mActionExecutor;
-    private Server server = new Server();
-    private Settings settings = new Settings();
-    private DatagramSocket socket;
-    private String mTeamName;
-    private char teamSide;
-    private int time;
+    double mBallDistance;
+    double mBallAngle;
+    boolean mCanKickBall;
+    boolean mCanSeeBall;
+    boolean mCanSeeGoal;
+    boolean mDebugMode = Settings.DEBUG;
+    double mGoalAngle;
+    double mGoalDistance;
+    PlayerInfo mInfo;
+    boolean mListening;
+    String mLastMessageTypeParsed;
+    char mOpponentTeamSide;
+    int mVerbosity = Settings.VERBOSITY;
+    int mPlayerNum;
+    boolean mPrintCommands;
+    boolean mPrintReceivedMessages;
+    InetAddress mSoccerServerHost;
+    int mSoccerServerPort = Settings.INIT_PORT;
+    DatagramSocket mSoccerServerSocket;
+    ScheduledThreadPoolExecutor mActionExecutor;
+    DatagramSocket mSocket;
+    String mTeamName = Settings.TEAM_NAME;
+    char mTeamSide;
+    int mCurrentTimeStep;
 
-    public Client(String teamName) {
-        mTeamName = teamName;
-        String[] initArgs = {mTeamName, String.format("(version %s)", settings.SOCCER_SERVER_VERSION)};
-        server.send(commands.INIT, initArgs);
+    public Client(String[] args) {
+        // Parse command-line arguments
+        for (int i = 1; i < args.length; i++ )
+        {
+            try 
+            {
+                if (args[i].equals("-t") || args[i].equals("--team"))
+                {
+                    mTeamName = args[i+1];
+                }
+                else if (args[i].equals("-d") || args[i].equals("--debug"))
+                {
+                    mDebugMode = true;
+                }
+                else if (args[i].equals("-v") || args[i].equals("--verbosity"))
+                {
+                    mVerbosity = Integer.parseInt(args[i+1]);
+                }
+            }
+            catch (Exception e )
+            {
+                System.out.println("Invalid command-line parameters.");
+            }
+        }
+        try {
+            // Set up server connection
+            mSoccerServerHost = InetAddress.getByName(Settings.HOSTNAME);
+            mSoccerServerSocket = new DatagramSocket();
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+        } catch (SocketException e) {
+            e.printStackTrace();
+        }
+        
+        sendCommand(Commands.INIT, mTeamName, String.format("(version %s)", Settings.SOCCER_SERVER_VERSION));
         // Start reading input from the server
-        mActionExecutor = new ScheduledThreadPoolExecutor(2);
+        mActionExecutor = new ScheduledThreadPoolExecutor(1);
         mActionExecutor.setContinueExistingPeriodicTasksAfterShutdownPolicy(false);
         mListening = true;
         Thread t = new Thread(new Runnable() {
@@ -42,7 +81,7 @@ public class Client {
             @Override
             public void run() {
                 while(mListening){
-                    parse(server.receive());
+                    parse(receive());
                 }
             }
         });
@@ -52,111 +91,36 @@ public class Client {
     }
  
     public void dash(Double power) {
-        String[] args = {power.toString()};
-        server.send(commands.DASH, args);
+        sendCommand(Commands.DASH, power);
     }
 
     public void dash(Double power, Double direction) {
-        String[] args = {power.toString(), direction.toString()};
-        server.send(commands.DASH, args);
+        sendCommand(Commands.DASH, power, direction);
     }
-
-    public void kick(Double power) {
-        String[] args = {power.toString()};
-        server.send(commands.KICK, args);
-    }
-
-    public void kick(Double power, Double direction) {
-        String[] args = {power.toString(), direction.toString()};
-        server.send(commands.KICK, args);
-    }
-
-    public void parse(String message) {
-        // Update the lastMessageTypeParsed variable
-        String[] parts = message.split(" ");
-        lastMessageTypeParsed = new String(parts[0].substring(1, parts[0].length()));
-
-        // Handle various message
-        if (message.startsWith("(init ")) {
-            teamSide = parts[1].charAt(0);
-            if (teamSide == 'l') {
-                opponentTeamSide = 'r';
-            }
-            else if (teamSide == 'r') {
-                opponentTeamSide = 'l';
-            }
-            else {
-                System.err.println("Could not parse teamSide.");
-            }
-            playerNum = Integer.parseInt(parts[2]);
-        }
-        else if (message.startsWith("(sense_body")) {
-            time = Integer.parseInt(parts[1]);
-        }
-        else if (message.startsWith("(see ")) {
-            // Extract ball info
-            String beginsWith = new String("((b) ");
-            int beginsAt = message.indexOf(beginsWith);
-            if (beginsAt > 0) {
-                canSeeBall = true;
-                String relevantPart = message.substring(beginsAt + beginsWith.length(), message.indexOf(")", beginsAt + beginsWith.length()));
-                String[] relevantParts = relevantPart.split(" ");
-                if (relevantParts.length == 1) {
-                    ballAngle = Double.valueOf(relevantParts[0]);
-                }
-                else if (relevantParts.length >= 2) {
-                    ballDistance = Double.valueOf(relevantParts[0]);
-                    ballAngle = Double.valueOf(relevantParts[1]);
-                }
-                if (ballDistance < 0.7) {
-                    canKickBall = true;
-                }
-            }
-            // Extract opponent goal info
-            beginsWith = new String(String.format("((g %s) ", opponentTeamSide));
-            beginsAt = message.indexOf(beginsWith);
-            if (beginsAt > 0) {
-                canSeeGoal = true;
-                String relevantPart = message.substring(beginsAt + beginsWith.length(), message.indexOf(")", beginsAt + beginsWith.length()));
-                String[] relevantParts = relevantPart.split(" ");
-                if (relevantParts.length == 1) {
-                    goalAngle = Double.valueOf(relevantParts[0]);
-                }
-                else if (relevantParts.length >= 2) {
-                    goalDistance = Double.valueOf(relevantParts[0]);
-                    goalAngle = Double.valueOf(relevantParts[1]);
-                }
-            }
-        }
-    }
-
-    public void resetKnowledge() {
-        canKickBall = false;
-        canSeeBall = false;
-        canSeeGoal = false;
-        ballDistance += 0.3;
-    }
-
-    public void respond() {
+    
+    /**
+     * Execute an action in the current timestep
+     */
+    public void act() {
         double approachAngle;
-        double power = Math.min(100, 10 + ballDistance * 20);
-        if (canKickBall) {
-            if (canSeeGoal) {
-                kick(100.0, goalAngle);
+        double power = Math.min(100, 10 + mBallDistance * 20);
+        if (mCanKickBall) {
+            if (mCanSeeGoal) {
+                kick(100.0, mGoalAngle);
             }
             else {
                 dash(30.0, 90.0);
             }
         }
-        else if (canSeeBall) {
-            if (canSeeGoal) {
-                double approachAngleDelta = ballDistance /10;
-                approachAngle = ballAngle + Math.copySign(1.0, ballAngle - goalAngle) * approachAngleDelta;
-                if (ballAngle > goalAngle) {
-                    approachAngle = ballAngle + approachAngleDelta;
+        else if (mCanSeeBall) {
+            if (mCanSeeGoal) {
+                double approachAngleDelta = mBallDistance /10;
+                approachAngle = mBallAngle + Math.copySign(1.0,  - mGoalAngle) * approachAngleDelta;
+                if (mBallAngle > mGoalAngle) {
+                    approachAngle =  + approachAngleDelta;
                 }
                 else {
-                    approachAngle = goalAngle - approachAngleDelta;
+                    approachAngle = mGoalAngle - approachAngleDelta;
                 }
                 dash(power, approachAngle);
             }
@@ -165,7 +129,7 @@ public class Client {
             }
         }
         else {
-            if (ballAngle > 0) {
+            if (mBallAngle > 0) {
                 turn(7.0);
             }
             else {
@@ -174,8 +138,138 @@ public class Client {
         }
     }
 
+    public void kick(Double power) {
+        sendCommand(Commands.KICK, power);
+    }
+
+    public void kick(Double power, Double direction) {
+        sendCommand(Commands.KICK, power, direction);
+    }
+
+    public void parse(String message) {
+        // Update the mLastMessageTypeParsed variable
+        String[] parts = message.split(" ");
+        mLastMessageTypeParsed = new String(parts[0].substring(1, parts[0].length()));
+
+        // Handle various message
+        if (message.startsWith("(init ")) {
+            mTeamSide = parts[1].charAt(0);
+            if (mTeamSide == 'l') {
+                mOpponentTeamSide = 'r';
+            }
+            else if (mTeamSide == 'r') {
+                mOpponentTeamSide = 'l';
+            }
+            else {
+                System.err.println("Could not parse teamSide.");
+            }
+            mPlayerNum = Integer.parseInt(parts[2]);
+        }
+        else if (message.startsWith("(sense_body")) {
+            mCurrentTimeStep = Integer.parseInt(parts[1]);
+        }
+        else if (message.startsWith("(see ")) {
+            // Extract ball info
+            String beginsWith = new String("((b) ");
+            int beginsAt = message.indexOf(beginsWith);
+            if (beginsAt > 0) {
+                mCanSeeBall = true;
+                String relevantPart = message.substring(beginsAt + beginsWith.length(), message.indexOf(")", beginsAt + beginsWith.length()));
+                String[] relevantParts = relevantPart.split(" ");
+                if (relevantParts.length == 1) {
+                    mBallAngle = Double.valueOf(relevantParts[0]);
+                }
+                else if (relevantParts.length >= 2) {
+                    mBallDistance = Double.valueOf(relevantParts[0]);
+                    mBallAngle = Double.valueOf(relevantParts[1]);
+                }
+                if (mBallDistance < 0.7) {
+                    mCanKickBall = true;
+                }
+            }
+            // Extract opponent goal info
+            beginsWith = new String(String.format("((g %s) ", mOpponentTeamSide));
+            beginsAt = message.indexOf(beginsWith);
+            if (beginsAt > 0) {
+                mCanSeeGoal = true;
+                String relevantPart = message.substring(beginsAt + beginsWith.length(), message.indexOf(")", beginsAt + beginsWith.length()));
+                String[] relevantParts = relevantPart.split(" ");
+                if (relevantParts.length == 1) {
+                    mGoalAngle = Double.valueOf(relevantParts[0]);
+                }
+                else if (relevantParts.length >= 2) {
+                    mGoalDistance = Double.valueOf(relevantParts[0]);
+                    mGoalAngle = Double.valueOf(relevantParts[1]);
+                }
+            }
+        }
+    }
+    
+    public void quit() {
+        sendCommand(Commands.BYE);
+        mSoccerServerSocket.close();
+    }
+    
+    public String receive() {
+        byte[] buffer = new byte[Settings.MSG_SIZE];
+        DatagramPacket packet = new DatagramPacket(buffer, Settings.MSG_SIZE);
+        try {
+            mSoccerServerSocket.receive(packet);
+            if (mSoccerServerPort == Settings.INIT_PORT) {
+                mSoccerServerPort = packet.getPort();
+            }
+        }
+        catch (IOException e) {
+            System.err.println("socket receiving error " + e);
+        }
+        if (mVerbosity >= 2) {
+            System.out.println(new String(buffer));
+        }
+        return new String(buffer);
+    }
+
+    public void resetKnowledge() {
+        mCanKickBall = false;
+        mCanSeeBall = false;
+        mCanSeeGoal = false;
+        mBallDistance += 0.3;
+    }
+    
+    /** Send a properly-formatted message to the soccer server
+     * 
+     * @param command the command to send
+     * @param args any amount of object arguments
+     */
+    public void sendCommand(String command, Object... args) {
+        String partial = String.format("(%s", command);
+        for (Object arg : args) {
+            partial += ' ' + arg.toString();
+        }
+        partial += ")\0";
+        sendMessage(partial);
+    }
+    
+    /**
+     * Send a message to the soccer server
+     * 
+     * @param message
+     */
+    public void sendMessage(String message)
+    {
+        if (mDebugMode || (mVerbosity >= 1)) {
+            System.out.println(message);
+        }
+        byte[] buffer = message.getBytes();
+        DatagramPacket packet = new DatagramPacket(buffer, buffer.length, mSoccerServerHost, mSoccerServerPort);
+        try {
+            mSoccerServerSocket.send(packet);
+        }
+        catch (IOException e) {
+            System.err.println("socket sending error " + e);
+        }
+    }
+
     private void turn(Double direction) {
-        String[] args = {direction.toString()};
-        server.send(commands.TURN, args);
+        sendCommand(Commands.TURN, direction);
     }
  }
