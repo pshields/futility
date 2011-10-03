@@ -1,4 +1,11 @@
+# Files from the build
 build/
+
+# Eclipse files
 .classpath
 .project
+
+# Soccer server files
+*.rcg
+*.rcl
 incomplete.*
