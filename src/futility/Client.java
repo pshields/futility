@@ -11,7 +11,7 @@ import java.util.concurrent.TimeUnit;
 
 import futility.Commands;
 
-public class Client {
+public class Client implements Runnable {
     double ballDistance;
     double ballAngle;
     boolean canKickBall;
@@ -87,7 +87,7 @@ public class Client {
         });
         t.start();
         // Start sending commands back to the server
-        actionExecutor.scheduleAtFixedRate(new ActionRunnable(this), 0, 100, TimeUnit.MILLISECONDS);
+        actionExecutor.scheduleAtFixedRate(this, 0, 100, TimeUnit.MILLISECONDS);
     }
  
     public void dash(Double power) {
@@ -233,6 +233,15 @@ public class Client {
         canSeeBall = false;
         canSeeGoal = false;
         ballDistance += 0.3;
+    }
+    
+    /**
+     * Respond during the current timestep
+     */
+    @Override
+    public void run() {
+        act();
+        resetKnowledge();
     }
     
     /** Send a properly-formatted message to the soccer server
