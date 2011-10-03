@@ -12,30 +12,30 @@ import java.util.concurrent.TimeUnit;
 import futility.Commands;
 
 public class Client {
-    double mBallDistance;
-    double mBallAngle;
-    boolean mCanKickBall;
-    boolean mCanSeeBall;
-    boolean mCanSeeGoal;
-    boolean mDebugMode = Settings.DEBUG;
-    double mGoalAngle;
-    double mGoalDistance;
-    PlayerInfo mInfo;
-    boolean mListening;
-    String mLastMessageTypeParsed;
-    char mOpponentTeamSide;
-    int mVerbosity = Settings.VERBOSITY;
-    int mPlayerNum;
-    boolean mPrintCommands;
-    boolean mPrintReceivedMessages;
-    InetAddress mSoccerServerHost;
-    int mSoccerServerPort = Settings.INIT_PORT;
-    DatagramSocket mSoccerServerSocket;
-    ScheduledThreadPoolExecutor mActionExecutor;
-    DatagramSocket mSocket;
-    String mTeamName = Settings.TEAM_NAME;
-    char mTeamSide;
-    int mCurrentTimeStep;
+    double ballDistance;
+    double ballAngle;
+    boolean canKickBall;
+    boolean canSeeBall;
+    boolean canSeeGoal;
+    boolean debugMode = Settings.DEBUG;
+    double goalAngle;
+    double goalDistance;
+    PlayerInfo info;
+    boolean listening;
+    String lastMessageTypeParsed;
+    char opponentTeamSide;
+    int verbosity = Settings.VERBOSITY;
+    int playerNum;
+    boolean printCommands;
+    boolean printReceivedMessages;
+    InetAddress soccerServerHost;
+    int soccerServerPort = Settings.INIT_PORT;
+    DatagramSocket soccerServerSocket;
+    ScheduledThreadPoolExecutor actionExecutor;
+    DatagramSocket socket;
+    String teamName = Settings.TEAM_NAME;
+    char teamSide;
+    int currentTimeStep;
 
     public Client(String[] args) {
         // Parse command-line arguments
@@ -45,15 +45,15 @@ public class Client {
             {
                 if (args[i].equals("-t") || args[i].equals("--team"))
                 {
-                    mTeamName = args[i+1];
+                    teamName = args[i+1];
                 }
                 else if (args[i].equals("-d") || args[i].equals("--debug"))
                 {
-                    mDebugMode = true;
+                    debugMode = true;
                 }
                 else if (args[i].equals("-v") || args[i].equals("--verbosity"))
                 {
-                    mVerbosity = Integer.parseInt(args[i+1]);
+                    verbosity = Integer.parseInt(args[i+1]);
                 }
             }
             catch (Exception e )
@@ -63,31 +63,31 @@ public class Client {
         }
         try {
             // Set up server connection
-            mSoccerServerHost = InetAddress.getByName(Settings.HOSTNAME);
-            mSoccerServerSocket = new DatagramSocket();
+            soccerServerHost = InetAddress.getByName(Settings.HOSTNAME);
+            soccerServerSocket = new DatagramSocket();
         } catch (UnknownHostException e) {
             e.printStackTrace();
         } catch (SocketException e) {
             e.printStackTrace();
         }
         
-        sendCommand(Commands.INIT, mTeamName, String.format("(version %s)", Settings.SOCCER_SERVER_VERSION));
+        sendCommand(Commands.INIT, teamName, String.format("(version %s)", Settings.SOCCER_SERVER_VERSION));
         // Start reading input from the server
-        mActionExecutor = new ScheduledThreadPoolExecutor(1);
-        mActionExecutor.setContinueExistingPeriodicTasksAfterShutdownPolicy(false);
-        mListening = true;
+        actionExecutor = new ScheduledThreadPoolExecutor(1);
+        actionExecutor.setContinueExistingPeriodicTasksAfterShutdownPolicy(false);
+        listening = true;
         Thread t = new Thread(new Runnable() {
 
             @Override
             public void run() {
-                while(mListening){
+                while(listening){
                     parse(receive());
                 }
             }
         });
         t.start();
         // Start sending commands back to the server
-        mActionExecutor.scheduleAtFixedRate(new ActionRunnable(this), 0, 100, TimeUnit.MILLISECONDS);
+        actionExecutor.scheduleAtFixedRate(new ActionRunnable(this), 0, 100, TimeUnit.MILLISECONDS);
     }
  
     public void dash(Double power) {
@@ -103,24 +103,24 @@ public class Client {
      */
     public void act() {
         double approachAngle;
-        double power = Math.min(100, 10 + mBallDistance * 20);
-        if (mCanKickBall) {
-            if (mCanSeeGoal) {
-                kick(100.0, mGoalAngle);
+        double power = Math.min(100, 10 + ballDistance * 20);
+        if (canKickBall) {
+            if (canSeeGoal) {
+                kick(100.0, goalAngle);
             }
             else {
                 dash(30.0, 90.0);
             }
         }
-        else if (mCanSeeBall) {
-            if (mCanSeeGoal) {
-                double approachAngleDelta = mBallDistance /10;
-                approachAngle = mBallAngle + Math.copySign(1.0,  - mGoalAngle) * approachAngleDelta;
-                if (mBallAngle > mGoalAngle) {
+        else if (canSeeBall) {
+            if (canSeeGoal) {
+                double approachAngleDelta = ballDistance /10;
+                approachAngle = ballAngle + Math.copySign(1.0, -goalAngle) * approachAngleDelta;
+                if (ballAngle > goalAngle) {
                     approachAngle =  + approachAngleDelta;
                 }
                 else {
-                    approachAngle = mGoalAngle - approachAngleDelta;
+                    approachAngle = goalAngle - approachAngleDelta;
                 }
                 dash(power, approachAngle);
             }
@@ -129,7 +129,7 @@ public class Client {
             }
         }
         else {
-            if (mBallAngle > 0) {
+            if (ballAngle > 0) {
                 turn(7.0);
             }
             else {
@@ -149,57 +149,57 @@ public class Client {
     public void parse(String message) {
         // Update the mLastMessageTypeParsed variable
         String[] parts = message.split(" ");
-        mLastMessageTypeParsed = new String(parts[0].substring(1, parts[0].length()));
+        lastMessageTypeParsed = new String(parts[0].substring(1, parts[0].length()));
 
         // Handle various message
         if (message.startsWith("(init ")) {
-            mTeamSide = parts[1].charAt(0);
-            if (mTeamSide == 'l') {
-                mOpponentTeamSide = 'r';
+            teamSide = parts[1].charAt(0);
+            if (teamSide == 'l') {
+                opponentTeamSide = 'r';
             }
-            else if (mTeamSide == 'r') {
-                mOpponentTeamSide = 'l';
+            else if (teamSide == 'r') {
+                opponentTeamSide = 'l';
             }
             else {
                 System.err.println("Could not parse teamSide.");
             }
-            mPlayerNum = Integer.parseInt(parts[2]);
+            playerNum = Integer.parseInt(parts[2]);
         }
         else if (message.startsWith("(sense_body")) {
-            mCurrentTimeStep = Integer.parseInt(parts[1]);
+            currentTimeStep = Integer.parseInt(parts[1]);
         }
         else if (message.startsWith("(see ")) {
             // Extract ball info
             String beginsWith = new String("((b) ");
             int beginsAt = message.indexOf(beginsWith);
             if (beginsAt > 0) {
-                mCanSeeBall = true;
+                canSeeBall = true;
                 String relevantPart = message.substring(beginsAt + beginsWith.length(), message.indexOf(")", beginsAt + beginsWith.length()));
                 String[] relevantParts = relevantPart.split(" ");
                 if (relevantParts.length == 1) {
-                    mBallAngle = Double.valueOf(relevantParts[0]);
+                    ballAngle = Double.valueOf(relevantParts[0]);
                 }
                 else if (relevantParts.length >= 2) {
-                    mBallDistance = Double.valueOf(relevantParts[0]);
-                    mBallAngle = Double.valueOf(relevantParts[1]);
+                    ballDistance = Double.valueOf(relevantParts[0]);
+                    ballAngle = Double.valueOf(relevantParts[1]);
                 }
-                if (mBallDistance < 0.7) {
-                    mCanKickBall = true;
+                if (ballDistance < 0.7) {
+                    canKickBall = true;
                 }
             }
             // Extract opponent goal info
-            beginsWith = new String(String.format("((g %s) ", mOpponentTeamSide));
+            beginsWith = new String(String.format("((g %s) ", opponentTeamSide));
             beginsAt = message.indexOf(beginsWith);
             if (beginsAt > 0) {
-                mCanSeeGoal = true;
+                canSeeGoal = true;
                 String relevantPart = message.substring(beginsAt + beginsWith.length(), message.indexOf(")", beginsAt + beginsWith.length()));
                 String[] relevantParts = relevantPart.split(" ");
                 if (relevantParts.length == 1) {
-                    mGoalAngle = Double.valueOf(relevantParts[0]);
+                    goalAngle = Double.valueOf(relevantParts[0]);
                 }
                 else if (relevantParts.length >= 2) {
-                    mGoalDistance = Double.valueOf(relevantParts[0]);
-                    mGoalAngle = Double.valueOf(relevantParts[1]);
+                    goalDistance = Double.valueOf(relevantParts[0]);
+                    goalAngle = Double.valueOf(relevantParts[1]);
                 }
             }
         }
@@ -207,32 +207,32 @@ public class Client {
     
     public void quit() {
         sendCommand(Commands.BYE);
-        mSoccerServerSocket.close();
+        soccerServerSocket.close();
     }
     
     public String receive() {
         byte[] buffer = new byte[Settings.MSG_SIZE];
         DatagramPacket packet = new DatagramPacket(buffer, Settings.MSG_SIZE);
         try {
-            mSoccerServerSocket.receive(packet);
-            if (mSoccerServerPort == Settings.INIT_PORT) {
-                mSoccerServerPort = packet.getPort();
+            soccerServerSocket.receive(packet);
+            if (soccerServerPort == Settings.INIT_PORT) {
+                soccerServerPort = packet.getPort();
             }
         }
         catch (IOException e) {
             System.err.println("socket receiving error " + e);
         }
-        if (mVerbosity >= 2) {
+        if (verbosity >= 2) {
             System.out.println(new String(buffer));
         }
         return new String(buffer);
     }
 
     public void resetKnowledge() {
-        mCanKickBall = false;
-        mCanSeeBall = false;
-        mCanSeeGoal = false;
-        mBallDistance += 0.3;
+        canKickBall = false;
+        canSeeBall = false;
+        canSeeGoal = false;
+        ballDistance += 0.3;
     }
     
     /** Send a properly-formatted message to the soccer server
@@ -256,13 +256,13 @@ public class Client {
      */
     public void sendMessage(String message)
     {
-        if (mDebugMode || (mVerbosity >= 1)) {
+        if (debugMode || (verbosity >= 1)) {
             System.out.println(message);
         }
         byte[] buffer = message.getBytes();
-        DatagramPacket packet = new DatagramPacket(buffer, buffer.length, mSoccerServerHost, mSoccerServerPort);
+        DatagramPacket packet = new DatagramPacket(buffer, buffer.length, soccerServerHost, soccerServerPort);
         try {
-            mSoccerServerSocket.send(packet);
+            soccerServerSocket.send(packet);
         }
         catch (IOException e) {
             System.err.println("socket sending error " + e);
