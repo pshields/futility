@@ -3,19 +3,23 @@
 
 package futility;
 
-abstract class ObjectConcept {
-    // The origin is arbitrarily chosen to be the farthest bottom-left point
-    // (given standard display conventions) that an object can occupy.
-    public double x = -1.0;
-    public double y = -1.0;
+public abstract class FieldObject extends GameObject {
+    Point position;
+    double angle = 0; // Assume all things face east.
     
-    public double angle = 0.0;
+    public FieldObject() {
+        position = new Point();
+    }
+    
+    public FieldObject(double x, double y) {
+        position = new Point(x, y);
+    }
     
     /** Get the angle from the current object to another
      * 
      * Assumes base angle is this object's body angle, if not specified
      */
-    public double angleTo(ObjectConcept object) {
+    public double angleTo(FieldObject object) {
         double angle = Math.atan(deltaY(object)/deltaX(object)) - this.angle;
         if (Double.isNaN(angle)) {
             angle = 0;
@@ -28,7 +32,7 @@ abstract class ObjectConcept {
      * @param object
      * @return the distance from the current object to another
      */
-    public double distanceTo(ObjectConcept object) {
+    public double distanceTo(FieldObject object) {
         return Math.hypot(deltaX(object), deltaY(object)); 
     }
     
@@ -36,16 +40,16 @@ abstract class ObjectConcept {
      * 
      * @return the difference in x coordinates from the current object to another
      */
-    public double deltaX(ObjectConcept object) {
-        return object.x - this.x;
+    public double deltaX(FieldObject object) {
+        return object.position.x - this.position.x;
     }
     
     /** Get the difference in y coordinates from the current object to another
      * 
      * @return the difference in y coordinates from the current object to another
      */
-    public double deltaY(ObjectConcept object) {
-        return object.y - this.y;
+    public double deltaY(FieldObject object) {
+        return object.position.y - this.position.y;
     }
     
     public boolean inRectangle(Rectangle rectangle) {

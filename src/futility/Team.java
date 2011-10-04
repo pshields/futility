@@ -1,6 +1,6 @@
 package futility;
 
-public class TeamConcept {
+public class Team {
     public String name = Settings.TEAM_NAME;
     public char side;
 }

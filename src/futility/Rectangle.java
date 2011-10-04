@@ -13,8 +13,8 @@ public class Rectangle {
         this.left = left;
     }
     
-    public boolean contains(ObjectConcept object) {
-        if (object.x > left && object.x < right && object.y > bottom && object.y < top)
+    public boolean contains(FieldObject object) {
+        if (object.position.x > left && object.position.x < right && object.position.y > bottom && object.position.y < top)
         {
             return true;
         }
@@ -22,5 +22,11 @@ public class Rectangle {
         {
             return false;
         }
+    }
+    
+    public Point getCenter() {
+        double centerX = (left + right) / 2;
+        double centerY = (bottom + top) / 2;
+        return new Point(centerX, centerY);
     }
 }
