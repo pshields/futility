@@ -9,7 +9,6 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 
 public class Player extends ObjectConcept {
-
     public boolean canSeeBall;
     public boolean canSeeGoal;
     boolean debugMode = Settings.DEBUG;
@@ -23,16 +22,28 @@ public class Player extends ObjectConcept {
     int verbosity = Settings.VERBOSITY;
     
     // Object models
-    public Ball ball;
-    public ObjectConcept goal;
+    public Rectangle field = new Rectangle(Settings.FIELD_BUFFER + Settings.FIELD_HEIGHT, Settings.FIELD_BUFFER + Settings.FIELD_WIDTH, Settings.FIELD_BUFFER, Settings.FIELD_BUFFER);
+    public ObjectConcept ball = new MovableObject();
+    public ObjectConcept goal = new ImmovableObject();
 
     public enum SeeInfo {
         GOAL_ANGLE,
         GOAL_DISTANCE
     }
 
+    
     public final boolean canKickBall() {
-        return (distanceTo(ball) <= 0.7);
+        if (!inRectangle(field)) 
+        {
+            return false;
+        }
+        if (distanceTo(ball) > 0.7)
+        {
+            return false;
+        }
+        else {
+            return true;
+        }
     }
 
     /** True if and only if the ball was seen in the most recently-parsed 'see' message.
@@ -57,8 +68,29 @@ public class Player extends ObjectConcept {
     public void kick(Double power, Double direction) {
         sendCommand(Commands.KICK, power, direction);
     }
+    
+    public void log(String message) {
+        System.out.println(message);
+    }
+    
+    public void log(int verbosity, String message) {
+        if (this.verbosity >= verbosity) {
+            if (verbosity == Settings.LOG_LEVELS.DEBUG) {
+                log("DEBUG: " + message);
+            }
+            else if (verbosity == Settings.LOG_LEVELS.INFO) {
+                log("INFO: " + message);
+            }
+            else if (verbosity == Settings.LOG_LEVELS.ERROR) {
+                System.err.println("ERROR: " + message);
+            }
+            else {
+                log(String.format("UNKNOWN VERBOSITY LEVEL %d", verbosity) + message);
+            }
+        }
+    }
 
-    public void parse(String message) {
+    public void parseMessage(String message) {
         String[] parts = message.split(" ");
         // Handle various message
         if (message.startsWith("(init ")) {
@@ -111,6 +143,56 @@ public class Player extends ObjectConcept {
             }
         }
     }
+    
+    public final void parseCommandLineArguments(String[] args) {
+        for (int i = 0; i < args.length; i++ )
+        {
+            try 
+            {
+                if (args[i].equals("-t") || args[i].equals("--team"))
+                {
+                    team.name = args[i+1];
+                }
+                else if (args[i].equals("-d") || args[i].equals("--debug"))
+                {
+                    debugMode = true;
+                    if (verbosity < Settings.LOG_LEVELS.DEBUG) {
+                        verbosity = Settings.LOG_LEVELS.DEBUG;
+                    }
+                }
+                else if (args[i].equals("-v") || args[i].equals("--verbosity"))
+                {
+                    verbosity = Integer.parseInt(args[i+1]);
+                }
+            }
+            catch (Exception e)
+            {
+                System.out.println("Invalid command-line parameters.");
+            }
+        }
+    }
+    
+    
+    /** Initialize a new client
+     * 
+     * @param args arguments to treat as if they were command-line arguments
+     */
+    public static final void initClient(String[] args) {
+        Client client = new Client(args);
+        client.init();
+    }
+    
+    /** Initialize a client for a specific team
+     * 
+     * @param args arguments to treat as if they were command-line arguments
+     * @param teamName a team name to override any other defaults
+     */
+    public static final void initClient(String[] args, String teamName) {
+        Client client = new Client(args);
+        client.team.name = teamName;
+        client.init();
+    }
+    
 
     public final void quit() {
         sendCommand(Commands.BYE);
@@ -172,6 +254,18 @@ public class Player extends ObjectConcept {
         }
         partial += ")\0";
         sendMessage(partial);
+    }
+    
+    public static final void startTeam(String[] args) {
+        for (int i=0; i<=10; i++) {
+            initClient(args);
+        }
+    }
+    
+    public static final void startTeam(String[] args, String teamName) {
+        for (int i=0; i<=10; i++) {
+            initClient(args, teamName);
+        }
     }
 
     public final void turn(Double direction) {

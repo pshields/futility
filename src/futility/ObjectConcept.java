@@ -9,14 +9,18 @@ abstract class ObjectConcept {
     public double x = -1.0;
     public double y = -1.0;
     
-    public double angle = 0;
+    public double angle = 0.0;
     
     /** Get the angle from the current object to another
      * 
      * Assumes base angle is this object's body angle, if not specified
      */
     public double angleTo(ObjectConcept object) {
-        return Math.atan(deltaY(object)/deltaX(object)) - angle;
+        double angle = Math.atan(deltaY(object)/deltaX(object)) - this.angle;
+        if (Double.isNaN(angle)) {
+            angle = 0;
+        }
+        return angle;
     }
     
     /** Get the distance from the current object to another
@@ -42,5 +46,9 @@ abstract class ObjectConcept {
      */
     public double deltaY(ObjectConcept object) {
         return object.y - this.y;
+    }
+    
+    public boolean inRectangle(Rectangle rectangle) {
+        return rectangle.contains(this);
     }
 }

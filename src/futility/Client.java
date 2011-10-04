@@ -14,30 +14,14 @@ public class Client extends Player implements Runnable {
     ScheduledThreadPoolExecutor actionExecutor;
     DatagramSocket socket;
 
+    /** Client constructor
+     * 
+     * Set up a client to play some virtual soccer!
+     * 
+     * @param args the same arguments passed to the process
+     */
     public Client(String[] args) {
-        // Parse command-line arguments
-        for (int i = 1; i < args.length; i++ )
-        {
-            try 
-            {
-                if (args[i].equals("-t") || args[i].equals("--team"))
-                {
-                    team.name = args[i+1];
-                }
-                else if (args[i].equals("-d") || args[i].equals("--debug"))
-                {
-                    debugMode = true;
-                }
-                else if (args[i].equals("-v") || args[i].equals("--verbosity"))
-                {
-                    verbosity = Integer.parseInt(args[i+1]);
-                }
-            }
-            catch (Exception e )
-            {
-                System.out.println("Invalid command-line parameters.");
-            }
-        }
+        parseCommandLineArguments(args);
     }
     
     public void init() {
@@ -61,20 +45,61 @@ public class Client extends Player implements Runnable {
             @Override
             public void run() {
                 while(listening){
-                    parse(receiveMessage());
+                    parseMessage(receiveMessage());
                 }
             }
         });
         t.start();
         // Start sending commands back to the server
+        log(Settings.LOG_LEVELS.DEBUG, "Scheduling client to run every 100 milliseconds...");
         actionExecutor.scheduleAtFixedRate(this, 0, 100, TimeUnit.MILLISECONDS);
     }
     
-    /**
-     * Respond during the current timestep
+    /** Main function
+     *
+     * First function to execute. Reads command-line arguments and activates
+     * one or more clients as specified in the args.
+     * 
+     * The ability to activate multiple clients here is meant as a CPU-saving
+     * technique for development. When competing, use the separate spin-up
+     * script to ensure complete process isolation. 
+     * 
+     * @param args Command-line arguments.
+     */
+    public static void main(String[] args) {
+        boolean startedClients = false;
+        for (int i = 0; i < args.length; i++ )
+        {
+            try 
+            {
+                if (args[i].equals("-c") || args[i].equals("--compete"))
+                {
+                    startTeam(args);
+                    startTeam(args, Settings.OTHER_TEAM_NAME);
+                    startedClients = true;
+                }
+                else if (args[i].equals("-s") || args[i].equals("--start-team"))
+                {
+                    startTeam(args);
+                    startedClients = true;
+                }
+            }
+            catch (Exception e)
+            {
+                System.out.println("Invalid command-line parameters.");
+            }
+        }
+        
+        if (!startedClients) {
+            initClient(args);
+        }
+    }
+    
+    /** Respond during the current timestep
      */
     @Override
     public void run() {
+        log(Settings.LOG_LEVELS.DEBUG, String.format("Running at time step %d...", time));
         double approachAngle;
         double power = Math.min(100, 10 + distanceTo(ball) * 20);
         if (canKickBall()) {
@@ -109,6 +134,8 @@ public class Client extends Player implements Runnable {
                 turn(-7.0);
             }
         }
+        log(Settings.LOG_LEVELS.DEBUG, "Got here.");
         resetKnowledge();
+        log(Settings.LOG_LEVELS.DEBUG, String.format("Done running at time step %d...", time));
     }
  }
