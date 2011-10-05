@@ -11,15 +11,14 @@ import java.util.concurrent.TimeUnit;
 
 import futility.Commands;
 
-public class Client implements Runnable {
-    boolean debugMode = Settings.DEBUG;
-    Player player;
-    ScheduledThreadPoolExecutor responseExecutor;
-    InetAddress soccerServerHost;
-    int soccerServerPort = Settings.INIT_PORT;
-    DatagramSocket soccerServerSocket;
-    DatagramSocket socket;
-    int verbosity = Settings.VERBOSITY;
+public class Client {
+    public boolean debugMode = Settings.DEBUG;
+    public Player player;
+    public ScheduledThreadPoolExecutor responseExecutor;
+    public InetAddress soccerServerHost;
+    public int soccerServerPort = Settings.INIT_PORT;
+    public DatagramSocket soccerServerSocket;
+    public int verbosity = Settings.VERBOSITY;
 
     /** Client constructor
      * 
@@ -28,18 +27,28 @@ public class Client implements Runnable {
      * @param args the same arguments passed to the process
      */
     public Client(String[] args) {
+        player = new Player(this);  // Initialize an associated player
+        // Process command-line arguments
         for (int i = 0; i < args.length; i++ ) {
             try {
                 if (args[i].equals("-t") || args[i].equals("--team")) {
+                    // Read the team name from the command-line
                     player.team.name = args[i+1];
                 }
                 else if (args[i].equals("-d") || args[i].equals("--debug")) {
+                    // Run in debug mode (no specific functionality right now)
                     debugMode = true;
                     if (verbosity < Settings.LOG_LEVELS.DEBUG) {
                         verbosity = Settings.LOG_LEVELS.DEBUG;
                     }
                 }
                 else if (args[i].equals("-v") || args[i].equals("--verbosity")) {
+                    // Set the verbosity to a custom level:
+                    //   * 0 is errors only
+                    //   * 1 is errors and important info
+                    //   * 2 is errors, important info and extra debug info
+                    //   * 3 is 0-2 with the addition of received server messages
+                    //  The default is specified in Settings.java.
                     verbosity = Integer.parseInt(args[i+1]);
                 }
             }
@@ -49,6 +58,10 @@ public class Client implements Runnable {
         }
     }
     
+    /** Initalize a client
+     * 
+     * Schedule and start related threads and connect to the server
+     */
     public void init() {
         try {
             // Set up server connection
@@ -79,12 +92,26 @@ public class Client implements Runnable {
         responseExecutor.scheduleAtFixedRate(player.brain, 0, 100, TimeUnit.MILLISECONDS);
     }
     
+    /** Basic logging shortcut
+     * 
+     * @param message what to send to the standard output
+     */
     public void log(String message) {
         System.out.println(message);
     }
     
+    /** Log with verbosity
+     * 
+     * Allows the inclusion of a verbosity value with a message
+     * 
+     * @param verbosity the minimum verbosity level the message should display at
+     * @param message
+     */
     public void log(int verbosity, String message) {
         if (this.verbosity >= verbosity) {
+            if (verbosity == Settings.LOG_LEVELS.ALL) {
+                log(message);
+            }
             if (verbosity == Settings.LOG_LEVELS.DEBUG) {
                 log("DEBUG: " + message);
             }
@@ -100,11 +127,18 @@ public class Client implements Runnable {
         }
     }
     
+    /** Disconnect from the server
+     * 
+     */
     public final void quit() {
         sendCommand(Commands.BYE);
         soccerServerSocket.close();
     }
     
+    /** Receive a message from the server
+     * 
+     * @return
+     */
     public String receiveMessage() {
         byte[] buffer = new byte[Settings.MSG_SIZE];
         DatagramPacket packet = new DatagramPacket(buffer, Settings.MSG_SIZE);
@@ -122,13 +156,6 @@ public class Client implements Runnable {
         }
         return new String(buffer);
     }    
-
-    /** Respond during the current timestep
-     */
-    @Override
-    public void run() {
-        player.brain.run();
-    }
     
     /** Send a properly-formatted message to the soccer server
      * 

@@ -2,18 +2,19 @@ package futility;
 
 public class Flag extends StationaryObject {
     
-    /** Flag constructor from object info
+    /** Flag constructor from ObjectInfo string
      * 
      * Pass in an object info string, get back a flag! It's magic!
-     * @param id the object info string
+     * @param id the ObjectInfo string
      */
     public Flag(String id) {
+        this.id = id;
         // Remove opening/closing parenthesis for readability
         String[] parts = id.substring(1, id.length() - 1).split(" ");
         double x = -1.0;
         double y = -1.0;
 
-        // Handle goal flags
+        // Handle goalpost flags
         if (parts[1].equals("g")) {
             // Set the horizontal value
             if (parts[2].equals("l")) {
@@ -51,7 +52,7 @@ public class Flag extends StationaryObject {
             }
         }
         // Handle flags on penalty area corners
-        if (parts[1].equals("p")) {
+        else if (parts[1].equals("p")) {
             // Set the horizontal value
             if (parts[2].equals("l")) {
                 // The flag is on the left side
@@ -75,8 +76,9 @@ public class Flag extends StationaryObject {
                 y = Settings.PENALTY_AREA_LEFT().bottom;
             }
         }
+        
         // Handle flags in the four corners of the field
-        if (parts.length == 3) {
+        else if (parts.length == 3) {
             // Set the horizontal value
             if (parts[1].equals("l")) {
                 // The flag is on the left side of the field

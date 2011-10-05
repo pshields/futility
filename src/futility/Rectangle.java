@@ -14,12 +14,10 @@ public class Rectangle {
     }
     
     public boolean contains(FieldObject object) {
-        if (object.position.x > left && object.position.x < right && object.position.y > bottom && object.position.y < top)
-        {
+        if (object.position.x > left && object.position.x < right && object.position.y > bottom && object.position.y < top) {
             return true;
         }
-        else
-        {
+        else {
             return false;
         }
     }

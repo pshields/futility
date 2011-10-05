@@ -16,9 +16,7 @@ public class Settings {
     // Default initial position for things with unknown locations
     // Note: the origin is arbitrarily chosen to be the farthest bottom-left
     // point (given standard display conventions) that an object can occupy.
-    public static Point INITIAL_POSITION() {
-        return new Point(-1.0, -1.0);
-    }
+    public static final Point INITIAL_POSITION = new Point(-1.0, -1.0);
     
     // Field geometry
     public static final double FIELD_WIDTH = 105.0;
@@ -40,8 +38,9 @@ public class Settings {
     }
     
     public static class LOG_LEVELS {
-        static int INFO = 2;
-        static int DEBUG = 1;
+        static int ALL = 3;
+        static int DEBUG = 2;
+        static int INFO = 1;
         static int ERROR = 0;
         static int NONE = -1;
     }
@@ -61,11 +60,15 @@ public class Settings {
     public static final StationaryObject[] STATIONARY_OBJECTS = {
         // Physical boundary flags
         new Flag("(f t l 50)"),
+        new Flag("(f t l 40)"),
         new Flag("(f t l 30)"),
+        new Flag("(f t l 20)"),
         new Flag("(f t l 10)"),
         new Flag("(f t 0)"),
         new Flag("(f t r 10)"),
+        new Flag("(f t r 20)"),
         new Flag("(f t r 30)"),
+        new Flag("(f t r 40)"),
         new Flag("(f t r 50)"),
         new Flag("(f r t 30)"),
         new Flag("(f r t 20)"),
@@ -73,12 +76,17 @@ public class Settings {
         new Flag("(f r 0)"),
         new Flag("(f r b 10)"),
         new Flag("(f r b 20)"),
-        new Flag("(f r b 50)"),
         new Flag("(f r b 30)"),
-        new Flag("(f r b 10)"),
+        new Flag("(f b r 50)"),
+        new Flag("(f b r 40)"),
+        new Flag("(f b r 30)"),
+        new Flag("(f b r 20)"),
+        new Flag("(f b r 10)"),
         new Flag("(f b 0)"),
         new Flag("(f b l 10)"),
+        new Flag("(f b l 20)"),
         new Flag("(f b l 30)"),
+        new Flag("(f b l 40)"),
         new Flag("(f b l 50)"),
         new Flag("(f l b 30)"),
         new Flag("(f l b 20)"),
@@ -93,6 +101,11 @@ public class Settings {
         new Flag("(f r t)"),
         new Flag("(f r b)"),
         new Flag("(f l b)"),
+        
+        // Field center flags
+        new Flag("(f c t)"),
+        new Flag("(f c)"),
+        new Flag("(f c b)"),
         
         // Penalty area flags
         new Flag("(f p l t)"),
@@ -110,7 +123,6 @@ public class Settings {
         
         // Goals
         new Goal("(g l)"),
-        new Goal("(g r")
-     
+        new Goal("(g r)")
     };
 }

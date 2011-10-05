@@ -1,10 +1,9 @@
 package futility;
 
 public class StationaryObject extends FieldObject {
-    String id;
     
     public StationaryObject() {
-        this.position = Settings.INITIAL_POSITION();
+        this.position = new Point(Settings.INITIAL_POSITION.x,Settings.INITIAL_POSITION.y);
     }
     
     public StationaryObject(String id, double x, double y) {

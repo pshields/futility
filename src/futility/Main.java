@@ -11,28 +11,21 @@ public class Main {
     * technique for development. When competing, use the separate spin-up
     * script to ensure complete process isolation. 
     * 
-    * @param args Command-line arguments.
+    * @param args command-line arguments
     */
    public static void main(String[] args) {
        for (int i = 0; i < args.length; i++ )
        {
-           try 
-           {
-               // Depending on these settings, initalize one or more clients
-               if (args[i].equals("-c") || args[i].equals("--compete")) {
-                   startTeam(args);
-                   startTeam(args, Settings.OTHER_TEAM_NAME);
-               }
-               else if (args[i].equals("-s") || args[i].equals("--start-team")) {
-                   startTeam(args);
-               }
-               else {
-                   initClient(args);
-               }
+           // Depending on these settings, initalize one or more clients
+           if (args[i].equals("-c") || args[i].equals("--compete")) {
+               startTeam(args);
+               startTeam(args, Settings.OTHER_TEAM_NAME);
            }
-           catch (Exception e)
-           {
-               System.out.println("Invalid command-line parameters.");
+           else if (args[i].equals("-s") || args[i].equals("--start-team")) {
+               startTeam(args);
+           }
+           else {
+               initClient(args);
            }
        }
    }
@@ -57,16 +50,24 @@ public class Main {
        client.init();
    }
    
+   /** Start a team of clients with the given arguments
+    * 
+    * @param args command-line arguments to pass to the created clients
+    */
    public static final void startTeam(String[] args) {
        for (int i=0; i<=10; i++) {
            initClient(args);
        }
    }
    
+   /** Start a team of clients with arguments and a team name
+    * 
+    * @param args command-line arguments to pass to the created clients
+    * @param teamName a team name to override all others
+    */
    public static final void startTeam(String[] args, String teamName) {
        for (int i=0; i<=10; i++) {
            initClient(args, teamName);
        }
    }
-   
 }

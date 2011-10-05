@@ -6,11 +6,16 @@ public class Point {
     double y;
     
     public Point() {
-        x = Settings.INITIAL_POSITION().x;
-        y = Settings.INITIAL_POSITION().y;
+        x = Settings.INITIAL_POSITION.x;
+        y = Settings.INITIAL_POSITION.y;
     }
     
     public Point(double x, double y) {
+        this.x = x;
+        this.y = y;
+    }
+    
+    public void update(double x, double y) {
         this.x = x;
         this.y = y;
     }

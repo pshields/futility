@@ -3,6 +3,7 @@ package futility;
 public class Goal extends StationaryObject {
     
     public Goal(String id) {
+        this.id = id;
         double x = -1.0;
         double y = Settings.FIELD().getCenter().y;
         if (id.charAt(4) == 'l') {
@@ -12,7 +13,8 @@ public class Goal extends StationaryObject {
             x = Settings.FIELD().right;
         }
         else {
-            // Throw error. Parsing failure!
+            // TODO get logging to work here
+            //log(Settings.LOG_LEVELS.ERROR, "Couldn't parse goal id "+id);
         }
         position = new Point(x, y);
     }
