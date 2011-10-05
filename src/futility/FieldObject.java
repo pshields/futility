@@ -4,8 +4,9 @@
 package futility;
 
 public abstract class FieldObject extends GameObject {
-    Point position;
     double angle = 0; // Assume all things face east.
+    Point position;
+    int timeLastSeen = -1;
     
     public FieldObject() {
         position = new Point();

@@ -1,5 +1,7 @@
 package futility;
 
+import java.io.IOException;
+import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
@@ -9,10 +11,15 @@ import java.util.concurrent.TimeUnit;
 
 import futility.Commands;
 
-public class Client extends Player implements Runnable {
-    boolean listening;
-    ScheduledThreadPoolExecutor actionExecutor;
+public class Client implements Runnable {
+    boolean debugMode = Settings.DEBUG;
+    Player player;
+    ScheduledThreadPoolExecutor responseExecutor;
+    InetAddress soccerServerHost;
+    int soccerServerPort = Settings.INIT_PORT;
+    DatagramSocket soccerServerSocket;
     DatagramSocket socket;
+    int verbosity = Settings.VERBOSITY;
 
     /** Client constructor
      * 
@@ -21,7 +28,25 @@ public class Client extends Player implements Runnable {
      * @param args the same arguments passed to the process
      */
     public Client(String[] args) {
-        parseCommandLineArguments(args);
+        for (int i = 0; i < args.length; i++ ) {
+            try {
+                if (args[i].equals("-t") || args[i].equals("--team")) {
+                    player.team.name = args[i+1];
+                }
+                else if (args[i].equals("-d") || args[i].equals("--debug")) {
+                    debugMode = true;
+                    if (verbosity < Settings.LOG_LEVELS.DEBUG) {
+                        verbosity = Settings.LOG_LEVELS.DEBUG;
+                    }
+                }
+                else if (args[i].equals("-v") || args[i].equals("--verbosity")) {
+                    verbosity = Integer.parseInt(args[i+1]);
+                }
+            }
+            catch (Exception e) {
+                System.out.println("Invalid command-line parameters.");
+            }
+        }
     }
     
     public void init() {
@@ -35,107 +60,106 @@ public class Client extends Player implements Runnable {
             e.printStackTrace();
         }
         
-        sendCommand(Commands.INIT, team.name, String.format("(version %s)", Settings.SOCCER_SERVER_VERSION));
+        sendCommand(Commands.INIT, player.team.name, String.format("(version %s)", Settings.SOCCER_SERVER_VERSION));
         // Start reading input from the server
-        actionExecutor = new ScheduledThreadPoolExecutor(1);
-        actionExecutor.setContinueExistingPeriodicTasksAfterShutdownPolicy(false);
-        listening = true;
+        responseExecutor = new ScheduledThreadPoolExecutor(1);
+        responseExecutor.setContinueExistingPeriodicTasksAfterShutdownPolicy(false);
         Thread t = new Thread(new Runnable() {
 
             @Override
             public void run() {
-                while(listening){
-                    parseMessage(receiveMessage());
+                while(true){
+                    player.brain.parseMessage(receiveMessage());
                 }
             }
         });
         t.start();
         // Start sending commands back to the server
         log(Settings.LOG_LEVELS.DEBUG, "Scheduling client to run every 100 milliseconds...");
-        actionExecutor.scheduleAtFixedRate(this, 0, 100, TimeUnit.MILLISECONDS);
+        responseExecutor.scheduleAtFixedRate(player.brain, 0, 100, TimeUnit.MILLISECONDS);
     }
     
-    /** Main function
-     *
-     * First function to execute. Reads command-line arguments and activates
-     * one or more clients as specified in the args.
-     * 
-     * The ability to activate multiple clients here is meant as a CPU-saving
-     * technique for development. When competing, use the separate spin-up
-     * script to ensure complete process isolation. 
-     * 
-     * @param args Command-line arguments.
-     */
-    public static void main(String[] args) {
-        boolean startedClients = false;
-        for (int i = 0; i < args.length; i++ )
-        {
-            try 
-            {
-                if (args[i].equals("-c") || args[i].equals("--compete"))
-                {
-                    startTeam(args);
-                    startTeam(args, Settings.OTHER_TEAM_NAME);
-                    startedClients = true;
-                }
-                else if (args[i].equals("-s") || args[i].equals("--start-team"))
-                {
-                    startTeam(args);
-                    startedClients = true;
-                }
+    public void log(String message) {
+        System.out.println(message);
+    }
+    
+    public void log(int verbosity, String message) {
+        if (this.verbosity >= verbosity) {
+            if (verbosity == Settings.LOG_LEVELS.DEBUG) {
+                log("DEBUG: " + message);
             }
-            catch (Exception e)
-            {
-                System.out.println("Invalid command-line parameters.");
+            else if (verbosity == Settings.LOG_LEVELS.INFO) {
+                log("INFO: " + message);
             }
-        }
-        
-        if (!startedClients) {
-            initClient(args);
+            else if (verbosity == Settings.LOG_LEVELS.ERROR) {
+                System.err.println("ERROR: " + message);
+            }
+            else {
+                log(String.format("UNKNOWN VERBOSITY LEVEL %d", verbosity) + message);
+            }
         }
     }
     
+    public final void quit() {
+        sendCommand(Commands.BYE);
+        soccerServerSocket.close();
+    }
+    
+    public String receiveMessage() {
+        byte[] buffer = new byte[Settings.MSG_SIZE];
+        DatagramPacket packet = new DatagramPacket(buffer, Settings.MSG_SIZE);
+        try {
+            soccerServerSocket.receive(packet);
+            if (soccerServerPort == Settings.INIT_PORT) {
+                soccerServerPort = packet.getPort();
+            }
+        }
+        catch (IOException e) {
+            System.err.println("socket receiving error " + e);
+        }
+        if (verbosity >= 2) {
+            System.out.println(new String(buffer));
+        }
+        return new String(buffer);
+    }    
+
     /** Respond during the current timestep
      */
     @Override
     public void run() {
-        log(Settings.LOG_LEVELS.DEBUG, String.format("Running at time step %d...", time));
-        double approachAngle;
-        double power = Math.min(100, 10 + distanceTo(ball) * 20);
-        if (canKickBall()) {
-            if (canSeeGoal) {
-                kick(100.0, angleTo(goal));
-            }
-            else {
-                dash(30.0, 90.0);
-            }
+        player.brain.run();
+    }
+    
+    /** Send a properly-formatted message to the soccer server
+     * 
+     * @param command the command to send
+     * @param args any amount of object arguments
+     */
+    public final void sendCommand(String command, Object... args) {
+        String partial = String.format("(%s", command);
+        for (Object arg : args) {
+            partial += ' ' + arg.toString();
         }
-        else if (canSeeBall) {
-            if (canSeeGoal) {
-                double approachAngleDelta = distanceTo(ball)/10;
-                approachAngle = angleTo(ball) + Math.copySign(1.0, -angleTo(goal)) * approachAngleDelta;
-                if (angleTo(ball) > angleTo(goal)) {
-                    approachAngle =  + approachAngleDelta;
-                }
-                else {
-                    approachAngle = angleTo(goal) - approachAngleDelta;
-                }
-                dash(power, approachAngle);
-            }
-            else {
-                dash(power);
-            }
+        partial += ")\0";
+        sendMessage(partial);
+    }
+    
+    /**
+     * Send a message to the soccer server
+     * 
+     * @param message
+     */
+    private void sendMessage(String message) {
+        if (debugMode || (verbosity >= 1)) {
+            System.out.println(message);
         }
-        else {
-            if (angleTo(ball) > 0) {
-                turn(7.0);
-            }
-            else {
-                turn(-7.0);
-            }
+        byte[] buffer = message.getBytes();
+        DatagramPacket packet = new DatagramPacket(buffer, buffer.length, soccerServerHost, soccerServerPort);
+        try {
+            soccerServerSocket.send(packet);
         }
-        log(Settings.LOG_LEVELS.DEBUG, "Got here.");
-        resetKnowledge();
-        log(Settings.LOG_LEVELS.DEBUG, String.format("Done running at time step %d...", time));
+        catch (IOException e) {
+            System.err.println("socket sending error " + e);
+        }
     }
  }

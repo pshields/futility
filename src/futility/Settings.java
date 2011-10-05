@@ -6,6 +6,7 @@ public class Settings {
     public static final boolean DEBUG = false;
     public static final String HOSTNAME = "localhost";
     public static final int INIT_PORT = 6000;
+    public static final int INITIAL_HASH_MAP_SIZE = 50;
     public static final String OTHER_TEAM_NAME = "adversary";
     public static final int MSG_SIZE = 4096;
     public static final String TEAM_NAME = "futility";
@@ -52,4 +53,64 @@ public class Settings {
     public static Rectangle PENALTY_AREA_RIGHT() {
         return new Rectangle(FIELD().getCenter().y + (GOAL_HEIGHT / 2) + PENALTY_AREA_DISTANCE, FIELD().right, FIELD().getCenter().y - GOAL_HEIGHT - PENALTY_AREA_DISTANCE, FIELD().right - PENALTY_AREA_DISTANCE);
     }
+    
+    // List of known stationary objects
+    // Although they could theoretically be parsed on the fly, we think it's
+    // probably more efficient to parse and store them in advance. They are
+    // stationary, after all.
+    public static final StationaryObject[] STATIONARY_OBJECTS = {
+        // Physical boundary flags
+        new Flag("(f t l 50)"),
+        new Flag("(f t l 30)"),
+        new Flag("(f t l 10)"),
+        new Flag("(f t 0)"),
+        new Flag("(f t r 10)"),
+        new Flag("(f t r 30)"),
+        new Flag("(f t r 50)"),
+        new Flag("(f r t 30)"),
+        new Flag("(f r t 20)"),
+        new Flag("(f r t 10)"),
+        new Flag("(f r 0)"),
+        new Flag("(f r b 10)"),
+        new Flag("(f r b 20)"),
+        new Flag("(f r b 50)"),
+        new Flag("(f r b 30)"),
+        new Flag("(f r b 10)"),
+        new Flag("(f b 0)"),
+        new Flag("(f b l 10)"),
+        new Flag("(f b l 30)"),
+        new Flag("(f b l 50)"),
+        new Flag("(f l b 30)"),
+        new Flag("(f l b 20)"),
+        new Flag("(f l b 10)"),
+        new Flag("(f l 0)"),
+        new Flag("(f l t 10)"),
+        new Flag("(f l t 20)"),
+        new Flag("(f l t 30)"),
+        
+        // Field corner flags
+        new Flag("(f l t)"),
+        new Flag("(f r t)"),
+        new Flag("(f r b)"),
+        new Flag("(f l b)"),
+        
+        // Penalty area flags
+        new Flag("(f p l t)"),
+        new Flag("(f p l c)"),
+        new Flag("(f p l b)"),
+        new Flag("(f p r t)"),
+        new Flag("(f p r c)"),
+        new Flag("(f p r b)"),
+        
+        // Goalpost flags
+        new Flag("(f g l t)"),
+        new Flag("(f g l b)"),
+        new Flag("(f g r t)"),
+        new Flag("(f g r b)"),
+        
+        // Goals
+        new Goal("(g l)"),
+        new Goal("(g r")
+     
+    };
 }
