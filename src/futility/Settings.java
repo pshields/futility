@@ -30,7 +30,14 @@ public class Settings {
     
     // Other constants
     public static final char LEFT_SIDE = 'l';
-    public static final char RIGHT_SIDE = 'r';    
+    public static final char RIGHT_SIDE = 'r';
+    
+    // Server parameters
+    public static final double TEAM_FAR_LENGTH = 40.0;
+    public static final double TEAM_TOO_FAR_LENGTH = 60.0;
+    
+    // Inferences
+    public static final double DISTANCE_ESTIMATE = 0.333333 * TEAM_FAR_LENGTH + 0.666666 * TEAM_TOO_FAR_LENGTH;
     
     public static Rectangle FIELD() {
         return new Rectangle(FIELD_BUFFER + FIELD_HEIGHT, FIELD_BUFFER + FIELD_WIDTH, FIELD_BUFFER, FIELD_BUFFER);
