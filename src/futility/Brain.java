@@ -34,11 +34,6 @@ public class Brain implements Runnable {
     LinkedHashMap<String, FieldObject> fieldObjects = new LinkedHashMap<String, FieldObject>(Settings.INITIAL_HASH_MAP_SIZE);
     LinkedList<String> justSeenObjects = new LinkedList<String>();
     ArrayDeque<String> hearMessages = new ArrayDeque<String>();
-    
-    public enum SeeInfo {
-        GOAL_ANGLE,
-        GOAL_DISTANCE
-    }
 
     /** Brain constructor
      * 
@@ -52,6 +47,10 @@ public class Brain implements Runnable {
             //player.client.log(Settings.LOG_LEVELS.DEBUG, String.format("Adding %s to my HashMap...", object.id));
             fieldObjects.put(object.id, object);
         }
+    }
+    
+    public final boolean canInferPositionFromJustSeenStationaryObjects() {
+    	return justSeenStationaryObjects.size() >= 2;
     }
     
     /** A rough estimate of whether the player can kick the ball
@@ -192,6 +191,43 @@ public class Brain implements Runnable {
         else {
             player.client.log(Settings.LOG_LEVELS.ERROR, "Could not determine position.");
         }
+    }
+    /**
+     * 
+     * @param objects an array of StationaryObjects with two elements
+     * @pre the objec
+     * @return
+     */
+    public final Point inferPosition(FieldObject object1, FieldObject object2) {
+    	double x;
+    	double y;
+    	
+    	// Imagine the triangle formed by the player and the two field objects.
+    	// We know the positions of the two field objects and their angles to us.
+    	// We know or have a good guess of their distances to us.
+    	// This should be easy.
+    	
+    	// Given the field objects' distances to the player we can calculate the
+    	// field positions which the player could plausibly be.
+    	// Those positions are the intersections of the two circles centered at
+    	// the field objects, with radiuses equal to the distance to the player.
+
+
+    	double distanceBetweenObjects = object1.distanceTo(object2);
+    	
+    	// Handle the case in which the circles don't intersect
+    	if (distanceBetweenObjects > Math.abs(object1.distanceTo(player)) + Math.abs(object2.distanceTo(player))) {
+    		// TODO
+    	}
+    	else {
+    		
+    		Point midpoint = new Point((object1.position.x + object2.position.x) / 2.0, (object1.position.y + object2.position.y) / 2.0);
+    	}
+    	
+    	// double dx = 
+    	
+    	
+    	
     }
 
     public void kick(double power) {
@@ -522,17 +558,19 @@ public class Brain implements Runnable {
      * This method is still in development.
      * 
      */
-    public final void updatePosition() {
-        if (justSeenObjects.size() > 2) // Required in order to successfully triangulate
-        {
-            double x = -1.0;
-            double y = -1.0;
-            FieldObject[] objects = {
-                    fieldObjects.get(justSeenObjects.get(0)),
-                    fieldObjects.get(justSeenObjects.get(1))
-            };
-            // player.position.update(x, y);
-        }
-        // Otherwise, assume we are in the same place as we were, and do nothing.
+    public final Point inferPosition() {
+    	Point position = new Point(Settings.INITIAL_POSITION.x, Settings.INITIAL_POSITION.y);
+    	if (canInferPositionFromJustSeenStationaryObjects()) {
+    		FieldObject[] objects = {
+    				fieldObjects.get(justSeenStationaryObjects.get(0)),
+    				fieldObjects.get(justSeenStationaryObjects.get(1))
+    		};
+    		position = inferPositionFromStationaryObjects(objects);
+    	}
+    	else
+    	{
+    		// TODO
+       	}
+    	return position;
     }
 }
