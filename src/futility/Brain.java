@@ -358,7 +358,7 @@ public class Brain implements Runnable {
             // TODO Parse players
             // TODO Parse ball
             // TODO Parse goal
-            //player.client.log(Settings.LOG_LEVELS.ERROR, "I just saw " + id + " but I couldn't find it in the HashMap!");
+            player.client.log(Settings.LOG_LEVELS.ERROR, "I just saw " + id + " but I couldn't find it in the HashMap!");
             //player.client.log(Settings.LOG_LEVELS.DEBUG, "HashMap size: "+fieldObjects.size());
         }
     }
