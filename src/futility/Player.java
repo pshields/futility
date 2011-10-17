@@ -8,6 +8,7 @@ public class Player extends MobileObject {
     public Team team = new Team();
     
     public Player() {
+        this.position = new Point();
     }
    
     /**
@@ -39,5 +40,6 @@ public class Player extends MobileObject {
     public Player(Client client) {
         brain = new Brain(this);
         this.client = client;
+        this.position = new Point();
     }
 }

@@ -14,12 +14,9 @@ public class Rectangle {
     }
     
     public boolean contains(FieldObject object) {
-        if (object.position.x > left && object.position.x < right && object.position.y > bottom && object.position.y < top) {
-            return true;
-        }
-        else {
-            return false;
-        }
+        double x = object.position.getX();
+        double y = object.position.getY();
+        return x >= left && x <= right && y >= bottom && y <= top;
     }
     
     public Point getCenter() {

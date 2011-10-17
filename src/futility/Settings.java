@@ -21,12 +21,12 @@ public class Settings {
     // point (given standard display conventions) that an object can occupy.
     public static final Point INITIAL_POSITION = new Point(-1.0, -1.0);
     
-    // Field geometry
+    // Field geometry for a standard field
     public static final double FIELD_WIDTH = 105.0;
     public static final double FIELD_HEIGHT = 68.0;
     public static final double FIELD_BUFFER = 5.0;
-    public static final double GOAL_HEIGHT = 14.02; // TODO Double-check this
-    public static final double PENALTY_AREA_DISTANCE = 16.5; // TODO Double-check this
+    public static final double GOAL_HEIGHT = 14.02;
+    public static final double PENALTY_AREA_DISTANCE = 16.5; // Unconfirmed
     
     // Other constants
     public static final char LEFT_SIDE = 'l';

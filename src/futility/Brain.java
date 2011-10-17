@@ -145,7 +145,9 @@ public class Brain implements Runnable {
      * 
      */
     public void dashClockwiseAroundTheField() {
-     // First, run to the top of the field
+        double x = player.position.getX();
+        double y = player.position.getY();
+        // First, run to the top of the field
         if (player.inRectangle(Settings.FIELD())) {
             if (Math.abs(90 - player.directionTo) > 10) {
                 // Turn to face north
@@ -156,32 +158,32 @@ public class Brain implements Runnable {
             }
         }
         // Then run around clockwise between the physical boundary and the field
-        else if (player.position.y > Settings.FIELD().top && player.position.x < Settings.FIELD().right) {
-            if (Math.abs(0 - player.directionTo) > 10) {
+        else if (y > Settings.FIELD().top && x < Settings.FIELD().right) {
+            if (Math.abs(0 - player.direction) > 10) {
                 turnTo(0);                
             }
             else {
                 dash(100);
             }
         }
-        else if (player.position.x > Settings.FIELD().right && player.position.y < Settings.FIELD().bottom) {
-            if (Math.abs(270 - player.directionTo) > 10) {
+        else if (x > Settings.FIELD().right && y < Settings.FIELD().bottom) {
+            if (Math.abs(270 - player.direction) > 10) {
                 turnTo(270);                
             }
             else {
                 dash(100);
             }
         }
-        else if (player.position.y < Settings.FIELD().bottom && player.position.x < Settings.FIELD().left) {
-            if (Math.abs(180 - player.directionTo) > 10) {
+        else if (y < Settings.FIELD().bottom && x < Settings.FIELD().left) {
+            if (Math.abs(180 - player.direction) > 10) {
                 turnTo(180);                
             }
             else {
                 dash(100);
             }  
         }
-        else if (player.position.x < Settings.FIELD().left && player.position.y < Settings.FIELD().top) {
-            if (Math.abs(90 - player.directionTo) > 10) {
+        else if (x < Settings.FIELD().left && y < Settings.FIELD().top) {
+            if (Math.abs(90 - player.direction) > 10) {
                 turnTo(90);                
             }
             else {
@@ -192,42 +194,16 @@ public class Brain implements Runnable {
             player.client.log(Settings.LOG_LEVELS.ERROR, "Could not determine position.");
         }
     }
-    /**
+    
+    /** Estimate the position of a field object
      * 
-     * @param objects an array of StationaryObjects with two elements
-     * @pre the objec
+     * @param object
      * @return
      */
-    public final Point inferPosition(FieldObject object1, FieldObject object2) {
-    	double x;
-    	double y;
-    	
-    	// Imagine the triangle formed by the player and the two field objects.
-    	// We know the positions of the two field objects and their angles to us.
-    	// We know or have a good guess of their distances to us.
-    	// This should be easy.
-    	
-    	// Given the field objects' distances to the player we can calculate the
-    	// field positions which the player could plausibly be.
-    	// Those positions are the intersections of the two circles centered at
-    	// the field objects, with radiuses equal to the distance to the player.
-
-
-    	double distanceBetweenObjects = object1.distanceTo(object2);
-    	
-    	// Handle the case in which the circles don't intersect
-    	if (distanceBetweenObjects > Math.abs(object1.distanceTo(player)) + Math.abs(object2.distanceTo(player))) {
-    		// TODO
-    	}
-    	else {
-    		
-    		Point midpoint = new Point((object1.position.x + object2.position.x) / 2.0, (object1.position.y + object2.position.y) / 2.0);
-    	}
-    	
-    	// double dx = 
-    	
-    	
-    	
+    private PositionEstimate estimatePositionOf(FieldObject object) {
+        PositionEstimate estimate = new PositionEstimate();
+        
+        return estimate;
     }
 
     public void kick(double power) {
@@ -329,6 +305,7 @@ public class Brain implements Runnable {
             int openParentheses = 0; // Not counting the exterior '(see ... )' parenthesis
             int beginIndex = -1;
             int endIndex = -1;
+            int objectInfos = 0;
             for (int i = 5; i < message.length(); i++) {
                 if (message.charAt(i) == '(') {
                     if (openParentheses == 0) {
@@ -338,12 +315,16 @@ public class Brain implements Runnable {
                 }
                 else if (message.charAt(i) == ')') {
                     if (openParentheses == 1) {
-                        endIndex = i; // This character marks the last character in an ObjectInfo string
+                        endIndex = i + 1; // This character marks the last character in an ObjectInfo string
                         // Now parse the ObjectInfo
-                        parseSeenObject(message.substring(beginIndex, endIndex + 1));
+                        parseObjectInfo(message.substring(beginIndex, endIndex));
+                        objectInfos++;
                     }
                     openParentheses--;
                 }
+            }
+            if (objectInfos >= 2) {
+                
             }
         }
         // Handle init messages
@@ -410,7 +391,7 @@ public class Brain implements Runnable {
         }
         
         if (fieldObjects.containsKey(id)) {
-            // Update our conception of the field object
+            // Update the player's beliefs about the field object
             
             FieldObject object = fieldObjects.get(id);
             object.copyFieldObject(obj);
@@ -483,8 +464,10 @@ public class Brain implements Runnable {
      * 
      */
     public void run() {
+        updatePosition();
         dashClockwiseAroundTheField();
         resetKnowledge();
+        player.client.log("I think I am at position "+player.position.render());
     }
     
     /** Turn by a relative amount in degrees
@@ -502,33 +485,14 @@ public class Brain implements Runnable {
     public final void turnTo(double direction) {
         turn(player.angleTo(direction));
     }
-
-    /** Update our belief about the player's location
-     * 
-     * This calculation takes several factors into effect:
-     *   * Can we infer the player's location from the field objects with known
-     *     locations seen in the most recently-received 'see'? If we have at
-     *     least two with estimated directions and distances, we can.
-     *   * Do we have an idea about where the player was in the last time-step?
-     *     We can take that plus the player's direction, momentum, and actions
-     *     taken in the previous time-step to guess where the player is now.
-     * 
-     * This method is still in development.
-     * 
-     */
-    public final Point inferPosition() {
-    	Point position = new Point(Settings.INITIAL_POSITION.x, Settings.INITIAL_POSITION.y);
-    	if (canInferPositionFromJustSeenStationaryObjects()) {
-    		FieldObject[] objects = {
-    				fieldObjects.get(justSeenStationaryObjects.get(0)),
-    				fieldObjects.get(justSeenStationaryObjects.get(1))
-    		};
-    		position = inferPositionFromStationaryObjects(objects);
-    	}
-    	else
-    	{
-    		// TODO
-       	}
-    	return position;
+    
+    private final void updatePosition() {
+        if (justSeenStationaryObjects.size() >= 2) {
+            FieldObject o1 = fieldObjects.get(justSeenStationaryObjects.get(0));
+            FieldObject o2 = fieldObjects.get(justSeenStationaryObjects.get(1));
+            Point[] points = o1.asCircle().intersectionPointsWith(o2.asCircle());
+            // Pick whichever is closes to wherever we think the player currently is
+            player.position.update(player.position.closestOf(points));   
+        }
     }
 }

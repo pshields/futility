@@ -52,6 +52,16 @@ public abstract class FieldObject extends GameObject {
         return angle;
     }
     
+    /** Return a circle for triangulation
+     * 
+     * The circle's radius is the last known distance to the object.
+     * 
+     * @return
+     */
+    public final Circle asCircle() {
+        return new Circle(this.position, this.distanceTo);
+    }
+    
     /** Get the angle from the current object to a global angle
      * 
      * @param direction the global angle

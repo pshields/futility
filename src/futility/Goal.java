@@ -13,8 +13,7 @@ public class Goal extends StationaryObject {
             x = Settings.FIELD().right;
         }
         else {
-            // TODO get logging to work here
-            //log(Settings.LOG_LEVELS.ERROR, "Couldn't parse goal id "+id);
+            System.out.println("Couldn't parse goal id "+id);
         }
         position = new Point(x, y);
     }

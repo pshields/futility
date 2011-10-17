@@ -151,9 +151,7 @@ public class Client {
         catch (IOException e) {
             System.err.println("socket receiving error " + e);
         }
-        if (verbosity >= 2) {
-            System.out.println(new String(buffer));
-        }
+        log(Settings.LOG_LEVELS.ALL, "RECEIVED: "+new String(buffer));
         return new String(buffer);
     }    
     
