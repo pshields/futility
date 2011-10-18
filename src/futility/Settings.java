@@ -1,5 +1,8 @@
 package futility;
 
+import java.util.Arrays;
+import java.util.HashSet;
+
 import futility.Settings;
 
 public class Settings {
@@ -52,6 +55,29 @@ public class Settings {
     public static Rectangle PENALTY_AREA_RIGHT() {
         return new Rectangle(FIELD().getCenter().y + (GOAL_HEIGHT / 2) + PENALTY_AREA_DISTANCE, FIELD().right, FIELD().getCenter().y - GOAL_HEIGHT - PENALTY_AREA_DISTANCE, FIELD().right - PENALTY_AREA_DISTANCE);
     }
+    
+    // List of known game-state play modes
+    // Look-up table for checking referee messages against any known or
+    //   specified play modes. Use contains("") to check against the table.
+    // Hash Set, for O(1) look-up time.
+    public static final HashSet<String> PLAY_MODES = new HashSet<String>(Arrays.asList(
+    		"before_kick_off",
+    		"play_on",
+    		"time_over",
+    		"kick_off_l",
+    		"kick_off_r",
+    		"kick_in_l",
+    		"kick_in_r",
+    		"free_kick_l",
+    		"free_kick_r",
+    		"corner_kick_l",
+    		"corner_kick_r",
+    		"goal_kick_l",
+    		"goal_kick_r",
+    		"drop_ball",
+    		"offside_l",
+    		"offside_r"
+    ));
     
     // List of known stationary objects
     // Although they could theoretically be parsed on the fly, we think it's
