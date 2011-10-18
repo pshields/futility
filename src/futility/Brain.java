@@ -10,6 +10,7 @@ public class Brain implements Runnable {
     
     Player player;
     public int time;
+    public int lastTimeTriangulated;
     
 
     
@@ -47,10 +48,6 @@ public class Brain implements Runnable {
             //player.client.log(Settings.LOG_LEVELS.DEBUG, String.format("Adding %s to my HashMap...", object.id));
             fieldObjects.put(object.id, object);
         }
-    }
-    
-    public final boolean canInferPositionFromJustSeenStationaryObjects() {
-    	return justSeenStationaryObjects.size() >= 2;
     }
     
     /** A rough estimate of whether the player can kick the ball
@@ -148,8 +145,11 @@ public class Brain implements Runnable {
         double x = player.position.getX();
         double y = player.position.getY();
         // First, run to the top of the field
-        if (player.inRectangle(Settings.FIELD())) {
-            if (Math.abs(90 - player.directionTo) > 10) {
+        if (lastTimeTriangulated < time - 5) {
+            turn(90);
+        }
+        else if (player.inRectangle(Settings.FIELD())) {
+            if (Math.abs(90 - player.directionEstimate.getDirection()) > 10) {
                 // Turn to face north
                 turnTo(90);
             }
@@ -159,7 +159,7 @@ public class Brain implements Runnable {
         }
         // Then run around clockwise between the physical boundary and the field
         else if (y > Settings.FIELD().top && x < Settings.FIELD().right) {
-            if (Math.abs(0 - player.direction) > 10) {
+            if (Math.abs(0 - player.directionEstimate.getDirection()) > 10) {
                 turnTo(0);                
             }
             else {
@@ -167,7 +167,7 @@ public class Brain implements Runnable {
             }
         }
         else if (x > Settings.FIELD().right && y < Settings.FIELD().bottom) {
-            if (Math.abs(270 - player.direction) > 10) {
+            if (Math.abs(270 - player.directionEstimate.getDirection()) > 10) {
                 turnTo(270);                
             }
             else {
@@ -175,15 +175,15 @@ public class Brain implements Runnable {
             }
         }
         else if (y < Settings.FIELD().bottom && x < Settings.FIELD().left) {
-            if (Math.abs(180 - player.direction) > 10) {
-                turnTo(180);                
+            if (Math.abs(180 - player.directionEstimate.getDirection()) > 10) {
+                turnTo(180);
             }
             else {
                 dash(100);
             }  
         }
         else if (x < Settings.FIELD().left && y < Settings.FIELD().top) {
-            if (Math.abs(90 - player.direction) > 10) {
+            if (Math.abs(90 - player.directionEstimate.getDirection()) > 10) {
                 turnTo(90);                
             }
             else {
@@ -298,7 +298,11 @@ public class Brain implements Runnable {
         else if (message.startsWith("(see")) {
             // Update our concept of the current timestep.
             // Standard times go up to 6000 so we'll only check four digits.
-            time = Integer.parseInt(message.substring(5, 9).split("\\s")[0]);
+            String timePart = message.substring(5, 9).split("\\s")[0];
+            if (timePart.endsWith(")")) {
+                timePart = timePart.substring(0, timePart.length() - 1);
+            }
+            time = Integer.parseInt(timePart);
             // Following the time are parentheses-delimited ObjectInfos.
             // We're parsing them manually so we don't waste cycles on
             // pattern matching (not sure if/how much it helps.)
@@ -317,7 +321,7 @@ public class Brain implements Runnable {
                     if (openParentheses == 1) {
                         endIndex = i + 1; // This character marks the last character in an ObjectInfo string
                         // Now parse the ObjectInfo
-                        parseObjectInfo(message.substring(beginIndex, endIndex));
+                        parseObjectInfo(message.substring(beginIndex, endIndex + 1));
                         objectInfos++;
                     }
                     openParentheses--;
@@ -389,6 +393,7 @@ public class Brain implements Runnable {
         while (objectInfo.charAt(i) != ')') {
             i++;
         }
+
         String id = objectInfo.substring(1, i+1); // id is the object name
         String values = objectInfo.substring(i + 2).replaceAll("\\)", ""); // the remaining arguments, no leading whitespace
         String[] args = values.split(" ");
@@ -400,7 +405,7 @@ public class Brain implements Runnable {
         obj.timeLastSeen = time;
         switch(args.length){
         case 1:
-        	obj.directionTo = Double.valueOf(args[0]);
+        	obj.angleLastSeen = Double.valueOf(args[0]);
         	break;
         case 6:
         	obj.headFacingDir = Double.valueOf(args[5]);
@@ -410,7 +415,7 @@ public class Brain implements Runnable {
         	obj.distanceChange = Double.valueOf(args[2]);
         case 2:
         	obj.distanceTo = Double.valueOf(args[0]);
-        	obj.directionTo = Double.valueOf(args[1]);  
+        	obj.angleLastSeen = Double.valueOf(args[1]);  
         	break;
         default:
         	player.client.log(Settings.LOG_LEVELS.ERROR, "Invalid number of arguments for a FieldObject");
@@ -500,6 +505,7 @@ public class Brain implements Runnable {
         canSeeBall = false;
         canSeeGoal = false;
         justSeenObjects.clear();
+        justSeenStationaryObjects.clear();
     }
     
     /** Respond in the current timestep
@@ -517,7 +523,14 @@ public class Brain implements Runnable {
      * @param direction the amount in degrees by which the player should turn
      */
     public final void turn(double direction) {
+        while (direction > 180) {
+            direction -= 360;
+        }
+        while (direction < -180) {
+            direction += 360;
+        }
         player.client.sendCommand(Commands.TURN, direction);
+        player.directionEstimate.update(player.directionEstimate.getDirection() - direction, 0.95 * player.directionEstimate.getConfidence(time), time);
     }
     
     /** Turn to face a global direction (east is 0)
@@ -525,6 +538,12 @@ public class Brain implements Runnable {
      * @param direction a global direction in degrees
      */
     public final void turnTo(double direction) {
+        if (direction > 10) {
+            direction = 10;
+        }
+        else if (direction < -10) {
+            direction = -10;
+        }
         turn(player.angleTo(direction));
     }
     
@@ -533,8 +552,12 @@ public class Brain implements Runnable {
             FieldObject o1 = fieldObjects.get(justSeenStationaryObjects.get(0));
             FieldObject o2 = fieldObjects.get(justSeenStationaryObjects.get(1));
             Point[] points = o1.asCircle().intersectionPointsWith(o2.asCircle());
+            if (points.length >= 1) {
+                lastTimeTriangulated = time;
+            }
             // Pick whichever is closes to wherever we think the player currently is
-            player.position.update(player.position.closestOf(points));   
+            player.position.update(player.position.closestOf(points));
+            player.client.log(Settings.LOG_LEVELS.DEBUG, "I think I am facing: " + Double.toString(player.directionEstimate.getDirection()) + "degrees from east with " + Double.toString(player.directionEstimate.getConfidence(time)) + " confidence.");
         }
     }
 }

@@ -2,8 +2,8 @@ package futility;
 
 // A point on a 2D plane
 public class Point {
-    double x;
-    double y;
+    private double x;
+    private double y;
     
     public Point() {
         x = Settings.INITIAL_POSITION.x;
@@ -81,6 +81,6 @@ public class Point {
     }
     
     public String render() {
-        return String.format("(%f, %f)", this.x, this.y);
+        return String.format("(%f, %f)", this.x - Settings.CENTER_FIELD.getX(), this.y - Settings.CENTER_FIELD.getY());
     }
 }
