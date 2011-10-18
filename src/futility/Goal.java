@@ -5,7 +5,7 @@ public class Goal extends StationaryObject {
     public Goal(String id) {
         this.id = id;
         double x = -1.0;
-        double y = Settings.FIELD().getCenter().y;
+        double y = Settings.FIELD().getCenter().getY();
         if (id.charAt(4) == 'l') {
             x = Settings.FIELD().left;
         }

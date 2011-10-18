@@ -6,14 +6,16 @@ package futility;
 public abstract class FieldObject extends GameObject {
 
     public double distanceTo = 0;
-    public double directionTo = 181; // Assume things face east, degrees
+    public double lastSeenAngleTo = 0; // Assume things face east, degrees
     public double distanceChange = 0;
-    public double directionChange = 181;
-    public double bodyFacingDir = 181; //degrees
-    public double headFacingDir = 181; 
+    public DirectionEstimate direction = new DirectionEstimate(0, true);
+    public double directionChange = 0;
+    public double bodyFacing = 0; //degrees
+    public double headFacing = 0; 
     public Point position;
     public String id = "UNKNOWN_NO_ID";
     public int timeLastSeen = -1;
+    public double angleLastSeen = -1;
     
     public FieldObject() {
         position = new Point();
@@ -45,7 +47,7 @@ public abstract class FieldObject extends GameObject {
      * Assumes base angle is this object's body angle, if not specified
      */
     public final double angleTo(FieldObject object) {
-        double angle = Math.atan(deltaY(object)/deltaX(object)) - this.directionTo;
+        double angle = Math.atan(deltaY(object)/deltaX(object)) - this.direction.getDirection();
         if (Double.isNaN(angle)) {
             angle = 0;
         }
@@ -68,7 +70,7 @@ public abstract class FieldObject extends GameObject {
      * @return the angle in degrees to turn in order to face the global angle
      */
     public final double angleTo(double direction) {
-        double deltaAngle = direction - this.directionTo;
+        double deltaAngle = direction - this.direction.getDirection();
         while (deltaAngle < 0) {
             deltaAngle += 360;
         }
@@ -92,7 +94,7 @@ public abstract class FieldObject extends GameObject {
      * @return the difference in x coordinates from the current object to another
      */
     public double deltaX(FieldObject object) {
-        return object.position.x - this.position.x;
+        return object.position.getX() - this.position.getX();
     }
     
     /** Get the difference in y coordinates from the current object to another
@@ -100,7 +102,7 @@ public abstract class FieldObject extends GameObject {
      * @return the difference in y coordinates from the current object to another
      */
     public double deltaY(FieldObject object) {
-        return object.position.y - this.position.y;
+        return object.position.getY() - this.position.getY();
     }
     
     /** Check if the field object is within a given rectangle boundary
@@ -110,5 +112,9 @@ public abstract class FieldObject extends GameObject {
      */
     public boolean inRectangle(Rectangle rectangle) {
         return rectangle.contains(this);
+    }
+    
+    public boolean isStationaryObject() {
+        return false;
     }
 }

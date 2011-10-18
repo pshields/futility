@@ -16,11 +16,6 @@ public class Settings {
     public static final String SOCCER_SERVER_VERSION = "15.0";
     public static final int VERBOSITY = 0;
     
-    // Default initial position for things with unknown locations
-    // Note: the origin is arbitrarily chosen to be the farthest bottom-left
-    // point (given standard display conventions) that an object can occupy.
-    public static final Point INITIAL_POSITION = new Point(-1.0, -1.0);
-    
     // Field geometry for a standard field
     public static final double FIELD_WIDTH = 105.0;
     public static final double FIELD_HEIGHT = 68.0;
@@ -38,6 +33,12 @@ public class Settings {
     
     // Inferences
     public static final double DISTANCE_ESTIMATE = 0.333333 * TEAM_FAR_LENGTH + 0.666666 * TEAM_TOO_FAR_LENGTH;
+    
+    // Default initial position for things with unknown locations
+    // Note: the origin is arbitrarily chosen to be the farthest bottom-left
+    // point (given standard display conventions) that an object can occupy.
+    public static final Point INITIAL_POSITION = new Point(-1.0, -1.0);
+    public static final Point CENTER_FIELD = new Point(FIELD().left + FIELD_WIDTH/2, FIELD().bottom + FIELD_HEIGHT/2);
     
     public static Rectangle FIELD() {
         return new Rectangle(FIELD_BUFFER + FIELD_HEIGHT, FIELD_BUFFER + FIELD_WIDTH, FIELD_BUFFER, FIELD_BUFFER);
@@ -60,7 +61,7 @@ public class Settings {
     }
     
     public static Rectangle PENALTY_AREA_RIGHT() {
-        return new Rectangle(FIELD().getCenter().y + (GOAL_HEIGHT / 2) + PENALTY_AREA_DISTANCE, FIELD().right, FIELD().getCenter().y - GOAL_HEIGHT - PENALTY_AREA_DISTANCE, FIELD().right - PENALTY_AREA_DISTANCE);
+        return new Rectangle(FIELD().getCenter().getY() + (GOAL_HEIGHT / 2) + PENALTY_AREA_DISTANCE, FIELD().right, FIELD().getCenter().getY() - GOAL_HEIGHT - PENALTY_AREA_DISTANCE, FIELD().right - PENALTY_AREA_DISTANCE);
     }
     
     // List of known game-state play modes
