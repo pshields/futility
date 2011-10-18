@@ -1,5 +1,6 @@
 package futility;
 
+import java.util.ArrayDeque;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 
@@ -10,14 +11,30 @@ public class Brain implements Runnable {
     Player player;
     public int time;
     
+
+    
+    // Self info & Play mode
+    // TODO Encapsulate this information as needed.
+    private String playMode;
+    private String viewQuality;
+    private String viewWidth;
+    private double stamina;
+    private double staminaEffort;
+    private double staminaCapacity;
+    private double speedAmount;
+    private double speedDirection;
+    private double headAngle;
+    private String collision = "none";
+    
     // Object models
     public Rectangle field = new Rectangle(Settings.FIELD_BUFFER + Settings.FIELD_HEIGHT, Settings.FIELD_BUFFER + Settings.FIELD_WIDTH, Settings.FIELD_BUFFER, Settings.FIELD_BUFFER);
     public MobileObject ball = new MobileObject();
     public StationaryObject goal = new StationaryObject();
     
-    LinkedHashMap<String, FieldObject> fieldObjects = new LinkedHashMap(Settings.INITIAL_HASH_MAP_SIZE);
-    LinkedList<String> justSeenObjects = new LinkedList();
-
+    LinkedHashMap<String, FieldObject> fieldObjects = new LinkedHashMap<String, FieldObject>(Settings.INITIAL_HASH_MAP_SIZE);
+    LinkedList<String> justSeenObjects = new LinkedList<String>();
+    ArrayDeque<String> hearMessages = new ArrayDeque<String>();
+    
     public enum SeeInfo {
         GOAL_ANGLE,
         GOAL_DISTANCE
@@ -199,7 +216,71 @@ public class Brain implements Runnable {
     public void parseMessage(String message) {
         // Handle sense_body messages
         if (message.startsWith("(sense_body")) {
+        	// TODO better nested parentheses parsing logic; perhaps
+        	//    reconcile with Patrick's parentheses logic?
+        	collision = "none";
             time = Integer.parseInt(message.substring(12, 16).split("\\s")[0]);
+            String parts[] = message.split("\\(");
+            for ( String i : parts ) // for each structured argument:
+            {
+            	// Clean the string, and break it down into the base arguments.
+            	String nMsg = i.split("\\)")[0].trim();
+            	if ( nMsg.isEmpty() ) continue;
+            	String nArgs[] = nMsg.split("\\s");
+            	
+            	// Check for specific argument types; ignore unknown arguments.
+            	if ( nArgs[0].contains("view_mode") )
+            	{ // Player's current view mode
+            		viewQuality = nArgs[1];
+            		viewWidth = nArgs[2];
+            	}
+            	else if ( nArgs[0].contains("stamina") )
+            	{ // Player's stamina data
+            		stamina = Double.parseDouble(nArgs[1]);
+            		staminaEffort = Double.parseDouble(nArgs[2]);
+            		staminaCapacity = Double.parseDouble(nArgs[3]);
+            	}
+            	else if ( nArgs[0].contains("speed") )
+            	{ // Player's speed data
+            		speedAmount = Double.parseDouble(nArgs[1]);
+            		speedDirection = Double.parseDouble(nArgs[2]);
+            	}
+            	else if ( nArgs[0].contains("head_angle") )
+            	{ // Player's head angle
+            		headAngle = Double.parseDouble(nArgs[1]);
+            	}
+            	else if ( nArgs[0].contains("ball") || nArgs[0].contains("player")
+            			       || nArgs[0].contains("post") )
+            	{ // COLLISION flags; limitation of this loop approach is we
+            	  //   can't handle nested parentheses arguments well.
+            	  // Luckily these flags only occur in the collision structure.
+            		collision = nArgs[0];
+            	}
+            }
+        }
+        // Handle hear messages
+        else if (message.startsWith("(hear"))
+        {
+        	String parts[] = message.split("\\s");
+        	time = Integer.parseInt(parts[1]);
+        	if ( parts[2].startsWith("s") || parts[2].startsWith("o") || parts[2].startsWith("c") )
+        	{
+        		// TODO logic for self, on-line coach, and trainer coach.
+        		// Self could potentially be for feedback,
+        		// On-line coach will require coach language parsing,
+        		// And trainer likely will as well. Outside of Sprint #2 scope.
+        		return;
+        	}
+        	else
+        	{
+        		// Check for a referee message, otherwise continue.
+        		String nMsg = parts[3].split("\\)")[0];         // Retrieve the message.
+        		if ( parts[2].startsWith("r")                   // Referee;
+        			   && Settings.PLAY_MODES.contains(nMsg) )  // Play Mode?
+            		playMode = nMsg;
+            	else
+            		hearMessages.add( nMsg );
+        	}
         }
         // Handle see messages
         else if (message.startsWith("(see")) {
@@ -246,9 +327,10 @@ public class Brain implements Runnable {
                 player.client.log(Settings.LOG_LEVELS.ERROR, "Could not parse teamSide.");
             }
             player.number = Integer.parseInt(parts[2]);
+            playMode = parts[3].split("\\)")[0];
         }
     }
-
+    
     /** Parse and handle an ObjectInfo string
      * 
      * Parse an ObjectInfo string and update our beliefs about the associated
