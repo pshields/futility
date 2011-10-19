@@ -4,7 +4,13 @@
 package futility;
 
 public abstract class FieldObject extends GameObject {
-    public double direction = 0; // Assume things face east
+
+    public double distanceTo = 0;
+    public double directionTo = -1.0; // Assume things face east, degrees
+    public double distanceChange = 0;
+    public double directionChange = 0;
+    public double bodyFacingDir = 0; //degrees
+    public double headFacingDir = 0; 
     public Point position;
     public String id = "UNKNOWN_NO_ID";
     public int timeLastSeen = -1;
@@ -17,12 +23,29 @@ public abstract class FieldObject extends GameObject {
         position = new Point(x, y);
     }
     
+    public FieldObject(FieldObject copy){
+    	copyFieldObject(copy);
+    }
+    
+    public void copyFieldObject(FieldObject copy){
+    	this.directionTo = copy.directionTo;
+    	this.distanceTo = copy.distanceTo;
+    	this.position.x = copy.position.x;
+    	this.position.y = copy.position.y;
+    	this.distanceChange = copy.distanceChange;
+    	this.directionChange = copy.directionChange;
+    	this.bodyFacingDir = copy.bodyFacingDir;
+    	this.headFacingDir = copy.headFacingDir;
+    	this.id = copy.id;
+    	this.timeLastSeen = copy.timeLastSeen;
+    }
+    
     /** Get the angle from the current object to another
      * 
      * Assumes base angle is this object's body angle, if not specified
      */
     public final double angleTo(FieldObject object) {
-        double angle = Math.atan(deltaY(object)/deltaX(object)) - this.direction;
+        double angle = Math.atan(deltaY(object)/deltaX(object)) - this.directionTo;
         if (Double.isNaN(angle)) {
             angle = 0;
         }
@@ -35,7 +58,7 @@ public abstract class FieldObject extends GameObject {
      * @return the angle in degrees to turn in order to face the global angle
      */
     public final double angleTo(double direction) {
-        double deltaAngle = direction - this.direction;
+        double deltaAngle = direction - this.directionTo;
         while (deltaAngle < 0) {
             deltaAngle += 360;
         }
