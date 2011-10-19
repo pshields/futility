@@ -11,6 +11,7 @@ import java.util.concurrent.TimeUnit;
 
 public class Client {
     public boolean debugMode = Settings.DEBUG;
+    public boolean hideReceivedMessages = false;
     public Player player;
     public ScheduledThreadPoolExecutor responseExecutor;
     public InetAddress soccerServerHost;
@@ -29,16 +30,19 @@ public class Client {
         // Process command-line arguments
         for (int i = 0; i < args.length; i++ ) {
             try {
+                if (args[i].equals("-d") || args[i].equals("--debug")) {
+                    // Run in debug mode (no specific functionality right now)
+                    this.debugMode = true;
+                    if (verbosity < Settings.LOG_LEVELS.DEBUG) {
+                        this.verbosity = Settings.LOG_LEVELS.DEBUG;
+                    }
+                }
                 if (args[i].equals("-t") || args[i].equals("--team")) {
                     // Read the team name from the command-line
                     player.team.name = args[i+1];
                 }
-                else if (args[i].equals("-d") || args[i].equals("--debug")) {
-                    // Run in debug mode (no specific functionality right now)
-                    debugMode = true;
-                    if (verbosity < Settings.LOG_LEVELS.DEBUG) {
-                        verbosity = Settings.LOG_LEVELS.DEBUG;
-                    }
+                else if (args[i].equals("-h") || args[i].equals("--hide-received-messages")) {
+                    this.hideReceivedMessages = true;
                 }
                 else if (args[i].equals("-v") || args[i].equals("--verbosity")) {
                     // Set the verbosity to a custom level:
@@ -47,7 +51,7 @@ public class Client {
                     //   * 2 is errors, important info and extra debug info
                     //   * 3 is 0-2 with the addition of received server messages
                     //  The default is specified in Settings.java.
-                    verbosity = Integer.parseInt(args[i+1]);
+                    this.verbosity = Integer.parseInt(args[i+1]);
                 }
             }
             catch (Exception e) {
@@ -107,9 +111,6 @@ public class Client {
      */
     public void log(int verbosity, String message) {
         if (this.verbosity >= verbosity) {
-            if (verbosity == Settings.LOG_LEVELS.ALL) {
-                log(message);
-            }
             if (verbosity == Settings.LOG_LEVELS.DEBUG) {
                 log("DEBUG: " + message);
             }
@@ -149,7 +150,9 @@ public class Client {
         catch (IOException e) {
             System.err.println("socket receiving error " + e);
         }
-        log(Settings.LOG_LEVELS.ALL, "RECEIVED: "+new String(buffer));
+        if (!this.hideReceivedMessages) {
+            log(Settings.LOG_LEVELS.DEBUG, "RECEIVED: "+new String(buffer));
+        }
         return new String(buffer);
     }
 

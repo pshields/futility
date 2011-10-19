@@ -62,4 +62,8 @@ public class DirectionEstimate extends Estimate {
         }
         return direction;
     }
+    
+    public String render(int time) {
+        return Double.toString(this.direction) + " degrees with " + this.getConfidence(time) + " confidence";
+    }
 }

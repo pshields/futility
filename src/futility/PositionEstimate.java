@@ -25,12 +25,20 @@ public class PositionEstimate extends Estimate {
         return position;
     }
     
+    public final String render(int time) {
+        return this.position.render() + " with " + Double.toString(this.getConfidence(time)) + " confidence.";
+    }
+    
     public final void setPosition(double x, double y) {
         this.position.update(x, y);
     }
     
     public final void setPosition(Point point) {
         this.position.update(point);
+    }
+    
+    public final void update(Point p, double confidence, int time) {
+        this.update(p.getX(), p.getY(), confidence, time);
     }
     
     public final void update(double x, double y, double confidence, int time) {

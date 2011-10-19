@@ -8,8 +8,32 @@ public class Circle {
         this.centroid = centroid;
         this.radius = radius;
     }
+    
+    public double closestDistanceTo(Point point) {
+        return this.centroid.distanceTo(point) - this.radius;
+    }
+    
+    /**
+     * Gets if this circle completely contains a given circle.
+     * 
+     * @param otherCircle the given circle
+     * @return whether this circle completely contains the given circle
+     */
+    public boolean completelyContains(Circle otherCircle){
+        return this.centroid.distanceTo(otherCircle.centroid) + otherCircle.getRadius() <= this.getRadius();
+    }
+    
+    /**
+     * Gets this circle's radius.
+     * 
+     * @return this circle's radius
+     */
+    public double getRadius() {
+        return radius;
+    }
 
-    /** Calculate the points of intersection between this circle and another
+    /**
+     * Calculates the points of intersection between this circle and another.
      * 
      * http://paulbourke.net/geometry/2circle/ was used as a math reference.
      * 
@@ -19,10 +43,10 @@ public class Circle {
      * be handled the same as non-intersection cases.
      * 
      * @param circle
-     * @return
+     * @return an array of intersection points
      */
     public Point[] intersectionPointsWith(Circle otherCircle) {
-        if (!this.intersects(otherCircle) || this.contains(otherCircle) || otherCircle.contains(this) || this.isEqual(otherCircle)) {
+        if (!this.intersects(otherCircle) || this.completelyContains(otherCircle) || otherCircle.completelyContains(this) || this.isEqual(otherCircle)) {
             return new Point[] {};
         }
         else if (this.touches(otherCircle)){
@@ -59,22 +83,32 @@ public class Circle {
         }
     }
     
-    public boolean contains(Circle otherCircle){
-        return this.centroid.distanceTo(otherCircle.centroid) + otherCircle.getRadius() <= this.getRadius();
-    }
-    
-    public double getRadius() {
-        return radius;
-    }
-
+    /**
+     * Gets whether this circle intersects a given circle in any part.
+     * 
+     * @param otherCircle the given circle
+     * @return whether the two circles intersect at any part
+     */
     public boolean intersects(Circle otherCircle) {
         return this.getRadius() + otherCircle.getRadius() > this.centroid.distanceTo(otherCircle.centroid);
     }
     
+    /**
+     * Gets whether this circle and a given circle are equal.
+     * 
+     * @param otherCircle the give circle
+     * @return whether they are equal or not
+     */
     public boolean isEqual(Circle otherCircle) {
         return this.getRadius() == otherCircle.getRadius() && this.centroid.isEqual(otherCircle.centroid);
     }
     
+    /**
+     * Gets whether this circle touches a given circle.
+     * 
+     * @param otherCircle the given circle
+     * @return whether they touch or not
+     */
     public boolean touches(Circle otherCircle) {
         return this.centroid.distanceTo(otherCircle.centroid) - this.getRadius() - otherCircle.getRadius() == 0;
     }

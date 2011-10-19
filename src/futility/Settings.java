@@ -57,11 +57,9 @@ public class Settings {
     }
     
     public static class LOG_LEVELS {
-        static int ALL = 3;
         static int DEBUG = 2;
         static int INFO = 1;
         static int ERROR = 0;
-        static int NONE = -1;
     }
     
     public static Rectangle PENALTY_AREA_LEFT() {
