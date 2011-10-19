@@ -1,11 +1,8 @@
 package futility;
 
-public class DirectionEstimate {
+public class DirectionEstimate extends Estimate {
     private double direction;
-    private double initialConfidence;
-    private int timeStepEstimated = -1;
-    private boolean keepConfidenceForever = true;
-    
+
     public DirectionEstimate() {
         direction = 0;
         initialConfidence = 0;
@@ -22,14 +19,14 @@ public class DirectionEstimate {
     
     public DirectionEstimate(double direction, int time) {
         this.direction = direction;
-        this.timeStepEstimated = time;
+        this.timeEstimated = time;
     }
     
     public double getConfidence(int time) {
         if (keepConfidenceForever) {
             return initialConfidence;
         }
-        else return 5 * initialConfidence / (5 + Math.abs(time - timeStepEstimated));
+        else return (5 * this.initialConfidence) / (5 + Math.abs(time - this.timeEstimated));
     }
     
     public double getDirection() {
@@ -52,7 +49,8 @@ public class DirectionEstimate {
     
     public void update(double direction, double confidence, int time) {
         this.direction = normalizeDirection(direction);
-        this.timeStepEstimated = time;
+        this.initialConfidence = confidence;
+        this.timeEstimated = time;
     }
     
     public double normalizeDirection(double direction) {
@@ -63,5 +61,9 @@ public class DirectionEstimate {
             direction -= 360;
         }
         return direction;
+    }
+    
+    public String render(int time) {
+        return Double.toString(this.direction) + " degrees with " + this.getConfidence(time) + " confidence";
     }
 }

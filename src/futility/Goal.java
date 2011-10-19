@@ -15,6 +15,6 @@ public class Goal extends StationaryObject {
         else {
             System.out.println("Couldn't parse goal id "+id);
         }
-        position = new Point(x, y);
+        position = new PositionEstimate(x, y, 1.0, true);
     }
 }
