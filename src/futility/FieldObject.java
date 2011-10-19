@@ -6,11 +6,11 @@ package futility;
 public abstract class FieldObject extends GameObject {
 
     public double distanceTo = 0;
-    public double directionTo = -1.0; // Assume things face east, degrees
+    public double directionTo = 181; // Assume things face east, degrees
     public double distanceChange = 0;
-    public double directionChange = 0;
-    public double bodyFacingDir = 0; //degrees
-    public double headFacingDir = 0; 
+    public double directionChange = 181;
+    public double bodyFacingDir = 181; //degrees
+    public double headFacingDir = 181; 
     public Point position;
     public String id = "UNKNOWN_NO_ID";
     public int timeLastSeen = -1;
