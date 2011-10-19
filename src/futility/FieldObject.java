@@ -4,25 +4,24 @@
 package futility;
 
 public abstract class FieldObject extends GameObject {
-
     public double distanceTo = 0;
     public double lastSeenAngleTo = 0; // Assume things face east, degrees
     public double distanceChange = 0;
-    public DirectionEstimate direction = new DirectionEstimate(0, true);
+    public DirectionEstimate direction = new DirectionEstimate();
     public double directionChange = 0;
     public double bodyFacing = 0; //degrees
     public double headFacing = 0; 
-    public Point position;
-    public String id = "UNKNOWN_NO_ID";
+    public PositionEstimate position = new PositionEstimate();
+    public String id = "UNKNOWN_ID";
     public int timeLastSeen = -1;
-    public double angleLastSeen = -1;
+    public DirectionEstimate angleToLastSeen = new DirectionEstimate();
+    public double distanceToLastSeen = -1;
     
     public FieldObject() {
-        position = new Point();
     }
     
     public FieldObject(double x, double y) {
-        position = new Point(x, y);
+        position.setPosition(x, y);
     }
     
     public FieldObject(FieldObject copy){
@@ -61,7 +60,7 @@ public abstract class FieldObject extends GameObject {
      * @return
      */
     public final Circle asCircle() {
-        return new Circle(this.position, this.distanceTo);
+        return new Circle(this.position.getPosition(), this.distanceTo);
     }
     
     /** Get the angle from the current object to a global angle
@@ -94,7 +93,9 @@ public abstract class FieldObject extends GameObject {
      * @return the difference in x coordinates from the current object to another
      */
     public double deltaX(FieldObject object) {
-        return object.position.getX() - this.position.getX();
+        double x0 = this.position.getPosition().getX();
+        double x1 = object.position.getPosition().getX();
+        return x1 - x0;
     }
     
     /** Get the difference in y coordinates from the current object to another
@@ -102,7 +103,9 @@ public abstract class FieldObject extends GameObject {
      * @return the difference in y coordinates from the current object to another
      */
     public double deltaY(FieldObject object) {
-        return object.position.getY() - this.position.getY();
+        double y0 = this.position.getPosition().getY();
+        double y1 = object.position.getPosition().getY();
+        return y1 - y0;
     }
     
     /** Check if the field object is within a given rectangle boundary

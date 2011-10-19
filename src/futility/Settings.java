@@ -40,6 +40,14 @@ public class Settings {
     public static final Point INITIAL_POSITION = new Point(-1.0, -1.0);
     public static final Point CENTER_FIELD = new Point(FIELD().left + FIELD_WIDTH/2, FIELD().bottom + FIELD_HEIGHT/2);
     
+    public class Commands {
+        public static final String BYE = "bye";
+        public static final String DASH = "dash";
+        public static final String INIT = "init";
+        public static final String KICK = "kick";
+        public static final String TURN = "turn";
+    }
+    
     public static Rectangle FIELD() {
         return new Rectangle(FIELD_BUFFER + FIELD_HEIGHT, FIELD_BUFFER + FIELD_WIDTH, FIELD_BUFFER, FIELD_BUFFER);
     }

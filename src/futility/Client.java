@@ -9,8 +9,6 @@ import java.net.UnknownHostException;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import futility.Commands;
-
 public class Client {
     public boolean debugMode = Settings.DEBUG;
     public Player player;
@@ -73,7 +71,7 @@ public class Client {
             e.printStackTrace();
         }
         
-        sendCommand(Commands.INIT, player.team.name, String.format("(version %s)", Settings.SOCCER_SERVER_VERSION));
+        sendCommand(Settings.Commands.INIT, player.team.name, String.format("(version %s)", Settings.SOCCER_SERVER_VERSION));
         // Start reading input from the server
         responseExecutor = new ScheduledThreadPoolExecutor(1);
         responseExecutor.setContinueExistingPeriodicTasksAfterShutdownPolicy(false);
@@ -131,7 +129,7 @@ public class Client {
      * 
      */
     public final void quit() {
-        sendCommand(Commands.BYE);
+        sendCommand(Settings.Commands.BYE);
         soccerServerSocket.close();
     }
     
@@ -153,8 +151,8 @@ public class Client {
         }
         log(Settings.LOG_LEVELS.ALL, "RECEIVED: "+new String(buffer));
         return new String(buffer);
-    }    
-    
+    }
+
     /** Send a properly-formatted message to the soccer server
      * 
      * @param command the command to send

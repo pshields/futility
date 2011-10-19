@@ -8,11 +8,9 @@ public class Brain implements Runnable {
     public boolean canSeeBall;  // TODO Remove eventually
     public boolean canSeeGoal;  // TODO Remove eventually
     
+    Client client;
     Player player;
     public int time;
-    public int lastTimeTriangulated;
-    
-
     
     // Self info & Play mode
     // TODO Encapsulate this information as needed.
@@ -33,19 +31,26 @@ public class Brain implements Runnable {
     public StationaryObject goal = new StationaryObject();
     
     LinkedHashMap<String, FieldObject> fieldObjects = new LinkedHashMap<String, FieldObject>(Settings.INITIAL_HASH_MAP_SIZE);
-    LinkedList<String> justSeenObjects = new LinkedList<String>();
     ArrayDeque<String> hearMessages = new ArrayDeque<String>();
+
+    private Strategy currentStrategy = Strategy.LOOK_AROUND;
+    
+    public enum Strategy {
+        DASH_AROUND_THE_FIELD_COUNTERCLOCKWISE,
+        LOOK_AROUND
+    }
 
     /** Brain constructor
      * 
      * @param player a back-reference to the invoking player
      */
-    public Brain(Player player) {
+    public Brain(Player player, Client client) {
         this.player = player;
+        this.client = client;
         // Load the HashMap
         for (int i = 0; i < Settings.STATIONARY_OBJECTS.length; i++) {
             StationaryObject object = Settings.STATIONARY_OBJECTS[i];
-            //player.client.log(Settings.LOG_LEVELS.DEBUG, String.format("Adding %s to my HashMap...", object.id));
+            //client.log(Settings.LOG_LEVELS.DEBUG, String.format("Adding %s to my HashMap...", object.id));
             fieldObjects.put(object.id, object);
         }
     }
@@ -126,7 +131,7 @@ public class Brain implements Runnable {
      * @param power how hard to dash
      */
     public final void dash(double power) {
-        player.client.sendCommand(Commands.DASH, Double.toString(power));
+        client.sendCommand(Settings.Commands.DASH, Double.toString(power));
     }
 
     /** Dash in a direction
@@ -135,64 +140,14 @@ public class Brain implements Runnable {
      * @param direction a relative direction in degrees in which to dash
      */
     public final void dash(double power, double direction) {
-        player.client.sendCommand(Commands.DASH, power, direction);
+        client.sendCommand(Settings.Commands.DASH, power, direction);
     }
     
     /** A simple strategy to test the player's belief about its field position
      * 
      */
     public void dashClockwiseAroundTheField() {
-        double x = player.position.getX();
-        double y = player.position.getY();
-        // First, run to the top of the field
-        if (lastTimeTriangulated < time - 5) {
-            turn(90);
-        }
-        else if (player.inRectangle(Settings.FIELD())) {
-            if (Math.abs(90 - player.directionEstimate.getDirection()) > 10) {
-                // Turn to face north
-                turnTo(90);
-            }
-            else {
-                dash(100);
-            }
-        }
-        // Then run around clockwise between the physical boundary and the field
-        else if (y > Settings.FIELD().top && x < Settings.FIELD().right) {
-            if (Math.abs(0 - player.directionEstimate.getDirection()) > 10) {
-                turnTo(0);                
-            }
-            else {
-                dash(100);
-            }
-        }
-        else if (x > Settings.FIELD().right && y < Settings.FIELD().bottom) {
-            if (Math.abs(270 - player.directionEstimate.getDirection()) > 10) {
-                turnTo(270);                
-            }
-            else {
-                dash(100);
-            }
-        }
-        else if (y < Settings.FIELD().bottom && x < Settings.FIELD().left) {
-            if (Math.abs(180 - player.directionEstimate.getDirection()) > 10) {
-                turnTo(180);
-            }
-            else {
-                dash(100);
-            }  
-        }
-        else if (x < Settings.FIELD().left && y < Settings.FIELD().top) {
-            if (Math.abs(90 - player.directionEstimate.getDirection()) > 10) {
-                turnTo(90);                
-            }
-            else {
-                dash(100);
-            }
-        }
-        else {
-            player.client.log(Settings.LOG_LEVELS.ERROR, "Could not determine position.");
-        }
+
     }
     
     /** Estimate the position of a field object
@@ -205,9 +160,67 @@ public class Brain implements Runnable {
         
         return estimate;
     }
+    
+    private final void executeStrategy(Strategy strategy) {
+        switch (strategy) {
+        case DASH_AROUND_THE_FIELD_COUNTERCLOCKWISE:
+            double x = player.position.getPosition().getX();
+            double y = player.position.getPosition().getY();
+            if (player.inRectangle(Settings.FIELD())) {
+                if (Math.abs(90 - player.direction.getDirection()) > 10) {
+                    // Turn to face north
+                    turnTo(90);
+                }
+                else {
+                    dash(100);
+                }
+            }
+            // Then run around clockwise between the physical boundary and the field
+            else if (y > Settings.FIELD().top && x < Settings.FIELD().right) {
+                if (Math.abs(0 - player.direction.getDirection()) > 10) {
+                    turnTo(0);                
+                }
+                else {
+                    dash(100);
+                }
+            }
+            else if (x > Settings.FIELD().right && y < Settings.FIELD().bottom) {
+                if (Math.abs(270 - player.direction.getDirection()) > 10) {
+                    turnTo(270);                
+                }
+                else {
+                    dash(100);
+                }
+            }
+            else if (y < Settings.FIELD().bottom && x < Settings.FIELD().left) {
+                if (Math.abs(180 - player.direction.getDirection()) > 10) {
+                    turnTo(180);
+                }
+                else {
+                    dash(100);
+                }  
+            }
+            else if (x < Settings.FIELD().left && y < Settings.FIELD().top) {
+                if (Math.abs(90 - player.direction.getDirection()) > 10) {
+                    turnTo(90);                
+                }
+                else {
+                    dash(100);
+                }
+            }
+            else {
+                client.log(Settings.LOG_LEVELS.ERROR, "Could not determine position.");
+            }
+            break;
+        case LOOK_AROUND:
+            turn(7);
+        default:
+            break;
+        }
+    }
 
     public void kick(double power) {
-        player.client.sendCommand(Commands.KICK, power);
+        client.sendCommand(Settings.Commands.KICK, power);
     }
 
     /** Kick in a relative direction
@@ -216,7 +229,15 @@ public class Brain implements Runnable {
      * @param direction a relative angle in degrees by which to kick
      */
     public void kick(double power, double direction) {
-        player.client.sendCommand(Commands.KICK, Double.toString(power), Double.toString(direction));
+        client.sendCommand(Settings.Commands.KICK, Double.toString(power), Double.toString(direction));
+    }
+    
+    public double measureError(Point p, FieldObject... objects) {
+        double error = 0;
+        for (FieldObject object : objects) {
+            error += p.distanceTo(object.position.getPosition());
+        }
+        return error;
     }
 
     /** Parse a message from the soccer server
@@ -298,10 +319,8 @@ public class Brain implements Runnable {
         else if (message.startsWith("(see")) {
             // Update our concept of the current timestep.
             // Standard times go up to 6000 so we'll only check four digits.
-            String timePart = message.substring(5, 9).split("\\s")[0];
-            if (timePart.endsWith(")")) {
-                timePart = timePart.substring(0, timePart.length() - 1);
-            }
+            // Split the string on any non-digit and take the first part
+            String timePart = message.substring(5, 9).split("\\D")[0];
             time = Integer.parseInt(timePart);
             // Following the time are parentheses-delimited ObjectInfos.
             // We're parsing them manually so we don't waste cycles on
@@ -309,7 +328,7 @@ public class Brain implements Runnable {
             int openParentheses = 0; // Not counting the exterior '(see ... )' parenthesis
             int beginIndex = -1;
             int endIndex = -1;
-            int objectInfos = 0;
+            LinkedList<String> justSeenObjectIds = new LinkedList<String>();
             for (int i = 5; i < message.length(); i++) {
                 if (message.charAt(i) == '(') {
                     if (openParentheses == 0) {
@@ -321,15 +340,13 @@ public class Brain implements Runnable {
                     if (openParentheses == 1) {
                         endIndex = i + 1; // This character marks the last character in an ObjectInfo string
                         // Now parse the ObjectInfo
-                        parseObjectInfo(message.substring(beginIndex, endIndex + 1));
-                        objectInfos++;
+                        String objectId = parseObjectInfo(message.substring(beginIndex, endIndex));
+                        justSeenObjectIds.add(objectId);
                     }
                     openParentheses--;
                 }
             }
-            if (objectInfos >= 2) {
-                
-            }
+            this.updatePositionAndDirection(justSeenObjectIds);
         }
         // Handle init messages
         else if (message.startsWith("(init")) {
@@ -345,7 +362,7 @@ public class Brain implements Runnable {
             }
             else {
                 // Raise error
-                player.client.log(Settings.LOG_LEVELS.ERROR, "Could not parse teamSide.");
+                client.log(Settings.LOG_LEVELS.ERROR, "Could not parse teamSide.");
             }
             player.number = Integer.parseInt(parts[2]);
             playMode = parts[3].split("\\)")[0];
@@ -387,8 +404,9 @@ public class Brain implements Runnable {
      * @param content the ObjectInfo string
      * @return none
      */
-    public final void parseSeenObject(String objectInfo) {
-        // First, identify the object name.
+
+    public final String parseSeenObject(String objectInfo) {
+        // Identify the object name
         int i = 2;
         while (objectInfo.charAt(i) != ')') {
             i++;
@@ -397,25 +415,24 @@ public class Brain implements Runnable {
         String id = objectInfo.substring(1, i+1); // id is the object name
         String values = objectInfo.substring(i + 2).replaceAll("\\)", ""); // the remaining arguments, no leading whitespace
         String[] args = values.split(" ");
-        
-        justSeenObjects.add(id);
+ 
         
         FieldObject obj = createFieldObject(id);
         if(obj == null) return; //yet unsupported object or an error
         obj.timeLastSeen = time;
         switch(args.length){
         case 1:
-        	obj.angleLastSeen = Double.valueOf(args[0]);
+        	obj.angleToLastSeen.update(Double.valueOf(args[0]), time);
         	break;
         case 6:
-        	obj.headFacingDir = Double.valueOf(args[5]);
-        	obj.bodyFacingDir = Double.valueOf(args[4]);
+        	obj.headFacing.update(Double.valueOf(args[5]), time);
+        	obj.bodyFacing.update(Double.valueOf(args[4]), time);
         case 4:
         	obj.directionChange = Double.valueOf(args[3]);
         	obj.distanceChange = Double.valueOf(args[2]);
         case 2:
         	obj.distanceTo = Double.valueOf(args[0]);
-        	obj.angleLastSeen = Double.valueOf(args[1]);  
+        	obj.angleToLastSeen.update(Double.valueOf(args[1]), time);  
         	break;
         default:
         	player.client.log(Settings.LOG_LEVELS.ERROR, "Invalid number of arguments for a FieldObject");
@@ -433,7 +450,7 @@ public class Brain implements Runnable {
         }
         else {
         	fieldObjects.put(id, obj);
-            player.client.log(Settings.LOG_LEVELS.DEBUG, "Just added " + id + " to the HashMap!");
+            player.client.log(Settings.LOG_LEVELS.DEBUG, "Just added " + id + " to the HashMap.");
         }
     }
     
@@ -495,27 +512,21 @@ public class Brain implements Runnable {
 			return null;
 		}
 	}
-
-	/** Reset the player's time-step specific knowledge
-     * 
-     * At the end of the turn, some variables need to be reset, such as the
-     * list of field objects seen in the current timestep. We do that here.
-     */
-    public void resetKnowledge() {
-        canSeeBall = false;
-        canSeeGoal = false;
-        justSeenObjects.clear();
-        justSeenStationaryObjects.clear();
-    }
     
     /** Respond in the current timestep
      * 
      */
     public void run() {
-        updatePosition();
-        dashClockwiseAroundTheField();
-        resetKnowledge();
-        player.client.log("I think I am at position "+player.position.render());
+        // Possibly update the current strategy
+        this.currentStrategy = this.getOptimalStrategy();
+        this.client.log("Current strategy: "+this.currentStrategy);
+        // Execute the current strategy
+        this.executeStrategy(this.currentStrategy);
+        // Clear variables for the current time step
+        this.canSeeBall = false;
+        this.canSeeGoal = false;
+        this.client.log(Settings.LOG_LEVELS.DEBUG, "Position confidence: " + Double.toString(this.player.position.getConfidence(time)));
+        this.client.log(Settings.LOG_LEVELS.DEBUG, "Direction confidence: " + Double.toString(this.player.direction.getConfidence(time)));
     }
     
     /** Turn by a relative amount in degrees
@@ -529,8 +540,8 @@ public class Brain implements Runnable {
         while (direction < -180) {
             direction += 360;
         }
-        player.client.sendCommand(Commands.TURN, direction);
-        player.directionEstimate.update(player.directionEstimate.getDirection() - direction, 0.95 * player.directionEstimate.getConfidence(time), time);
+        client.sendCommand(Settings.Commands.TURN, direction);
+        player.direction.update(player.direction.getDirection() - direction, 0.95 * player.direction.getConfidence(time), time);
     }
     
     /** Turn to face a global direction (east is 0)
@@ -547,17 +558,105 @@ public class Brain implements Runnable {
         turn(player.angleTo(direction));
     }
     
-    private final void updatePosition() {
-        if (justSeenStationaryObjects.size() >= 2) {
-            FieldObject o1 = fieldObjects.get(justSeenStationaryObjects.get(0));
-            FieldObject o2 = fieldObjects.get(justSeenStationaryObjects.get(1));
-            Point[] points = o1.asCircle().intersectionPointsWith(o2.asCircle());
-            if (points.length >= 1) {
-                lastTimeTriangulated = time;
+    private final void updatePositionAndDirection(LinkedList<String> justSeenObjectIds) {
+        LinkedList<FieldObject> qualifiedObjects = new LinkedList<FieldObject>();
+        for (String objectId : justSeenObjectIds) {
+            if (fieldObjects.containsKey(objectId)) {    
+                FieldObject object = fieldObjects.get(objectId);
+                if (object.isStationaryObject() && object.angleToLastSeen.getTimeEstimated() == this.time) {
+                    qualifiedObjects.add(object);
+                }
             }
-            // Pick whichever is closes to wherever we think the player currently is
-            player.position.update(player.position.closestOf(points));
-            player.client.log(Settings.LOG_LEVELS.DEBUG, "I think I am facing: " + Double.toString(player.directionEstimate.getDirection()) + "degrees from east with " + Double.toString(player.directionEstimate.getConfidence(time)) + " confidence.");
         }
+        this.client.log(Settings.LOG_LEVELS.DEBUG, "Found " + qualifiedObjects.size() + " qualified objects out of " + justSeenObjectIds.size() + " just seen objects at time " + this.time);
+        // TODO Handle the near-ideal case of 3+ qualified objects
+        if (qualifiedObjects.size() >= 2) {
+            FieldObject o1 = qualifiedObjects.get(0);
+            FieldObject o2 = qualifiedObjects.get(1);
+            Point[] points = o1.asCircle().intersectionPointsWith(o2.asCircle());
+            if (points.length > 0) {
+                Point bestPoint = new Point();
+                double bestError = Double.MAX_VALUE;
+                // Use player's beliefs about directions to the objects to
+                // determine which point to use
+                for (Point point : points) {
+                    double error = this.measureError(point, o1, o2);
+                    if (error < bestError) {
+                        bestError = error;
+                        bestPoint.update(point);
+                    }
+                }
+                double updateConfidence = 25 / (25 + bestError);
+                this.client.log(Settings.LOG_LEVELS.DEBUG, "Used two-circle triangulation to derive a new position estimate of " + bestPoint.render() + " with a confidence of " + Double.toString(updateConfidence));
+                player.position.update(bestPoint.getX(), bestPoint.getY(), updateConfidence, time);
+            }
+            else {
+                this.client.log(Settings.LOG_LEVELS.ERROR, "Two-circle triangulation returned no points.");
+            }
+        }
+        if (qualifiedObjects.size() >= 1){
+            FieldObject object = qualifiedObjects.get(0);
+            // Alternative position update function
+            double updateConfidence = 0.95 * player.direction.getConfidence(time);
+            if (this.player.position.getConfidence(time) < updateConfidence) {
+                double x = object.position.getPosition().getX();
+                double y = object.position.getPosition().getY();
+                double objectiveAngleTo = this.player.direction.getDirection() - object.angleToLastSeen.getDirection();
+                x += Math.cos(objectiveAngleTo) * object.distanceTo;
+                y += Math.sin(objectiveAngleTo) * object.distanceTo;
+                this.player.position.update(x, y, updateConfidence, time);
+                this.client.log(Settings.LOG_LEVELS.DEBUG, "Thought it would be smart to update position to " + this.player.position.getPosition().render() + " with a confidence of " + Double.toString(updateConfidence) + ".");
+            }
+            // Alternative direction update function
+            updateConfidence = this.player.position.getConfidence(time) * object.position.getConfidence(time) * 0.95;
+            if (updateConfidence > this.player.direction.getConfidence(time)) {
+                double x0 = this.player.position.getPosition().getX();
+                double y0 = this.player.position.getPosition().getY();
+                double x1 = object.position.getPosition().getX();
+                double y1 = object.position.getPosition().getY();
+                double newDirection = Math.toDegrees(Math.atan((y1 - y0)/(x1 - x0)));
+                this.player.direction.update(newDirection, updateConfidence, time);
+                this.client.log(Settings.LOG_LEVELS.DEBUG, "Thought it would be smart to update direction to " + Double.toString(this.player.direction.getDirection()) + " with a confidence of " + Double.toString(updateConfidence) + ".");
+            }
+        }
+        else {
+            // Do nothing. The confidence in the player's position will
+            // naturally decrease with time. If it gets really low, it
+            // will switch to a 'look around strategy'.
+        }
+    }
+    
+    
+    private final void updateDirection(FieldObject object) {
+
+    }
+    
+    private final Strategy getOptimalStrategy() {
+        Strategy optimalStrategy = this.currentStrategy;
+        double bestUtility = 0;
+        for (Strategy strategy : Strategy.values()) {
+            double utility = this.getUtility(strategy);
+            if (utility > bestUtility) {
+                bestUtility = utility;
+                optimalStrategy = strategy;
+            }
+        }
+        return optimalStrategy;
+    }
+    
+    private final double getUtility(Strategy strategy) {
+        double utility = 0;
+        switch (strategy) {
+            case DASH_AROUND_THE_FIELD_COUNTERCLOCKWISE:
+                utility = 0.3;
+                break;
+            case LOOK_AROUND:
+                utility = 1 - ( 1 / (1 + this.player.position.getConfidence(this.time)));
+                break;
+            default:
+                utility = 0;
+                break;
+        }
+        return utility;
     }
 }

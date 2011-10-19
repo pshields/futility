@@ -136,6 +136,6 @@ public class Flag extends StationaryObject {
                 y = Settings.FIELD().getCenter().getY() - offset;
             }
         }
-        position = new Point(x, y);
+        position = new PositionEstimate(x, y, 1.0, true);
     }
 }

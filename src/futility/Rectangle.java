@@ -14,8 +14,8 @@ public class Rectangle {
     }
     
     public boolean contains(FieldObject object) {
-        double x = object.position.getX();
-        double y = object.position.getY();
+        double x = object.position.getPosition().getX();
+        double y = object.position.getPosition().getY();
         return x >= left && x <= right && y >= bottom && y <= top;
     }
     
