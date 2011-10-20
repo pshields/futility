@@ -24,10 +24,10 @@ public class Goal extends StationaryObject {
         
         // Determine the side this goal belongs on:
         if (id.charAt(3) == 'l') {
-            x = Settings.FIELD().left;
+            x = Settings.FIELD().getLeft();
         }
         else if (id.charAt(3) == 'r') {
-            x = Settings.FIELD().right;
+            x = Settings.FIELD().getRight();
         }
         else {
             System.out.println("Couldn't parse goal id "+id);

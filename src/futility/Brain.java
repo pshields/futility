@@ -205,16 +205,16 @@ public class Brain implements Runnable {
                 targetDirection = 90;
             }
             // Then run around clockwise between the physical boundary and the field
-            else if (y >= field.top && x <= field.right) {
+            else if (y >= field.getTop() && x <= field.getRight()) {
                 targetDirection = 0;        
             }
-            else if (x >= field.right && y >= field.bottom) {
+            else if (x >= field.getRight() && y >= field.getBottom()) {
                 targetDirection = 270;
             }
-            else if (y <= field.bottom && x >= field.left) {
+            else if (y <= field.getBottom() && x >= field.getLeft()) {
                 targetDirection = 180;
             }
-            else if (x <= field.left && y <= field.top) {
+            else if (x <= field.getLeft() && y <= field.getTop()) {
                 targetDirection = 90;
             }
             else {
