@@ -72,7 +72,7 @@ public abstract class FieldObject extends GameObject {
     
     /**
      * Calculates the absolute angle from this object to the given field
-     * object. The angle is retrieved using the formula:
+     * object. The angle is retrieved using the formula: <br>
      * \f$angle = \arctan\left(\frac{y_2-y_1}{x_2-x_1}\right)\f$
      * 
      * @param object the given field object to calculate an angle against.
@@ -137,7 +137,8 @@ public abstract class FieldObject extends GameObject {
     
     /**
      * Gets the distance from this object to the given field object.
-     * Distance formula: \f$dist = \sqrt{\(x_2-x_1\)^2 + \(y_2-y_1\)^2}\f$
+     * Distance formula: <br>
+     * \f$dist = \sqrt{\(x_2-x_1\)^2 + \(y_2-y_1\)^2}\f$
      * 
      * @param object the given field object
      * @return the distance from the this object to the given field object

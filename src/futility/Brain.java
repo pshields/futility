@@ -442,6 +442,35 @@ public class Brain implements Runnable {
     }
     
     /**
+     *  Parses and handles an ObjectInfo string.
+     *  Objects must fit the following format to be properly parsed.<br>
+     *  ObjInfo ::= (ObjName Distance Direction DistChange DirChange BodyFacingDir HeadFacingDir ) <br>
+		| (ObjName Distance Direction DistChange DirChange <br>
+		| (ObjName Distance Direction) <br>
+		| (ObjName Direction) <br>
+		ObjName ::= (p ["Teamname" [UniformNumber [goalie]]]) <br>
+		| (b) <br>
+		| (g [l|r]) <br>
+		| (f c) <br>
+		| (f [l|c|r] [t|b]) <br>
+		| (f p [l|r] [t|c|b]) <br>
+		| (f g [l|r] [t|b]) <br>
+		| (f [l|r|t|b] 0) <br>
+		| (f [t|b] [l|r] [10|20|30|40|50]) <br>
+		| (f [l|r] [t|b] [10|20|30]) <br>
+		| (l [l|r|t|b]) <br>
+		| (B) <br>
+		| (F)<br>
+		| (G) <br>
+		| (P) <br>
+		Distance ::= positive real number <br>
+		Direction ::= -180 to 180 degrees <br>
+		DistChange ::= real number <br>
+		DirChange ::= real number <br>
+		HeadFaceDir ::= -180 to 180 degrees <br>
+		BodyFaceDir ::= -180 to 180 degrees <br>
+		Teamname ::= string <br>
+		UniformNumber ::= 1-11 <br>
      * Parses and handles an ObjectInfo string.
      * @param objectInfo the ObjectInfo string
      * @return the objectId of the parsed ObjectInfo
@@ -500,6 +529,24 @@ public class Brain implements Runnable {
     }
     
     /**
+     * Given a valid ObjectId, this method returns a proper FieldObject.
+     * 
+     * @param name - meets the following criteria <br>
+     * ObjName ::= (p ["Teamname" [UniformNumber [goalie]]]) <br>
+		| (b) <br>
+		| (g [l|r]) <br>
+		| (f c) <br>
+		| (f [l|c|r] [t|b]) <br>
+		| (f p [l|r] [t|c|b]) <br>
+		| (f g [l|r] [t|b]) <br>
+		| (f [l|r|t|b] 0) <br>
+		| (f [t|b] [l|r] [10|20|30|40|50]) <br>
+		| (f [l|r] [t|b] [10|20|30]) <br>
+		| (l [l|r|t|b]) <br>
+		| (B) <br>
+		| (F)<br>
+		| (G) <br>
+		| (P) <br>
      * Given a valid soccer server object name this method returns a proper FieldObject
      * @param name
      * @return a FieldObject based off the name
