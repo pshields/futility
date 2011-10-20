@@ -28,19 +28,19 @@ public class Flag extends StationaryObject {
             // Set the horizontal value
             if (parts[3].equals("t")) {
                 // The flag marks the top goalpost
-                y = Settings.FIELD().getCenter().y + Settings.GOAL_HEIGHT / 2;
+                y = Settings.FIELD().getCenter().getY() + Settings.GOAL_HEIGHT / 2;
             }
             else if (parts[3].equals("b")) {
                 // The flag marks the bottom goalpost
-                y = Settings.FIELD().getCenter().y - Settings.GOAL_HEIGHT / 2;
+                y = Settings.FIELD().getCenter().getY() - Settings.GOAL_HEIGHT / 2;
             }
         }
         // Handle center flags
         else if (parts[1].equals("c")) {
-            x = Settings.FIELD().getCenter().x;
+            x = Settings.FIELD().getCenter().getX();
             if (parts.length == 2) {
                 // The flag marks center field
-                y = Settings.FIELD().getCenter().y;
+                y = Settings.FIELD().getCenter().getY();
             }
             else if (parts[2].equals("t")) {
                 // The flag marks top-center field
@@ -69,35 +69,57 @@ public class Flag extends StationaryObject {
             }
             else if (parts[3].equals("c")) {
                 // The flag is at the vertical center of the penalty area
-                y = Settings.PENALTY_AREA_LEFT().getCenter().y;
+                y = Settings.PENALTY_AREA_LEFT().getCenter().getY();
             }
             else if (parts[3].equals("b")) {
                 // The flag is at the bottom of the penalty area
                 y = Settings.PENALTY_AREA_LEFT().bottom;
             }
-        }
-        
-        // Handle flags in the four corners of the field
+        }        
         else if (parts.length == 3) {
-            // Set the horizontal value
-            if (parts[1].equals("l")) {
-                // The flag is on the left side of the field
-                x = Settings.FIELD().left;
+            // Handle the four half-way points on the physical boundary
+            if (parts[2].equals("0")) {
+                if (parts[1].equals("t")) {
+                    x = Settings.PHYSICAL_BOUNDARY().getCenter().getX();
+                    y = Settings.PHYSICAL_BOUNDARY().top;
+                }
+                else if (parts[1].equals("b")) {
+                    x = Settings.PHYSICAL_BOUNDARY().getCenter().getX();
+                    y = Settings.PHYSICAL_BOUNDARY().top;
+                }
+                else if (parts[1].equals("l")) {
+                    x = Settings.PHYSICAL_BOUNDARY().left;
+                    y = Settings.PHYSICAL_BOUNDARY().getCenter().getY();
+                }
+                else if (parts[1].equals("r")) {
+                    x = Settings.PHYSICAL_BOUNDARY().right;
+                    y = Settings.PHYSICAL_BOUNDARY().getCenter().getY();
+                }
+                
             }
-            else if (parts[1].equals("r")) {
-                // The flag is on the right side of the field
-                x = Settings.FIELD().right;
-            }
-            // Set the vertical value
-            if (parts[2].equals("t")) {
-                // The flag is at the top of the field
-                y = Settings.FIELD().top;
-            }
-            else if (parts[2].equals("b")) {
-                // The flag is at the bottom of the field
-                y = Settings.FIELD().bottom;
+            // Handle flags in the four corners of the field
+            else {
+                // Set the horizontal value
+                if (parts[1].equals("l")) {
+                    // The flag is on the left side of the field
+                    x = Settings.FIELD().left;
+                }
+                else if (parts[1].equals("r")) {
+                    // The flag is on the right side of the field
+                    x = Settings.FIELD().right;
+                }
+                // Set the vertical value
+                if (parts[2].equals("t")) {
+                    // The flag is at the top of the field
+                    y = Settings.FIELD().top;
+                }
+                else if (parts[2].equals("b")) {
+                    // The flag is at the bottom of the field
+                    y = Settings.FIELD().bottom;
+                }
             }
         }
+
         // Handle physical boundary flags
         else if (parts.length == 4) {
             double offset = Double.parseDouble(parts[3]);
@@ -112,11 +134,11 @@ public class Flag extends StationaryObject {
             }
             else if (parts[2].equals("l")) {
                 // The flag is on the left half of the physical boundary
-                x = Settings.FIELD().getCenter().x - offset;
+                x = Settings.FIELD().getCenter().getX() - offset;
             }
             else if (parts[2].equals("r")) {
                 // The flag is on the right half of the physical boundary
-                x = Settings.FIELD().getCenter().x + offset;
+                x = Settings.FIELD().getCenter().getX() + offset;
             }
             // Set the vertical value
             if (parts[1].equals("t")) {
@@ -129,13 +151,16 @@ public class Flag extends StationaryObject {
             }
             else if (parts[2].equals("t")) {
                 // The flag is on the top half of the field
-                y = Settings.FIELD().getCenter().y + offset;
+                y = Settings.FIELD().getCenter().getY() + offset;
             }
             else if (parts[2].equals("b")) {
                 // The flag is on the bottom half of the field
-                y = Settings.FIELD().getCenter().y - offset;
+                y = Settings.FIELD().getCenter().getY() - offset;
             }
         }
-        position = new Point(x, y);
+        if (x == -1 || y == -1) {
+            System.err.println("Flag " + this.id + " didn't parse it's position correctly");
+        }
+        position = new PositionEstimate(x, y, 1.0, true);
     }
 }
