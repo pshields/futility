@@ -20,11 +20,12 @@ public class Point {
      * Assumes base angle is this object's body angle, if not specified
      */
     public final double angleTo(Point otherPoint) {
-        double angle = Math.atan(this.deltaY(otherPoint)/this.deltaX(otherPoint));
+        double angle = Math.atan(this.deltaY(otherPoint) / this.deltaX(otherPoint));
         if (Double.isNaN(angle)) {
             angle = 0;
         }
-        return angle;
+
+        return Math.toDegrees(angle);
     }
     
     public final Point closestOf(Point[] points) {

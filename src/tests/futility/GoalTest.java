@@ -1,23 +1,29 @@
-/** @file Goal.java
- * Representation of a visible goal object.
- * 
- * @author Team F(utility)
- * @date 20 October 2011
- */
+package tests.futility;
 
-package futility;
 
-/** @class Goal
- * Extension of StationaryObject to represent a visible goal on the playing
- * field.
- */
-public class Goal extends StationaryObject {
-    
-	/**
-	 * Builds a goal object according to the side of the field it belongs on.
-	 * @param id literal string identifier, as sent by the server.
-	 */
-    public Goal(String id) {
+import static org.junit.Assert.*;
+
+import org.junit.Test;
+
+import org.junit.After;
+import org.junit.Before;
+
+import futility.PositionEstimate;
+import futility.Settings;
+
+public class GoalTest {
+
+	@Before
+	public void setUp() throws Exception {
+	}
+
+	@After
+	public void tearDown() throws Exception {
+	}
+
+	@Test
+    public void testGoal() {
+/*		Goal(String id)
         this.id = id;
         double x = -1.0;
         double y = Settings.FIELD().getCenter().getY();
@@ -35,5 +41,7 @@ public class Goal extends StationaryObject {
         
         // Set our understanding of the goal's position:
         position = new PositionEstimate(x, y, 1.0, true);
+*/
+		fail("Not implemented yet");
     }
 }
