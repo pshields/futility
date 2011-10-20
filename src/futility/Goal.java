@@ -5,17 +5,16 @@ public class Goal extends StationaryObject {
     public Goal(String id) {
         this.id = id;
         double x = -1.0;
-        double y = Settings.FIELD().getCenter().y;
-        if (id.charAt(4) == 'l') {
+        double y = Settings.FIELD().getCenter().getY();
+        if (id.charAt(3) == 'l') {
             x = Settings.FIELD().left;
         }
-        else if (id.charAt(4) == 'r') {
+        else if (id.charAt(3) == 'r') {
             x = Settings.FIELD().right;
         }
         else {
-            // TODO get logging to work here
-            //log(Settings.LOG_LEVELS.ERROR, "Couldn't parse goal id "+id);
+            System.out.println("Couldn't parse goal id "+id);
         }
-        position = new Point(x, y);
+        position = new PositionEstimate(x, y, 1.0, true);
     }
 }
