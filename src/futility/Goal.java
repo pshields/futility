@@ -6,10 +6,10 @@ public class Goal extends StationaryObject {
         this.id = id;
         double x = -1.0;
         double y = Settings.FIELD().getCenter().getY();
-        if (id.charAt(4) == 'l') {
+        if (id.charAt(3) == 'l') {
             x = Settings.FIELD().left;
         }
-        else if (id.charAt(4) == 'r') {
+        else if (id.charAt(3) == 'r') {
             x = Settings.FIELD().right;
         }
         else {

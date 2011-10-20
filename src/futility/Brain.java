@@ -154,11 +154,11 @@ public class Brain implements Runnable {
      * @param object a field object to estimate the position of
      * @return a position estimate for the field object
      */
-    private PositionEstimate estimatePositionOf(FieldObject object) {
-        PositionEstimate estimate = new PositionEstimate();
-        // TODO 
-        return estimate;
-    }
+    //private PositionEstimate estimatePositionOf(FieldObject object) {
+    //    PositionEstimate estimate = new PositionEstimate();
+    //    // TODO 
+    //    return estimate;
+    //}
     
     /**
      * Executes a strategy for the player in the current time step.
@@ -233,7 +233,7 @@ public class Brain implements Runnable {
         double utility = 0;
         switch (strategy) {
             case DASH_AROUND_THE_FIELD_COUNTERCLOCKWISE:
-                utility = 0.5;
+                utility = 0.75;
                 break;
             case LOOK_AROUND:
                 utility = 1 - this.player.position.getConfidence(this.time);
@@ -277,7 +277,7 @@ public class Brain implements Runnable {
     public double measureError(Point point, FieldObject... objects) {
         double error = 0;
         for (FieldObject object : objects) {
-            error += object.asCircle().closestDistanceTo(point);
+            error += point.distanceTo(object.asCircle().getBorderPoint(-this.player.absoluteAngleTo(object)));
         }
         return error;
     }
@@ -455,8 +455,7 @@ public class Brain implements Runnable {
         String id = objectInfo.substring(1, i+1); // id is the object name
         String values = objectInfo.substring(i + 2).replaceAll("\\)", ""); // the remaining arguments, no leading whitespace
         String[] args = values.split(" ");
- 
-        
+
         FieldObject obj = createFieldObject(id);
         if(obj == null) return; //yet unsupported object or an error
         obj.timeLastSeen = time;
@@ -472,7 +471,10 @@ public class Brain implements Runnable {
         	obj.distanceChange = Double.valueOf(args[2]);
         case 2:
         	obj.distanceTo = Double.valueOf(args[0]);
-        	obj.angleToLastSeen.update(Double.valueOf(args[1]), time);  
+        	// Since the soccer server presents items to the right with
+        	// with positive angles, we reverse the angle before storing
+        	// so its fits with our unit circle model.
+        	obj.angleToLastSeen.update(-Double.valueOf(args[1]), time);  
         	break;
         default:
         	player.client.log(Settings.LOG_LEVELS.ERROR, "Invalid number of arguments for a FieldObject");
@@ -649,26 +651,37 @@ public class Brain implements Runnable {
                         bestPoint.update(point);
                     }
                 }
-                double updateConfidence = 25 / (25 + bestError);
-                this.client.log(Settings.LOG_LEVELS.DEBUG, "Used two-circle triangulation to derive a new position estimate of " + bestPoint.render() + " with a confidence of " + Double.toString(updateConfidence));
-                player.position.update(bestPoint, updateConfidence, this.time);
+                if (bestError < 30) {
+                    double updateConfidence = 25 / (25 + bestError);
+                    this.client.log(Settings.LOG_LEVELS.DEBUG, "Used two-circle triangulation to derive a new position estimate of " + bestPoint.render() + " with a confidence of " + Double.toString(updateConfidence));
+                    player.position.update(bestPoint, updateConfidence, this.time);
+                    // Update the player's direction
+                    double newDir1 = this.player.absoluteAngleTo(o1) + o1.angleToLastSeen.getDirection();
+                    double newDir2 = this.player.absoluteAngleTo(o2) + o2.angleToLastSeen.getDirection();
+                    player.direction.update((newDir1 + newDir2) / 2, updateConfidence * 0.95, time);
+                }
             }
             else {
                 this.client.log(Settings.LOG_LEVELS.ERROR, "Two-circle triangulation returned no points.");
             }
         }
-        if (qualifiedObjects.size() >= 1){
+        else if (qualifiedObjects.size() >= 1){
             FieldObject object = qualifiedObjects.get(0);
             // Alternative position update function
             double updateConfidence = 0.95 * player.direction.getConfidence(time);
             if (this.player.position.getConfidence(time) < updateConfidence) {
                 double x = object.position.getPosition().getX();
                 double y = object.position.getPosition().getY();
-                double objectiveAngleTo = this.player.direction.getDirection() - object.angleToLastSeen.getDirection();
-                x += Math.cos(objectiveAngleTo) * object.distanceTo;
-                y += Math.sin(objectiveAngleTo) * object.distanceTo;
-                this.player.position.update(x, y, updateConfidence, time);
-                this.client.log(Settings.LOG_LEVELS.DEBUG, "Thought it would be smart to update position to " + this.player.position.getPosition().render() + " with a confidence of " + Double.toString(updateConfidence) + ".");
+                // Determine the absolute angle from the player to the object
+                double angle = this.player.direction.getDirection() + object.angleToLastSeen.getDirection(); 
+                x += Math.cos(Math.toRadians(angle)) * object.distanceToLastSeen;
+                y += Math.sin(Math.toRadians(angle)) * object.distanceToLastSeen;
+                Point newPoint = new Point(x, y);
+                updateConfidence = updateConfidence * (10 / (10 + newPoint.distanceTo(this.player.position.getPosition())));
+                if (updateConfidence > this.player.position.getConfidence(time)) {
+                    this.player.position.update(x, y, updateConfidence, time);
+                    this.client.log(Settings.LOG_LEVELS.DEBUG, "Thought it would be smart to update position to " + this.player.position.getPosition().render() + " with a confidence of " + Double.toString(updateConfidence) + ".");
+                }    
             }
             // Alternative direction update function
             updateConfidence = this.player.position.getConfidence(time) * object.position.getConfidence(time) * 0.95;

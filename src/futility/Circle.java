@@ -24,6 +24,20 @@ public class Circle {
     }
     
     /**
+     * Gets the point on the border of the circle at the given direction.
+     * 
+     * @param direction the direction in degrees at which to get the border point
+     * @return the point at the border at the given direction
+     */
+    public Point getBorderPoint(double direction) {
+        double x = this.centroid.getX();
+        double y = this.centroid.getY();
+        x += Math.cos(Math.toRadians(direction)) * this.radius;
+        y += Math.sin(Math.toRadians(direction)) * this.radius;
+        return new Point(x, y);
+    }
+    
+    /**
      * Gets this circle's radius.
      * 
      * @return this circle's radius
@@ -50,8 +64,8 @@ public class Circle {
             return new Point[] {};
         }
         else if (this.touches(otherCircle)){
-            double dx = Math.cos(this.centroid.angleTo(otherCircle.centroid)) * this.getRadius();
-            double dy = Math.sin(this.centroid.angleTo(otherCircle.centroid)) * this.getRadius();
+            double dx = Math.cos(Math.toRadians(this.centroid.angleTo(otherCircle.centroid))) * this.getRadius();
+            double dy = Math.sin(Math.toRadians(this.centroid.angleTo(otherCircle.centroid))) * this.getRadius();
             Point point = new Point(this.centroid.getX() + dx, this.centroid.getY() + dy);
             return new Point[] {point};
         }

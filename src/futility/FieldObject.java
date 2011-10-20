@@ -103,7 +103,7 @@ public abstract class FieldObject extends GameObject {
      * object from the player with the brain
      */
     public final Circle asCircle() {
-        return new Circle(this.position.getPosition(), this.distanceTo);
+        return new Circle(this.position.getPosition(), this.distanceToLastSeen);
     }
     
     /**
