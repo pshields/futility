@@ -442,7 +442,6 @@ public class Brain implements Runnable {
     }
     
     /**
-<<<<<<< HEAD
      *  Parses and handles an ObjectInfo string.
      *  Objects must fit the following format to be properly parsed.<br>
      *  ObjInfo ::= (ObjName Distance Direction DistChange DirChange BodyFacingDir HeadFacingDir ) <br>
@@ -472,9 +471,7 @@ public class Brain implements Runnable {
 		BodyFaceDir ::= -180 to 180 degrees <br>
 		Teamname ::= string <br>
 		UniformNumber ::= 1-11 <br>
-=======
      * Parses and handles an ObjectInfo string.
->>>>>>> upstream/master
      * @param objectInfo the ObjectInfo string
      * @return the objectId of the parsed ObjectInfo
      */
@@ -532,7 +529,6 @@ public class Brain implements Runnable {
     }
     
     /**
-<<<<<<< HEAD
      * Given a valid ObjectId, this method returns a proper FieldObject.
      * 
      * @param name - meets the following criteria <br>
@@ -551,10 +547,8 @@ public class Brain implements Runnable {
 		| (F)<br>
 		| (G) <br>
 		| (P) <br>
-=======
      * Given a valid soccer server object name this method returns a proper FieldObject
      * @param name
->>>>>>> upstream/master
      * @return a FieldObject based off the name
      */
     private FieldObject createFieldObject(String name) {
