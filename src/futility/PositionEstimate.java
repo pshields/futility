@@ -32,6 +32,14 @@ public class PositionEstimate extends Estimate {
         return position;
     }
     
+    public final double getX() {
+    	return position.getX();
+    }
+    
+    public final double getY() {
+    	return position.getY();
+    }
+    
     public final String render(int time) {
         return this.position.render() + " with " + Double.toString(this.getConfidence(time)) + " confidence.";
     }
