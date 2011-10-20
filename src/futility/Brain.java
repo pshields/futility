@@ -205,16 +205,16 @@ public class Brain implements Runnable {
                 targetDirection = 90;
             }
             // Then run around clockwise between the physical boundary and the field
-            else if (y >= field.top && x <= field.right) {
+            else if (y >= field.getTop() && x <= field.getRight()) {
                 targetDirection = 0;        
             }
-            else if (x >= field.right && y >= field.bottom) {
+            else if (x >= field.getRight() && y >= field.getBottom()) {
                 targetDirection = 270;
             }
-            else if (y <= field.bottom && x >= field.left) {
+            else if (y <= field.getBottom() && x >= field.getLeft()) {
                 targetDirection = 180;
             }
-            else if (x <= field.left && y <= field.top) {
+            else if (x <= field.getLeft() && y <= field.getTop()) {
                 targetDirection = 90;
             }
             else {
@@ -442,6 +442,7 @@ public class Brain implements Runnable {
     }
     
     /**
+<<<<<<< HEAD
      *  Parses and handles an ObjectInfo string.
      *  Objects must fit the following format to be properly parsed.<br>
      *  ObjInfo ::= (ObjName Distance Direction DistChange DirChange BodyFacingDir HeadFacingDir ) <br>
@@ -471,6 +472,9 @@ public class Brain implements Runnable {
 		BodyFaceDir ::= -180 to 180 degrees <br>
 		Teamname ::= string <br>
 		UniformNumber ::= 1-11 <br>
+=======
+     * Parses and handles an ObjectInfo string.
+>>>>>>> upstream/master
      * @param objectInfo the ObjectInfo string
      * @return the objectId of the parsed ObjectInfo
      */
@@ -528,6 +532,7 @@ public class Brain implements Runnable {
     }
     
     /**
+<<<<<<< HEAD
      * Given a valid ObjectId, this method returns a proper FieldObject.
      * 
      * @param name - meets the following criteria <br>
@@ -546,6 +551,10 @@ public class Brain implements Runnable {
 		| (F)<br>
 		| (G) <br>
 		| (P) <br>
+=======
+     * Given a valid soccer server object name this method returns a proper FieldObject
+     * @param name
+>>>>>>> upstream/master
      * @return a FieldObject based off the name
      */
     private FieldObject createFieldObject(String name) {

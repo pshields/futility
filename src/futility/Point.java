@@ -40,11 +40,12 @@ public class Point {
      * @return the angle between this Point and otherPoint.
      */
     public final double angleTo(Point otherPoint) {
-        double angle = Math.atan(this.deltaY(otherPoint)/this.deltaX(otherPoint));
+        double angle = Math.atan(this.deltaY(otherPoint) / this.deltaX(otherPoint));
         if (Double.isNaN(angle)) {
             angle = 0;
         }
-        return angle;
+
+        return Math.toDegrees(angle);
     }
     
     /** Retrieves the closest Point object to this Point from the provided
@@ -138,6 +139,7 @@ public class Point {
      * @param otherPoint the Point object to compute against
      * @return Distance between Point objects
      */
+    
     public double distanceTo(Point otherPoint) {
         return Math.hypot(this.deltaX(otherPoint), this.deltaY(otherPoint));
     }
@@ -150,6 +152,7 @@ public class Point {
      * @param otherPoint the Point object to compute against
      * @return a Point object representing the midpoint
      */
+
     public Point midpointTo(Point otherPoint) {
         return new Point(this.getX() + this.deltaX(otherPoint) / 2, this.getY() + this.deltaY(otherPoint) /2);
     }

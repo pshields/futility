@@ -50,7 +50,7 @@ public class Settings {
     // Note: the origin is arbitrarily chosen to be the farthest bottom-left
     // point (given standard display conventions) that an object can occupy.
     public static final Point INITIAL_POSITION = new Point(-1.0, -1.0);
-    public static final Point CENTER_FIELD = new Point(FIELD().left + FIELD_WIDTH/2, FIELD().bottom + FIELD_HEIGHT/2);
+    public static final Point CENTER_FIELD = new Point(FIELD().getLeft() + FIELD_WIDTH/2, FIELD().getBottom() + FIELD_HEIGHT/2);
     
     
     ///////////////////////////////////////////////////////////////////////////
@@ -125,9 +125,9 @@ public class Settings {
     public static Rectangle PENALTY_AREA_RIGHT() {
         return new Rectangle(
         		FIELD().getCenter().getY() + (GOAL_HEIGHT / 2) + PENALTY_AREA_DISTANCE,
-        		FIELD().right,
+        		FIELD().getRight(),
         		FIELD().getCenter().getY() - GOAL_HEIGHT - PENALTY_AREA_DISTANCE,
-        		FIELD().right - PENALTY_AREA_DISTANCE);
+        		FIELD().getRight() - PENALTY_AREA_DISTANCE);
     }
     
     

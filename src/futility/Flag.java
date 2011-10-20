@@ -29,11 +29,11 @@ public class Flag extends StationaryObject {
             // Set the horizontal value
             if (parts[2].equals("l")) {
                 // The flag marks a goalpost on the left side
-                x = Settings.FIELD().left;
+                x = Settings.FIELD().getLeft();
             }
             else if (parts[2].equals("r")) {
                 // The flag marks a goalpost on the right side
-                x = Settings.FIELD().right;
+                x = Settings.FIELD().getRight();
             }
             // Set the horizontal value
             if (parts[3].equals("t")) {
@@ -54,11 +54,11 @@ public class Flag extends StationaryObject {
             }
             else if (parts[2].equals("t")) {
                 // The flag marks top-center field
-                y = Settings.FIELD().top;
+                y = Settings.FIELD().getTop();
             }
             else if (parts[2].equals("b")) {
                 // The flag marks bottom-center field
-                y = Settings.FIELD().bottom;
+                y = Settings.FIELD().getBottom();
             }
         }
         // Handle flags on penalty area corners
@@ -66,16 +66,16 @@ public class Flag extends StationaryObject {
             // Set the horizontal value
             if (parts[2].equals("l")) {
                 // The flag is on the left side
-                x = Settings.PENALTY_AREA_LEFT().right;
+                x = Settings.PENALTY_AREA_LEFT().getRight();
             }
             else if (parts[2].equals("r")) {
                 // The flag is on the right side
-                x = Settings.PENALTY_AREA_RIGHT().left;
+                x = Settings.PENALTY_AREA_RIGHT().getLeft();
             }
             // Set the vertical value
             if (parts[3].equals("t")) {
                 // The flag is at the top of the penalty area
-                y = Settings.PENALTY_AREA_LEFT().top;
+                y = Settings.PENALTY_AREA_LEFT().getTop();
             }
             else if (parts[3].equals("c")) {
                 // The flag is at the vertical center of the penalty area
@@ -83,7 +83,7 @@ public class Flag extends StationaryObject {
             }
             else if (parts[3].equals("b")) {
                 // The flag is at the bottom of the penalty area
-                y = Settings.PENALTY_AREA_LEFT().bottom;
+                y = Settings.PENALTY_AREA_LEFT().getBottom();
             }
         }        
         else if (parts.length == 3) {
@@ -91,18 +91,18 @@ public class Flag extends StationaryObject {
             if (parts[2].equals("0")) {
                 if (parts[1].equals("t")) {
                     x = Settings.PHYSICAL_BOUNDARY().getCenter().getX();
-                    y = Settings.PHYSICAL_BOUNDARY().top;
+                    y = Settings.PHYSICAL_BOUNDARY().getTop();
                 }
                 else if (parts[1].equals("b")) {
                     x = Settings.PHYSICAL_BOUNDARY().getCenter().getX();
-                    y = Settings.PHYSICAL_BOUNDARY().top;
+                    y = Settings.PHYSICAL_BOUNDARY().getTop();
                 }
                 else if (parts[1].equals("l")) {
-                    x = Settings.PHYSICAL_BOUNDARY().left;
+                    x = Settings.PHYSICAL_BOUNDARY().getLeft();
                     y = Settings.PHYSICAL_BOUNDARY().getCenter().getY();
                 }
                 else if (parts[1].equals("r")) {
-                    x = Settings.PHYSICAL_BOUNDARY().right;
+                    x = Settings.PHYSICAL_BOUNDARY().getRight();
                     y = Settings.PHYSICAL_BOUNDARY().getCenter().getY();
                 }
                 
@@ -112,20 +112,20 @@ public class Flag extends StationaryObject {
                 // Set the horizontal value
                 if (parts[1].equals("l")) {
                     // The flag is on the left side of the field
-                    x = Settings.FIELD().left;
+                    x = Settings.FIELD().getLeft();
                 }
                 else if (parts[1].equals("r")) {
                     // The flag is on the right side of the field
-                    x = Settings.FIELD().right;
+                    x = Settings.FIELD().getRight();
                 }
                 // Set the vertical value
                 if (parts[2].equals("t")) {
                     // The flag is at the top of the field
-                    y = Settings.FIELD().top;
+                    y = Settings.FIELD().getTop();
                 }
                 else if (parts[2].equals("b")) {
                     // The flag is at the bottom of the field
-                    y = Settings.FIELD().bottom;
+                    y = Settings.FIELD().getBottom();
                 }
             }
         }
@@ -136,11 +136,11 @@ public class Flag extends StationaryObject {
             // Set the horizontal value
             if (parts[1].equals("l")) {
                 // The flag is on the left side of the physical boundary
-                x = Settings.PHYSICAL_BOUNDARY().left;
+                x = Settings.PHYSICAL_BOUNDARY().getLeft();
             }
             else if (parts[1].equals("r")) {
                 // The flag is on the right side of the physical boundary
-                x = Settings.PHYSICAL_BOUNDARY().right;
+                x = Settings.PHYSICAL_BOUNDARY().getRight();
             }
             else if (parts[2].equals("l")) {
                 // The flag is on the left half of the physical boundary
@@ -153,11 +153,11 @@ public class Flag extends StationaryObject {
             // Set the vertical value
             if (parts[1].equals("t")) {
                 // The flag is on the top side of the physical boundary
-                y = Settings.PHYSICAL_BOUNDARY().top;
+                y = Settings.PHYSICAL_BOUNDARY().getTop();
             }
             else if (parts[1].equals("b")) {
                 // The flag is on the bottom side of the physical boundary
-                y = Settings.PHYSICAL_BOUNDARY().bottom;
+                y = Settings.PHYSICAL_BOUNDARY().getBottom();
             }
             else if (parts[2].equals("t")) {
                 // The flag is on the top half of the field

@@ -4,6 +4,7 @@ build/
 # Eclipse files
 .classpath
 .project
+.metadata/
 
 # Soccer server files
 *.rcg
