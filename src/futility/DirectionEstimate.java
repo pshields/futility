@@ -8,6 +8,13 @@ public class DirectionEstimate extends Estimate {
         initialConfidence = 0;
     }
     
+    public DirectionEstimate(DirectionEstimate estimate) {
+        this.direction = estimate.getDirection();
+        this.initialConfidence = estimate.getInitialConfidence();
+        this.keepConfidenceForever = estimate.getKeepConfidenceForever();
+        this.timeEstimated = estimate.getTimeEstimated();
+    }
+    
     public DirectionEstimate(double direction, boolean forever) {
         if (forever) {
             this.setForever(direction);

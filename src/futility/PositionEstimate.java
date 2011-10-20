@@ -6,6 +6,13 @@ public class PositionEstimate extends Estimate {
     public PositionEstimate() {
     }
     
+    public PositionEstimate(PositionEstimate estimate) {
+        this.position.update(estimate.getPosition());
+        this.initialConfidence = estimate.getInitialConfidence();
+        this.timeEstimated = estimate.getTimeEstimated();
+        this.keepConfidenceForever = estimate.getKeepConfidenceForever();
+    }
+    
     public PositionEstimate(double x, double y, double confidence, boolean keepConfidenceForever) {
         this.position.update(x, y);
         this.initialConfidence = confidence;

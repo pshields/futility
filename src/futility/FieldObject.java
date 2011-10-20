@@ -37,14 +37,13 @@ public abstract class FieldObject extends GameObject {
     }
     
     public void copyFieldObject(FieldObject copy){
-    	this.directionTo = copy.directionTo;
+    	this.lastSeenAngleTo = copy.lastSeenAngleTo;
     	this.distanceTo = copy.distanceTo;
-    	this.position.x = copy.position.x;
-    	this.position.y = copy.position.y;
+    	this.position = new PositionEstimate(copy.position);
     	this.distanceChange = copy.distanceChange;
     	this.directionChange = copy.directionChange;
-    	this.bodyFacingDir = copy.bodyFacingDir;
-    	this.headFacingDir = copy.headFacingDir;
+    	this.bodyFacing = copy.bodyFacing;
+    	this.headFacing = copy.headFacing;
     	this.id = copy.id;
     	this.timeLastSeen = copy.timeLastSeen;
     }
