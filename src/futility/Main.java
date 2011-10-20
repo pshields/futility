@@ -1,5 +1,16 @@
+/** @file Main.java
+ * Start-up routines for initializing the F(Utility) RoboCup Soccer Client.
+ * 
+ * @author Team F(utility)
+ * @date 20 October 2011
+ */
+
 package futility;
 
+/** @class Main
+ * Contains start-up subroutines for initializing the game client according to
+ * specified command-line parameters.
+ */
 public class Main {
     
     /** Main function
@@ -14,19 +25,22 @@ public class Main {
     * @param args command-line arguments
     */
    public static void main(String[] args) {
+       boolean customStart = false;
        for (int i = 0; i < args.length; i++ )
        {
            // Depending on these settings, initalize one or more clients
            if (args[i].equals("-c") || args[i].equals("--compete")) {
+               customStart = true;
                startTeam(args);
                startTeam(args, Settings.OTHER_TEAM_NAME);
            }
            else if (args[i].equals("-s") || args[i].equals("--start-team")) {
+               customStart = true;
                startTeam(args);
            }
-           else {
-               initClient(args);
-           }
+       }
+       if (!customStart) {
+           initClient(args);
        }
    }
    

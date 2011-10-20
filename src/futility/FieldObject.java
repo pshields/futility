@@ -1,81 +1,209 @@
-// Represents a physical object positioned somewhere on the field. Used by the
-// client to model states.
+/** @file FieldObject.java
+ * Represents a physical object positioned somewhere on the field. Used by the
+ * client to model states.
+ * 
+ * @author Team F(utility)
+ * @date 20 October 2011
+ */ 
 
 package futility;
 
+/** @class FieldObject
+ * Extension of GameObject; represents a given object on the playing field
+ *
+ */
 public abstract class FieldObject extends GameObject {
-    public double direction = 0; // Assume things face east
-    public Point position;
-    public String id = "UNKNOWN_NO_ID";
+    public double distanceTo = 0;
+    public double lastSeenAngleTo = 0; // Assume things face east, degrees
+    public double distanceChange = 0;
+    public DirectionEstimate direction = new DirectionEstimate();
+    public double directionChange = 0;
+    public double bodyFacing = 0; //degrees
+    public double headFacing = 0; 
+    public PositionEstimate position = new PositionEstimate();
+    public String id = "UNKNOWN_ID";
+    
+    // Variables used by the player with the brain
     public int timeLastSeen = -1;
+    public DirectionEstimate angleToLastSeen = new DirectionEstimate();
+    public double distanceToLastSeen = -1;
     
-    public FieldObject() {
-        position = new Point();
-    }
-    
-    public FieldObject(double x, double y) {
-        position = new Point(x, y);
-    }
-    
-    /** Get the angle from the current object to another
-     * 
-     * Assumes base angle is this object's body angle, if not specified
+    /**
+     * Default constructor, initializes the field object with default values.
      */
-    public final double angleTo(FieldObject object) {
-        double angle = Math.atan(deltaY(object)/deltaX(object)) - this.direction;
-        if (Double.isNaN(angle)) {
-            angle = 0;
+    public FieldObject() {
+    }
+    
+    /**
+     * Initializes a field object at the given coordinates.
+     * 
+     * @param x the x-coordinate
+     * @param y the y-coordinate
+     */
+    public FieldObject(double x, double y) {
+        position.setPosition(x, y);
+    }
+    
+    /**
+     * Initializes this field object as a deep copy of the given field object.
+     * 
+     * @param copy the given field object to copy
+     */
+    public FieldObject(FieldObject copy){
+    	copyFieldObject(copy);
+    }
+
+    /**
+     * Builds a deep copy of the given field object.
+     * 
+     * @param copy the given field object to copy.
+     */
+    public void copyFieldObject(FieldObject copy){
+    	this.lastSeenAngleTo = copy.lastSeenAngleTo;
+    	this.distanceTo = copy.distanceTo;
+    	this.position = new PositionEstimate(copy.position);
+    	this.distanceChange = copy.distanceChange;
+    	this.directionChange = copy.directionChange;
+    	this.bodyFacing = copy.bodyFacing;
+    	this.headFacing = copy.headFacing;
+    	this.id = copy.id;
+    	this.timeLastSeen = copy.timeLastSeen;
+    }
+    
+    /**
+     * Calculates the absolute angle from this object to the given field
+     * object. The angle is retrieved using the formula:
+     * \f$angle = \arctan\left(\frac{y_2-y_1}{x_2-x_1}\right)\f$
+     * 
+     * @param object the given field object to calculate an angle against.
+     * @return
+     */
+    public final double absoluteAngleTo(FieldObject object) {
+        double angle;
+        double dx = this.deltaX(object);
+        double dy = this.deltaY(object);
+        // If the objects have the same x-coordinate, arctangent will fail
+        // We handle that case independently here
+        if (dx == 0) {
+            if (dy >= 0) {
+                angle = 90;
+            }
+            else {
+                angle = -90;
+            }
+        }
+        // In all other cases, arctangent produces the correct angle
+        else {
+            angle = Math.toDegrees(Math.atan(dy/dx));
+        }
+        // Simply the angle
+        while (angle > 180) {
+            angle -= 360;
+        }
+        while (angle < -180) {
+            angle += 360;
         }
         return angle;
     }
     
-    /** Get the angle from the current object to a global angle
+    /**
+     * Gets the offset from the current object's direction to another object.
      * 
-     * @param direction the global angle
-     * @return the angle in degrees to turn in order to face the global angle
+     * @return an offset in degrees from this object's direction to the other
+     * object
      */
-    public final double angleTo(double direction) {
-        double deltaAngle = direction - this.direction;
-        while (deltaAngle < 0) {
-            deltaAngle += 360;
+    public final double relativeAngleTo(FieldObject object) {
+        double angle = this.absoluteAngleTo(object) - this.direction.getDirection();
+        // Simplify the angle
+        while (angle > 180) {
+            angle -= 360;
         }
-        while (deltaAngle > 360) {
-            deltaAngle -= 360;
+        while (angle < -180) {
+            angle += 360;
         }
-        return deltaAngle;
+        return angle;
     }
     
-    /** Get the distance from the current object to another
+    /**
+     * Gets a circle for triangulation. The circle's radius is the last known
+     * distance to the object.
      * 
-     * @param object
-     * @return the distance from the current object to another
+     * @return a circle with radius equal to the last known distance to this 
+     * object from the player with the brain
+     */
+    public final Circle asCircle() {
+        return new Circle(this.position.getPosition(), this.distanceToLastSeen);
+    }
+    
+    /**
+     * Gets the distance from this object to the given field object.
+     * Distance formula: \f$dist = \sqrt{\(x_2-x_1\)^2 + \(y_2-y_1\)^2}\f$
+     * 
+     * @param object the given field object
+     * @return the distance from the this object to the given field object
      */
     public double distanceTo(FieldObject object) {
-        return Math.hypot(deltaX(object), deltaY(object)); 
+        double dx = this.deltaX(object);
+        double dy = this.deltaY(object);
+        return Math.hypot(dx, dy); 
     }
     
-    /** Get the difference in x coordinates from the current object to another
+    /**
+     * Gets the difference in x coordinates from this object to the given object.
      * 
-     * @return the difference in x coordinates from the current object to another
+     * @return the difference in x coordinates from this object to the given object.
      */
     public double deltaX(FieldObject object) {
-        return object.position.x - this.position.x;
+        double x0 = this.position.getPosition().getX();
+        double x1 = object.position.getPosition().getX();
+        return x1 - x0;
     }
     
-    /** Get the difference in y coordinates from the current object to another
+    /**
+     * Gets the difference in y coordinates from this object to the given object.
      * 
-     * @return the difference in y coordinates from the current object to another
+     * @return the difference in y coordinates from this object to the given object
      */
     public double deltaY(FieldObject object) {
-        return object.position.y - this.position.y;
+        double y0 = this.position.getPosition().getY();
+        double y1 = object.position.getPosition().getY();
+        return y1 - y0;
     }
     
-    /** Check if the field object is within a given rectangle boundary
+    /**
+     * Gets if this object is within the given rectangle boundary.
      * 
-     * @param rectangle a Rectangle object to check if the object is in
-     * @return true if in the specified Rectangle
+     * @param rectangle a rectangle to check if this object is in
+     * @return true if this object is in the rectangle
      */
     public boolean inRectangle(Rectangle rectangle) {
         return rectangle.contains(this);
+    }
+    
+    /**
+     * Gets whether this object is a StationaryObject.
+     * @return whether it is or not
+     */
+    public boolean isStationaryObject() {
+        return false;
+    }
+    
+    /**
+     * Gets the angle between this object's direction and the given direction.
+     * 
+     * @param direction an angle in degrees on the standard unit circle
+     * @return an offset which could be added to this object's direction to
+     * yield the given direction
+     */
+    public final double relativeAngleTo(double direction) {
+        double offset = direction - this.direction.getDirection();
+        // Simplify the offset so that it is within [-180, 180] degrees
+        while (offset > 180) {
+            offset -= 360;
+        }
+        while (offset < -180) {
+            offset += 360;
+        }
+        return offset;
     }
 }
