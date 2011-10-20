@@ -42,8 +42,13 @@ public class PositionEstimate extends Estimate {
     }
     
     public final void update(double x, double y, double confidence, int time) {
+        Point oldPosition = new Point(this.position.getX(), this.position.getY());
         this.initialConfidence = confidence;
         this.timeEstimated = time;
         this.position.update(x, y);
+        double distance = this.position.distanceTo(oldPosition);
+        if (distance > 10) {
+            System.err.println("Updated position by " + Double.toString(distance));
+        }
     }
 }
