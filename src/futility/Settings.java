@@ -21,7 +21,8 @@ public class Settings {
     public static final double FIELD_HEIGHT = 68.0;
     public static final double FIELD_BUFFER = 5.0;
     public static final double GOAL_HEIGHT = 14.02;
-    public static final double PENALTY_AREA_DISTANCE = 16.5; // Unconfirmed
+    public static final double PENALTY_AREA_WIDTH = 16.5; // 97.4% confirmed in robocup; based on size of actual field
+    public static final double PENALTY_AREA_HEIGHT = 40.3; // 97.4% confirmed in robocup; based on size of actual field
     
     // Other constants
     public static final char LEFT_SIDE = 'l';
@@ -63,11 +64,11 @@ public class Settings {
     }
     
     public static Rectangle PENALTY_AREA_LEFT() {
-        return new Rectangle(FIELD_BUFFER + FIELD_HEIGHT / 2.0 + GOAL_HEIGHT / 2.0 + PENALTY_AREA_DISTANCE, FIELD_BUFFER + PENALTY_AREA_DISTANCE, FIELD_BUFFER - GOAL_HEIGHT / 2 - PENALTY_AREA_DISTANCE, FIELD_BUFFER);
+        return new Rectangle(FIELD_BUFFER + FIELD_HEIGHT / 2.0 + PENALTY_AREA_HEIGHT / 2.0, FIELD_BUFFER + PENALTY_AREA_WIDTH, FIELD_BUFFER + FIELD_HEIGHT / 2.0 - PENALTY_AREA_HEIGHT / 2.0, FIELD_BUFFER);
     }
     
     public static Rectangle PENALTY_AREA_RIGHT() {
-        return new Rectangle(FIELD().getCenter().getY() + (GOAL_HEIGHT / 2) + PENALTY_AREA_DISTANCE, FIELD().getRight(), FIELD().getCenter().getY() - GOAL_HEIGHT - PENALTY_AREA_DISTANCE, FIELD().getRight() - PENALTY_AREA_DISTANCE);
+        return new Rectangle(FIELD().getCenter().getY() + PENALTY_AREA_HEIGHT / 2.0, FIELD().getRight(), FIELD().getCenter().getY() - PENALTY_AREA_HEIGHT / 2.0, FIELD().getRight() - PENALTY_AREA_WIDTH);
     }
     
     // List of known game-state play modes
