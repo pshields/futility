@@ -1,5 +1,16 @@
+/** @file Main.java
+ * Start-up routines for initializing the F(Utility) RoboCup Soccer Client.
+ * 
+ * @author Team F(utility)
+ * @date 20 October 2011
+ */
+
 package futility;
 
+/** @class Main
+ * Contains start-up subroutines for initializing the game client according to
+ * specified command-line parameters.
+ */
 public class Main {
     
     /** Main function
