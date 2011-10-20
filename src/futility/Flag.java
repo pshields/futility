@@ -95,7 +95,7 @@ public class Flag extends StationaryObject {
                 }
                 else if (parts[1].equals("b")) {
                     x = Settings.PHYSICAL_BOUNDARY().getCenter().getX();
-                    y = Settings.PHYSICAL_BOUNDARY().getTop();
+                    y = Settings.PHYSICAL_BOUNDARY().getBottom();
                 }
                 else if (parts[1].equals("l")) {
                     x = Settings.PHYSICAL_BOUNDARY().getLeft();
