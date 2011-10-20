@@ -1,5 +1,17 @@
+/** @file Player.java
+ * Representation of a player object on the game field. May also represent this
+ * game client's player agent.
+ * 
+ * @author Team F(utility)
+ * @date 20 October 2011
+ */
+
 package futility;
 
+/** @class Player
+ * Extension of the MobileObject class that represents a player of a team on
+ * the game field.
+ */
 public class Player extends MobileObject {
     public Brain brain;
     public Client client;
@@ -7,6 +19,10 @@ public class Player extends MobileObject {
     public Team otherTeam = new Team();
     public Team team = new Team();
     
+    /**
+     * Default constructor, builds a Player with no central logic data or
+     * known information.
+     */
     public Player() {
     }
    
@@ -32,10 +48,18 @@ public class Player extends MobileObject {
     	}
     }
     
+    /**
+     * Build a player object on the game field with the given uniform number.
+     * @param number the uniform number of the player.
+     */
     public Player(int number) {
         this.number = number;
     }
     
+    /**
+     * Builds a representation of this game client's player agent.
+     * @param client the interface for network communication
+     */
     public Player(Client client) {
         brain = new Brain(this, client);
         this.client = client;

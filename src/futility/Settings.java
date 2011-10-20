@@ -1,3 +1,11 @@
+/** @file Settings.java
+ * Global variable and settings storage; known server and player parameters
+ * are stored here.
+ * 
+ * @author Team F(utility)
+ * @date 20 October 2011
+ */
+
 package futility;
 
 import java.util.Arrays;
@@ -5,6 +13,10 @@ import java.util.HashSet;
 
 import futility.Settings;
 
+/** @class Settings
+ * Static class that stores all client parameters based on information
+ * known about the simulation.
+ */
 public class Settings {
     public static final boolean DEBUG = false;
     public static final String HOSTNAME = "localhost";
@@ -40,6 +52,15 @@ public class Settings {
     public static final Point INITIAL_POSITION = new Point(-1.0, -1.0);
     public static final Point CENTER_FIELD = new Point(FIELD().left + FIELD_WIDTH/2, FIELD().bottom + FIELD_HEIGHT/2);
     
+    
+    ///////////////////////////////////////////////////////////////////////////
+    //  ENUMERATORS / STRUCTURES
+    ///////////////////////////////////////////////////////////////////////////
+    
+    /** @class Commands
+     * Constant string literals representing the commands a client may send
+     * to the server.
+     */
     public class Commands {
         public static final String BYE = "bye";
         public static final String DASH = "dash";
@@ -48,27 +69,71 @@ public class Settings {
         public static final String TURN = "turn";
     }
     
-    public static Rectangle FIELD() {
-        return new Rectangle(FIELD_BUFFER + FIELD_HEIGHT, FIELD_BUFFER + FIELD_WIDTH, FIELD_BUFFER, FIELD_BUFFER);
-    }
-    
-    public static Rectangle PHYSICAL_BOUNDARY() {
-        return new Rectangle(FIELD_BUFFER * 2.0 + FIELD_HEIGHT, FIELD_BUFFER * 2.0 + FIELD_WIDTH, 0.0, 0.0);
-    }
-    
+    /** @class LOG_LEVELS
+     * Class representing the different verbosity levels for logging messages.
+     */
     public static class LOG_LEVELS {
         static int DEBUG = 2;
         static int INFO = 1;
         static int ERROR = 0;
     }
     
-    public static Rectangle PENALTY_AREA_LEFT() {
-        return new Rectangle(FIELD_BUFFER + FIELD_HEIGHT / 2.0 + GOAL_HEIGHT / 2.0 + PENALTY_AREA_DISTANCE, FIELD_BUFFER + PENALTY_AREA_DISTANCE, FIELD_BUFFER - GOAL_HEIGHT / 2 - PENALTY_AREA_DISTANCE, FIELD_BUFFER);
+    
+    ///////////////////////////////////////////////////////////////////////////
+    //  KNOWN GAME SPACE REGIONS
+    ///////////////////////////////////////////////////////////////////////////
+    
+    /**
+     * Builds a Rectangle object based on the dimensions of the field.
+     * @return a rectangle spanning the playing field.
+     */
+    public static Rectangle FIELD() {
+        return new Rectangle(
+        		FIELD_BUFFER + FIELD_HEIGHT,
+        		FIELD_BUFFER + FIELD_WIDTH,
+        		FIELD_BUFFER,
+        		FIELD_BUFFER);
     }
     
-    public static Rectangle PENALTY_AREA_RIGHT() {
-        return new Rectangle(FIELD().getCenter().getY() + (GOAL_HEIGHT / 2) + PENALTY_AREA_DISTANCE, FIELD().right, FIELD().getCenter().getY() - GOAL_HEIGHT - PENALTY_AREA_DISTANCE, FIELD().right - PENALTY_AREA_DISTANCE);
+    /**
+     * Builds a Rectangle object based on the absolute boundaries of the game space.
+     * @return a rectangle spanning the game space.
+     */
+    public static Rectangle PHYSICAL_BOUNDARY() {
+        return new Rectangle(FIELD_BUFFER * 2.0 + FIELD_HEIGHT,
+        		FIELD_BUFFER * 2.0 + FIELD_WIDTH, 0.0, 0.0);
     }
+    
+    /**
+     * Builds a rectangle representing the penalty region on the left team's 
+     * side of the field.
+     * @return the rectangle spanning the left team's penalty box
+     */
+    public static Rectangle PENALTY_AREA_LEFT() {
+        return new Rectangle(
+        		FIELD_BUFFER + FIELD_HEIGHT / 2.0 + GOAL_HEIGHT / 2.0 + PENALTY_AREA_DISTANCE,
+        		FIELD_BUFFER + PENALTY_AREA_DISTANCE,
+        		FIELD_BUFFER - GOAL_HEIGHT / 2 - PENALTY_AREA_DISTANCE,
+        		FIELD_BUFFER);
+    }
+    
+    /**
+     * Builds a rectangle representing the penalty region on the right team's 
+     * side of the field.
+     * @return the rectangle spanning the right team's penalty box
+     */
+    public static Rectangle PENALTY_AREA_RIGHT() {
+        return new Rectangle(
+        		FIELD().getCenter().getY() + (GOAL_HEIGHT / 2) + PENALTY_AREA_DISTANCE,
+        		FIELD().right,
+        		FIELD().getCenter().getY() - GOAL_HEIGHT - PENALTY_AREA_DISTANCE,
+        		FIELD().right - PENALTY_AREA_DISTANCE);
+    }
+    
+    
+    ///////////////////////////////////////////////////////////////////////////
+    // LOOK-UP TABLES
+    ///////////////////////////////////////////////////////////////////////////
     
     // List of known game-state play modes
     // Look-up table for checking referee messages against any known or
