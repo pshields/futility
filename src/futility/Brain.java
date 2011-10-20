@@ -148,7 +148,7 @@ public class Brain implements Runnable {
     public void dashClockwiseAroundTheField() {
      // First, run to the top of the field
         if (player.inRectangle(Settings.FIELD())) {
-            if (Math.abs(90 - player.direction) > 10) {
+            if (Math.abs(90 - player.directionTo) > 10) {
                 // Turn to face north
                 turnTo(90);
             }
@@ -158,7 +158,7 @@ public class Brain implements Runnable {
         }
         // Then run around clockwise between the physical boundary and the field
         else if (player.position.y > Settings.FIELD().top && player.position.x < Settings.FIELD().right) {
-            if (Math.abs(0 - player.direction) > 10) {
+            if (Math.abs(0 - player.directionTo) > 10) {
                 turnTo(0);                
             }
             else {
@@ -166,7 +166,7 @@ public class Brain implements Runnable {
             }
         }
         else if (player.position.x > Settings.FIELD().right && player.position.y < Settings.FIELD().bottom) {
-            if (Math.abs(270 - player.direction) > 10) {
+            if (Math.abs(270 - player.directionTo) > 10) {
                 turnTo(270);                
             }
             else {
@@ -174,7 +174,7 @@ public class Brain implements Runnable {
             }
         }
         else if (player.position.y < Settings.FIELD().bottom && player.position.x < Settings.FIELD().left) {
-            if (Math.abs(180 - player.direction) > 10) {
+            if (Math.abs(180 - player.directionTo) > 10) {
                 turnTo(180);                
             }
             else {
@@ -182,7 +182,7 @@ public class Brain implements Runnable {
             }  
         }
         else if (player.position.x < Settings.FIELD().left && player.position.y < Settings.FIELD().top) {
-            if (Math.abs(90 - player.direction) > 10) {
+            if (Math.abs(90 - player.directionTo) > 10) {
                 turnTo(90);                
             }
             else {
@@ -304,7 +304,7 @@ public class Brain implements Runnable {
                     if (openParentheses == 1) {
                         endIndex = i; // This character marks the last character in an ObjectInfo string
                         // Now parse the ObjectInfo
-                        parseObjectInfo(message.substring(beginIndex, endIndex));
+                        parseSeenObject(message.substring(beginIndex, endIndex + 1));
                     }
                     openParentheses--;
                 }
@@ -332,38 +332,149 @@ public class Brain implements Runnable {
     }
     
     /** Parse and handle an ObjectInfo string
-     * 
+     * <br>
      * Parse an ObjectInfo string and update our beliefs about the associated
-     * object.
-     *
+     * object. Objects must fit the following format to be properly parsed.
+     *<br>
+     *  ObjInfo ::= (ObjName Distance Direction DistChange DirChange BodyFacingDir HeadFacingDir ) <br>
+		| (ObjName Distance Direction DistChange DirChange <br>
+		| (ObjName Distance Direction) <br>
+		| (ObjName Direction) <br>
+		ObjName ::= (p ["Teamname" [UniformNumber [goalie]]]) <br>
+		| (b) <br>
+		| (g [l|r]) <br>
+		| (f c) <br>
+		| (f [l|c|r] [t|b]) <br>
+		| (f p [l|r] [t|c|b]) <br>
+		| (f g [l|r] [t|b]) <br>
+		| (f [l|r|t|b] 0) <br>
+		| (f [t|b] [l|r] [10|20|30|40|50]) <br>
+		| (f [l|r] [t|b] [10|20|30]) <br>
+		| (l [l|r|t|b]) <br>
+		| (B) <br>
+		| (F)<br>
+		| (G) <br>
+		| (P) <br>
+		Distance ::= positive real number <br>
+		Direction ::= -180 to 180 degrees <br>
+		DistChange ::= real number <br>
+		DirChange ::= real number <br>
+		HeadFaceDir ::= -180 to 180 degrees <br>
+		BodyFaceDir ::= -180 to 180 degrees <br>
+		Teamname ::= string <br>
+		UniformNumber ::= 1-11 <br>
      * @param content the ObjectInfo string
      * @return none
      */
-    public final void parseObjectInfo(String objectInfo) {
+    public final void parseSeenObject(String objectInfo) {
         // First, identify the object name.
         int i = 2;
         while (objectInfo.charAt(i) != ')') {
             i++;
         }
         String id = objectInfo.substring(1, i+1); // id is the object name
+        String values = objectInfo.substring(i + 2).replaceAll("\\)", ""); // the remaining arguments, no leading whitespace
+        String[] args = values.split(" ");
+        
         justSeenObjects.add(id);
+        
+        FieldObject obj = createFieldObject(id);
+        if(obj == null) return; //yet unsupported object or an error
+        obj.timeLastSeen = time;
+        switch(args.length){
+        case 1:
+        	obj.directionTo = Double.valueOf(args[0]);
+        	break;
+        case 6:
+        	obj.headFacingDir = Double.valueOf(args[5]);
+        	obj.bodyFacingDir = Double.valueOf(args[4]);
+        case 4:
+        	obj.directionChange = Double.valueOf(args[3]);
+        	obj.distanceChange = Double.valueOf(args[2]);
+        case 2:
+        	obj.distanceTo = Double.valueOf(args[0]);
+        	obj.directionTo = Double.valueOf(args[1]);  
+        	break;
+        default:
+        	player.client.log(Settings.LOG_LEVELS.ERROR, "Invalid number of arguments for a FieldObject");
+        	return;
+        }
         
         if (fieldObjects.containsKey(id)) {
             // Update our conception of the field object
+            
             FieldObject object = fieldObjects.get(id);
-            object.timeLastSeen = time;
+            object.copyFieldObject(obj);
+            
+            player.client.log(Settings.LOG_LEVELS.DEBUG, "Just updated field object with name " + object.id);
             // TODO Update our conception of player /ball positions
         }
         else {
-            // TODO Parse players
-            // TODO Parse ball
-            // TODO Parse goal
-            player.client.log(Settings.LOG_LEVELS.ERROR, "I just saw " + id + " but I couldn't find it in the HashMap!");
-            //player.client.log(Settings.LOG_LEVELS.DEBUG, "HashMap size: "+fieldObjects.size());
+        	fieldObjects.put(id, obj);
+            player.client.log(Settings.LOG_LEVELS.DEBUG, "Just added " + id + " to the HashMap!");
         }
     }
     
-    /** Reset the player's time-step specific knowledge
+    /**
+     * Given a valid soccer server object name this method returns a proper FieldObject
+     * @param name - meets the following criteria <br>
+     * ObjName ::= (p ["Teamname" [UniformNumber [goalie]]]) <br>
+		| (b) <br>
+		| (g [l|r]) <br>
+		| (f c) <br>
+		| (f [l|c|r] [t|b]) <br>
+		| (f p [l|r] [t|c|b]) <br>
+		| (f g [l|r] [t|b]) <br>
+		| (f [l|r|t|b] 0) <br>
+		| (f [t|b] [l|r] [10|20|30|40|50]) <br>
+		| (f [l|r] [t|b] [10|20|30]) <br>
+		| (l [l|r|t|b]) <br>
+		| (B) <br>
+		| (F)<br>
+		| (G) <br>
+		| (P) <br>
+     * @return a FieldObject based off the name
+     */
+    private FieldObject createFieldObject(String name) {
+		if(name.startsWith("(b")){
+			return new Ball();
+		}
+		else if(name.startsWith("(p")){
+			return new Player(name);
+		}
+		else if(name.startsWith("(g")){
+			return new Goal(name);
+		}
+		else if(name.startsWith("(f")){
+			return new Flag(name);
+		}
+		else if(name.startsWith("(l")){
+			//TODO return whatever an l is
+			return null;
+		}
+		else if(name.startsWith("(B")){
+			//TODO return whatever a B is
+			return null;
+		}
+		else if(name.startsWith("(F")){
+			//TODO return whatver an F is
+			return null;
+		}
+		else if(name.startsWith("(G")){
+			//TODO return whatever a G is
+			return null;
+		}
+		else if(name.startsWith("(P")){
+			//TODO return whatever a P is
+			return null;
+		}
+		else{
+			player.client.log(Settings.LOG_LEVELS.ERROR, "invalid name detected for see parse");
+			return null;
+		}
+	}
+
+	/** Reset the player's time-step specific knowledge
      * 
      * At the end of the turn, some variables need to be reset, such as the
      * list of field objects seen in the current timestep. We do that here.
