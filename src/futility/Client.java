@@ -1,3 +1,9 @@
+/** @file Client.java
+ * Network agent that handles UDP communication with the game server.
+ * @author Team F(utility)
+ * @date 20 October 2011
+ */
+
 package futility;
 
 import java.io.IOException;
@@ -9,6 +15,10 @@ import java.net.UnknownHostException;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+/** @class Client
+ * Network client that initializes a connection to the robocup soccer server.
+ * All UDP communication is handled by this class.
+ */
 public class Client {
     public boolean debugMode = Settings.DEBUG;
     public boolean hideReceivedMessages = false;
@@ -107,7 +117,7 @@ public class Client {
      * Allows the inclusion of a verbosity value with a message
      * 
      * @param verbosity the minimum verbosity level the message should display at
-     * @param message
+     * @param message the message to display
      */
     public void log(int verbosity, String message) {
         if (this.verbosity >= verbosity) {
@@ -134,9 +144,9 @@ public class Client {
         soccerServerSocket.close();
     }
     
-    /** Receive a message from the server
+    /** Receive a message from the soccer server
      * 
-     * @return
+     * @return message sent by the server
      */
     public String receiveMessage() {
         byte[] buffer = new byte[Settings.MSG_SIZE];
@@ -171,9 +181,9 @@ public class Client {
     }
     
     /**
-     * Send a message to the soccer server
+     * Sends a message to the soccer server.
      * 
-     * @param message
+     * @param message to send to the server
      */
     private void sendMessage(String message) {
         if (debugMode || (verbosity >= 1)) {

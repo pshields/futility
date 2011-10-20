@@ -1,8 +1,17 @@
-// Represents a physical object positioned somewhere on the field. Used by the
-// client to model states.
+/** @file FieldObject.java
+ * Represents a physical object positioned somewhere on the field. Used by the
+ * client to model states.
+ * 
+ * @author Team F(utility)
+ * @date 20 October 2011
+ */ 
 
 package futility;
 
+/** @class FieldObject
+ * Extension of GameObject; represents a given object on the playing field
+ *
+ */
 public abstract class FieldObject extends GameObject {
     public double distanceTo = 0;
     public double lastSeenAngleTo = 0; // Assume things face east, degrees
@@ -19,6 +28,9 @@ public abstract class FieldObject extends GameObject {
     public DirectionEstimate angleToLastSeen = new DirectionEstimate();
     public double distanceToLastSeen = -1;
     
+    /**
+     * Default constructor, initializes the field object with default values.
+     */
     public FieldObject() {
     }
     
@@ -32,10 +44,20 @@ public abstract class FieldObject extends GameObject {
         position.setPosition(x, y);
     }
     
+    /**
+     * Initializes this field object as a deep copy of the given field object.
+     * 
+     * @param copy the given field object to copy
+     */
     public FieldObject(FieldObject copy){
     	copyFieldObject(copy);
     }
-    
+
+    /**
+     * Builds a deep copy of the given field object.
+     * 
+     * @param copy the given field object to copy.
+     */
     public void copyFieldObject(FieldObject copy){
     	this.lastSeenAngleTo = copy.lastSeenAngleTo;
     	this.distanceTo = copy.distanceTo;
@@ -48,6 +70,14 @@ public abstract class FieldObject extends GameObject {
     	this.timeLastSeen = copy.timeLastSeen;
     }
     
+    /**
+     * Calculates the absolute angle from this object to the given field
+     * object. The angle is retrieved using the formula:
+     * \f$angle = \arctan\left(\frac{y_2-y_1}{x_2-x_1}\right)\f$
+     * 
+     * @param object the given field object to calculate an angle against.
+     * @return
+     */
     public final double absoluteAngleTo(FieldObject object) {
         double angle;
         double dx = this.deltaX(object);
@@ -107,6 +137,7 @@ public abstract class FieldObject extends GameObject {
     
     /**
      * Gets the distance from this object to the given field object.
+     * Distance formula: \f$dist = \sqrt{\(x_2-x_1\)^2 + \(y_2-y_1\)^2}\f$
      * 
      * @param object the given field object
      * @return the distance from the this object to the given field object
