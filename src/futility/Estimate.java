@@ -5,7 +5,15 @@ public class Estimate {
     protected int timeEstimated = -1;
     protected boolean keepConfidenceForever = false;
     
+    public double getInitialConfidence() {
+        return this.initialConfidence;
+    }
+    
+    public boolean getKeepConfidenceForever() {
+        return this.keepConfidenceForever;
+    }
+    
     public int getTimeEstimated() {
-        return timeEstimated;
+        return this.timeEstimated;
     }
 }

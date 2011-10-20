@@ -382,7 +382,7 @@ public class Brain implements Runnable {
                     if (openParentheses == 1) {
                         endIndex = i + 1; // This character marks the last character in an ObjectInfo string
                         // Now parse the ObjectInfo
-                        String objectId = parseObjectInfo(message.substring(beginIndex, endIndex));
+                        String objectId = this.parseSeenObject(message.substring(beginIndex, endIndex));
                         justSeenObjectIds.add(objectId);
                     }
                     openParentheses--;
@@ -457,15 +457,15 @@ public class Brain implements Runnable {
         String[] args = values.split(" ");
 
         FieldObject obj = createFieldObject(id);
-        if(obj == null) return; //yet unsupported object or an error
+        if(obj == null) return id; //yet unsupported object or an error
         obj.timeLastSeen = time;
         switch(args.length){
         case 1:
-        	obj.angleToLastSeen.update(Double.valueOf(args[0]), time);
+        	obj.angleToLastSeen.update(Double.valueOf(args[0]), 0.95,  time);
         	break;
         case 6:
-        	obj.headFacing.update(Double.valueOf(args[5]), time);
-        	obj.bodyFacing.update(Double.valueOf(args[4]), time);
+        	obj.headFacing = Double.valueOf(args[5]);
+        	obj.bodyFacing = Double.valueOf(args[4]);
         case 4:
         	obj.directionChange = Double.valueOf(args[3]);
         	obj.distanceChange = Double.valueOf(args[2]);
@@ -474,11 +474,11 @@ public class Brain implements Runnable {
         	// Since the soccer server presents items to the right with
         	// with positive angles, we reverse the angle before storing
         	// so its fits with our unit circle model.
-        	obj.angleToLastSeen.update(-Double.valueOf(args[1]), time);  
+        	obj.angleToLastSeen.update(-Double.valueOf(args[1]), 0.95,  time);  
         	break;
         default:
         	player.client.log(Settings.LOG_LEVELS.ERROR, "Invalid number of arguments for a FieldObject");
-        	return;
+        	return id;
         }
         
         if (fieldObjects.containsKey(id)) {
@@ -494,6 +494,7 @@ public class Brain implements Runnable {
         	fieldObjects.put(id, obj);
             player.client.log(Settings.LOG_LEVELS.DEBUG, "Just added " + id + " to the HashMap.");
         }
+        return id;
     }
     
     /**
@@ -700,34 +701,5 @@ public class Brain implements Runnable {
             // naturally decrease with time. If it gets really low, it
             // will switch to a 'look around' strategy.
         }
-    }
-    
-    private final Strategy getOptimalStrategy() {
-        Strategy optimalStrategy = this.currentStrategy;
-        double bestUtility = 0;
-        for (Strategy strategy : Strategy.values()) {
-            double utility = this.getUtility(strategy);
-            if (utility > bestUtility) {
-                bestUtility = utility;
-                optimalStrategy = strategy;
-            }
-        }
-        return optimalStrategy;
-    }
-    
-    private final double getUtility(Strategy strategy) {
-        double utility = 0;
-        switch (strategy) {
-            case DASH_AROUND_THE_FIELD_COUNTERCLOCKWISE:
-                utility = 0.3;
-                break;
-            case LOOK_AROUND:
-                utility = 1 - ( 1 / (1 + this.player.position.getConfidence(this.time)));
-                break;
-            default:
-                utility = 0;
-                break;
-        }
-        return utility;
     }
 }
