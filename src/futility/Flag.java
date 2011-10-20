@@ -1,5 +1,15 @@
+/** @file Flag.java
+ * Representation of a flag object on the visible playing field.
+ * 
+ * @author Team F(utility)
+ * @date 20 October 2011
+ */
+
 package futility;
 
+/** @class Flag
+ * An extension of StationaryObject that represents a visible flag on the field
+ */
 public class Flag extends StationaryObject {
     
     /** Flag constructor from ObjectInfo string

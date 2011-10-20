@@ -1,10 +1,36 @@
+/** @file Brain.java
+ * Player agent's central logic and memory center.
+ * @author Team F(utility)
+ * @date 20 October 2011
+ */
+
 package futility;
 
 import java.util.ArrayDeque;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 
+/** @class Brain
+ * Threaded class that contains the player agent's sensory data parsing and
+ * strategy computation algorithms.
+ */
 public class Brain implements Runnable {
+    /**
+     * Enumerator representing the possible strategies that may be used by this
+     * player agent.
+     * 
+     * DASH_AROUND_THE_FIELD_COUNTERCLOCKWISE tells the player to dash around
+     *   the field boundaries counter-clockwise.
+     * LOOK_AROUND tells the player to look around itself.
+     */
+    public enum Strategy {
+        DASH_AROUND_THE_FIELD_COUNTERCLOCKWISE,
+        LOOK_AROUND
+    }
+	
+    ///////////////////////////////////////////////////////////////////////////
+    // MEMBER VARIABLES
+    ///////////////////////////////////////////////////////////////////////////
     private boolean canSeeBall;  // TODO Remove eventually
     private boolean canSeeGoal;  // TODO Remove eventually
     
@@ -26,20 +52,23 @@ public class Brain implements Runnable {
     private String collision = "none";
     
     // Object models
-    public Rectangle field = new Rectangle(Settings.FIELD_BUFFER + Settings.FIELD_HEIGHT, Settings.FIELD_BUFFER + Settings.FIELD_WIDTH, Settings.FIELD_BUFFER, Settings.FIELD_BUFFER);
+    public Rectangle field = new Rectangle(
+    		Settings.FIELD_BUFFER + Settings.FIELD_HEIGHT,
+    		Settings.FIELD_BUFFER + Settings.FIELD_WIDTH,
+    		Settings.FIELD_BUFFER, Settings.FIELD_BUFFER);
     public MobileObject ball = new MobileObject();
     public StationaryObject goal = new StationaryObject();
     
-    LinkedHashMap<String, FieldObject> fieldObjects = new LinkedHashMap<String, FieldObject>(Settings.INITIAL_HASH_MAP_SIZE);
+    LinkedHashMap<String, FieldObject> fieldObjects =
+    		new LinkedHashMap<String, FieldObject>(
+    				Settings.INITIAL_HASH_MAP_SIZE);
     ArrayDeque<String> hearMessages = new ArrayDeque<String>();
 
     private Strategy currentStrategy = Strategy.LOOK_AROUND;
-    
-    public enum Strategy {
-        DASH_AROUND_THE_FIELD_COUNTERCLOCKWISE,
-        LOOK_AROUND
-    }
 
+    ///////////////////////////////////////////////////////////////////////////
+    // CONSTRUCTORS
+    ///////////////////////////////////////////////////////////////////////////
     /**
      * This is the primary constructor for the Brain class.
      * 
@@ -57,12 +86,13 @@ public class Brain implements Runnable {
         }
     }
     
-    /** A rough estimate of whether the player can kick the ball
+    ///////////////////////////////////////////////////////////////////////////
+    // GAME LOGIC
+    ///////////////////////////////////////////////////////////////////////////
+    /** A rough estimate of whether the player can kick the ball, dependent
+     * on its distance to the ball and whether it is inside the playing field.
      * 
-     * Return true if the player is on the field and within the kickable
-     * distance of the ball.
-     * 
-     * @return
+     * @return true if the player is on the field and within kicking distance
      */
     public final boolean canKickBall() {
         if (!player.inRectangle(field)) {
@@ -514,7 +544,8 @@ public class Brain implements Runnable {
 	}
     
     /**
-     * Responds for the current time step. This method is called every 100ms.
+     * Responds for the current time step. This method is called every
+     * time-step as established by the game client (default 100ms).
      */
     public void run() {
         // Possibly update the current strategy

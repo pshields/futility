@@ -1,3 +1,7 @@
+/** @file Circle.java
+ * Represents a circle of ...
+ */
+
 package futility;
 
 public class Circle {
@@ -9,6 +13,11 @@ public class Circle {
         this.radius = radius;
     }
     
+    /**
+     * Gets the distance to the specified point from the border of the circle.
+     * @param point the given point
+     * @return the distance to the given point from this circle's border
+     */
     public double closestDistanceTo(Point point) {
         return this.centroid.distanceTo(point) - this.radius;
     }
