@@ -1,7 +1,7 @@
 /** @file PositionEstimate.java
  * Position estimates with confidence values.
+ * 
  * @author Team F(utility)
- * @date 20 October 2011
  */
 package futility;
 

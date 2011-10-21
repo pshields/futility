@@ -1,5 +1,6 @@
 /** @file Goal.java
  * Representation of a visible goal object.
+ * 
  * @author Team F(utility)
  */
 

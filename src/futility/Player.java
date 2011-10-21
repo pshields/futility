@@ -1,27 +1,14 @@
 /** @file Player.java
-<<<<<<< HEAD
  * Representation of a player object on the game field. May also represent this
  * game client's player agent.
  * 
  * @author Team F(utility)
- * @date 20 October 2011
  */
 
 package futility;
 
 /** @class Player
- * Extension of the MobileObject class that represents a player of a team on
- * the game field.
-=======
  * Representation of a player on the field.
- * 
- * @author Team F(utility)
- */
-package futility;
-
-/** @class Player
- * Representation of a player on the field.
->>>>>>> Add comments
  */
 public class Player extends MobileObject {
     public Brain brain;

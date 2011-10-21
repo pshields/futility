@@ -2,7 +2,6 @@
  * Representation of an absolute-coordinate point on a 2D plane.
  * 
  * @author Team F(utility)
- * @date 20 October 2011
  */
 
 package futility;
@@ -25,6 +24,7 @@ public class Point {
 
     /**
      * Constructor, builds a Point object based on the provided coordinates.
+     * 
      * @param x the x-coordinate
      * @param y the y-coordinate
      */
@@ -33,25 +33,44 @@ public class Point {
         this.y = y;
     }
     
-    /** Get the angle between this Point and another Point object.
-     * Assumes base angle is this object's body angle, if not specified.
-     * Formula: <br> \f$angle = \arctan\left(\frac{y_2-y_1}{x_2-x_1}\right)\f$
+    /** 
+     * Gets the angle between this Point and another Point object.
+     * Uses the formula \f$angle = \arctan\left(\frac{y_2-y_1}{x_2-x_1}\right)\f$.
      * 
-     * Assumes base angle is this object's body angle, if not specified
      * @param otherPoint the Point object to consider
-     * @return the angle between this Point and otherPoint.
+     * @return the angle between this Point and otherPoint
      */
-    public final double angleTo(Point otherPoint) {
-        double angle = Math.atan(this.deltaY(otherPoint) / this.deltaX(otherPoint));
-        if (Double.isNaN(angle)) {
-            angle = 0;
+    public final double absoluteAngleTo(Point otherPoint) {
+        double angle;
+        double dx = this.deltaX(otherPoint);
+        double dy = this.deltaY(otherPoint);
+        // If the points have the same x-coordinate, arctangent will fail
+        // We handle that case independently here
+        if (dx == 0) {
+            if (dy >= 0) {
+                angle = 90;
+            }
+            else {
+                angle = -90;
+            }
         }
-
-        return Math.toDegrees(angle);
+        // In all other cases, arctangent produces the correct angle
+        else {
+            angle = Math.toDegrees(Math.atan(dy/dx));
+        }
+        // Simply the angle
+        while (angle > 180) {
+            angle -= 360;
+        }
+        while (angle < -180) {
+            angle += 360;
+        }
+        return angle;
     }
     
-    /** Retrieves the closest Point object to this Point from the provided
-     *  collection of Point objects.
+    /**
+     * Retrieves the closest Point object to this Point from the provided
+     * collection of Point objects.
      * 
      * @param points array of Point objects to consider.
      * @return the Point object closest to this Point.
@@ -71,7 +90,8 @@ public class Point {
         }
     }
     
-    /** Sets this Point's coordinates to the specified coordinates.
+    /**
+     * Sets this Point's coordinates to the specified coordinates.
      * 
      * @param x the x-coordinate
      * @param y the y-coordinate
@@ -81,7 +101,8 @@ public class Point {
         this.y = y;
     }
     
-    /** Copies the specified Point's coordinates to this Point.
+    /**
+     * Copies the specified Point's coordinates to this Point.
      * 
      * @param point the Point object to copy coordinates from.
      */
@@ -90,7 +111,8 @@ public class Point {
         this.y = point.getY();
     }
     
-    /** Gets the x-coordinate.
+    /**
+     * Gets the x-coordinate.
      * 
      * @return the x-coordinate
      */
@@ -98,7 +120,8 @@ public class Point {
         return this.x;
     }
 
-    /** Gets the y-coordinate.
+    /**
+     * Gets the y-coordinate.
      * 
      * @return the y-coordinate
      */
@@ -106,7 +129,8 @@ public class Point {
         return this.y;
     }
     
-    /** Determines if this Point is equivalent to a specified Point object.
+    /**
+     * Determines if this Point is equivalent to a specified Point object.
      * 
      * @param otherPoint the Point to compare this Point to.
      * @return true if the two Points have the same coordinates, otherwise false.
@@ -115,9 +139,10 @@ public class Point {
         return this.getX() == otherPoint.getX() && this.getY() == otherPoint.getY();
     }
     
-    /** Retrieves the difference in x-coordinates between this Point and
-     * another Point object. 
-     * Formula: <br> \f$\delta x = x_2 - x_1\f$
+    /**
+     * Retrieves the difference in x-coordinates between this Point and
+     * another Point object. The formula used is \f$\delta x = x_2 - x_1\f$.
+     * 
      * @param otherPoint the Point object to compute against
      * @return Difference in x-coordinates
      */
@@ -125,9 +150,10 @@ public class Point {
         return otherPoint.getX() - this.getX();
     }
     
-    /** Retrieves the difference in x-coordinates between this Point and
-     * another Point object. 
-     * Formula: <br> \f$\delta y = y_2 - y_1\f$
+    /**
+     * Retrieves the difference in x-coordinates between this Point and
+     * another Point object. The formula used is \f$\delta y = y_2 - y_1\f$.
+     * 
      * @param otherPoint the Point object to compute against
      * @return Difference in x-coordinates
      */
@@ -135,8 +161,9 @@ public class Point {
         return otherPoint.getY() - this.getY();
     }
     
-    /** Retrieves the distance between this Point and another Point object.
-     * Formula: <br> \f$dist = \sqrt{\(\delta x\)^2 + \(\delta y\)^2}\f$
+    /**
+     * Retrieves the distance between this Point and another Point object.
+     * The formula used is \f$dist = \sqrt{\(\delta x\)^2 + \(\delta y\)^2}\f$.
      * 
      * @param otherPoint the Point object to compute against
      * @return Distance between Point objects
@@ -145,10 +172,10 @@ public class Point {
         return Math.hypot(this.deltaX(otherPoint), this.deltaY(otherPoint));
     }
     
-    /** Builds a Point object representing the midpoint between this Point and
-     * a specified Point object.
-     * Formula: <br>
-     * \f$\left(x_n, y_n\right) = \(x_1 + \frac{\delta x}{2}, y_1 + \frac{\delta y}{2}\)\f$
+    /**
+     * Builds a Point object representing the midpoint between this Point and
+     * a specified Point object. The formula used is
+     * \f$\left(x_n, y_n\right) = \(x_1 + \frac{\delta x}{2}, y_1 + \frac{\delta y}{2}\)\f$.
      * 
      * @param otherPoint the Point object to compute against
      * @return a Point object representing the midpoint
@@ -157,7 +184,8 @@ public class Point {
         return new Point(this.getX() + this.deltaX(otherPoint) / 2, this.getY() + this.deltaY(otherPoint) /2);
     }
     
-    /** Builds a formatted textual representation of this Point object.
+    /**
+     * Builds a formatted textual representation of this Point object.
      * 
      * @return a formatted string representation
      */

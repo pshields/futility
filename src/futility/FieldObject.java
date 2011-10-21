@@ -71,38 +71,13 @@ public abstract class FieldObject extends GameObject {
     
     /**
      * Calculates the absolute angle from this object to the given field
-     * object. The angle is retrieved using the formula 
-     * \f$angle = \arctan\left(\frac{y_2-y_1}{x_2-x_1}\right)\f$.
+     * object.
      * 
      * @param object the given field object to calculate an angle against.
      * @return the angle to the object in degrees
      */
     public final double absoluteAngleTo(FieldObject object) {
-        double angle;
-        double dx = this.deltaX(object);
-        double dy = this.deltaY(object);
-        // If the objects have the same x-coordinate, arctangent will fail
-        // We handle that case independently here
-        if (dx == 0) {
-            if (dy >= 0) {
-                angle = 90;
-            }
-            else {
-                angle = -90;
-            }
-        }
-        // In all other cases, arctangent produces the correct angle
-        else {
-            angle = Math.toDegrees(Math.atan(dy/dx));
-        }
-        // Simply the angle
-        while (angle > 180) {
-            angle -= 360;
-        }
-        while (angle < -180) {
-            angle += 360;
-        }
-        return angle;
+        return this.position.getPosition().absoluteAngleTo(object.position.getPosition());
     }
     
     /**

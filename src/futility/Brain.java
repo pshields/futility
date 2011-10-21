@@ -1,5 +1,6 @@
 /** @file Brain.java
  * Player agent's central logic and memory center.
+ * 
  * @author Team F(utility)
  */
 

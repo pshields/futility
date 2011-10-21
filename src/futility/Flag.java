@@ -1,5 +1,6 @@
 /** @file Flag.java
  * Representation of a flag object on the visible playing field.
+ * 
  * @author Team F(utility)
  */
 

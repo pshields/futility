@@ -1,5 +1,6 @@
 /** @file DirectionEstimate.java
  * Confidence in directions.
+ * 
  * @author Team F(utility)
  */
 package futility;

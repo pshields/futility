@@ -1,8 +1,9 @@
 /** @file Estimate.java
  * Estimate values with confidence.
+ * 
  * @author Team F(utility)
- * @date 20 October 2011
  */
+
 package futility;
 
 /** @class Estimate

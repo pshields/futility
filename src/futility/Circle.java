@@ -1,5 +1,6 @@
 /** @file Circle.java
  * A circle class facilitating player triangulation.
+ * 
  * @author Team F(utility)
  */
 
@@ -84,8 +85,8 @@ public class Circle {
             return new Point[] {};
         }
         else if (this.touches(otherCircle)){
-            double dx = Math.cos(Math.toRadians(this.centroid.angleTo(otherCircle.centroid))) * this.getRadius();
-            double dy = Math.sin(Math.toRadians(this.centroid.angleTo(otherCircle.centroid))) * this.getRadius();
+            double dx = Math.cos(Math.toRadians(this.centroid.absoluteAngleTo(otherCircle.centroid))) * this.getRadius();
+            double dy = Math.sin(Math.toRadians(this.centroid.absoluteAngleTo(otherCircle.centroid))) * this.getRadius();
             Point point = new Point(this.centroid.getX() + dx, this.centroid.getY() + dy);
             return new Point[] {point};
         }

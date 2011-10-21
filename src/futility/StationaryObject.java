@@ -3,7 +3,6 @@
  * does not move.
  * 
  * @author Team F(utility)
- * @date 20 October 2011
  */ 
 
 package futility;
@@ -24,6 +23,7 @@ public class StationaryObject extends FieldObject {
     /**
      * Constructor; Builds a StationaryObject with a unique identifying string
      * and the provided coordinates.
+     * 
      * @param id identifying string literal
      * @param x the x-coordinate
      * @param y the y-coordinate
@@ -35,6 +35,7 @@ public class StationaryObject extends FieldObject {
     
     /**
      * Returns true if this is a stationary object.
+     * 
      * @return true
      */
     public boolean isStationaryObject() {
