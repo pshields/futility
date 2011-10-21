@@ -3,7 +3,6 @@
  * are stored here.
  * 
  * @author Team F(utility)
- * @date 20 October 2011
  */
 
 package futility;
@@ -13,7 +12,7 @@ import java.util.HashSet;
 
 import futility.Settings;
 
-/** @class Settings
+/**
  * Static class that stores all client parameters based on information
  * known about the simulation.
  */
@@ -53,7 +52,7 @@ public class Settings {
     public static final Point INITIAL_POSITION = new Point(-1.0, -1.0);
     public static final Point CENTER_FIELD = new Point(FIELD().getLeft() + FIELD_WIDTH/2, FIELD().getBottom() + FIELD_HEIGHT/2);
     
-    /** @class Commands
+    /**
      * Constant string literals representing the commands a client may send
      * to the server.
      */
@@ -67,6 +66,7 @@ public class Settings {
     
     /**
      * Builds a Rectangle object based on the dimensions of the field.
+     * 
      * @return a rectangle spanning the playing field.
      */
     public static Rectangle FIELD() {
@@ -75,13 +75,14 @@ public class Settings {
     
     /**
      * Builds a Rectangle object based on the absolute boundaries of the game space.
+     * 
      * @return a rectangle spanning the game space.
      */
     public static Rectangle PHYSICAL_BOUNDARY() {
         return new Rectangle(FIELD_BUFFER * 2.0 + FIELD_HEIGHT, FIELD_BUFFER * 2.0 + FIELD_WIDTH, 0.0, 0.0);
     }
     
-    /** @class LOG_LEVELS
+    /**
      * Class representing the different verbosity levels for logging messages.
      */
     public static class LOG_LEVELS {
@@ -93,6 +94,7 @@ public class Settings {
     /**
      * Builds a rectangle representing the penalty region on the left team's 
      * side of the field.
+     * 
      * @return the rectangle spanning the left team's penalty box
      */
     public static Rectangle PENALTY_AREA_LEFT() {
@@ -102,6 +104,7 @@ public class Settings {
     /**
      * Builds a rectangle representing the penalty region on the right team's 
      * side of the field.
+     * 
      * @return the rectangle spanning the right team's penalty box
      */
     public static Rectangle PENALTY_AREA_RIGHT() {
@@ -135,10 +138,12 @@ public class Settings {
     		"offside_r"
     ));
     
-    // List of known stationary objects
-    // Although they could theoretically be parsed on the fly, we think it's
-    // probably more efficient to parse and store them in advance. They are
-    // stationary, after all.
+    /**
+     * List of known stationary objects.
+     * Although they could theoretically be parsed on the fly, we think it's
+     * probably more efficient to parse and store them in advance. They are
+     * stationary, after all.
+     */
     public static final StationaryObject[] STATIONARY_OBJECTS = {
         // Physical boundary flags
         new Flag("(f t l 50)"),

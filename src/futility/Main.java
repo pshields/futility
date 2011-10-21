@@ -2,25 +2,24 @@
  * Start-up routines for initializing the F(Utility) RoboCup Soccer Client.
  * 
  * @author Team F(utility)
- * @date 20 October 2011
  */
 
 package futility;
 
-/** @class Main
+/**
  * Contains start-up subroutines for initializing the game client according to
  * specified command-line parameters.
  */
 public class Main {
     
-    /** Main function
-    *
-    * First function to execute. Reads command-line arguments and activates
-    * one or more clients as specified in the args.
+    /**
+    * This main function  is the first function to execute. It reads
+    * command-line arguments and activates one or more clients as specified
+    * in the args.
     * 
     * The ability to activate multiple clients here is meant as a CPU-saving
     * technique for development. When competing, use the separate spin-up
-    * script to ensure complete process isolation. 
+    * script to ensure process isolation. 
     * 
     * @param args command-line arguments
     */
@@ -44,7 +43,8 @@ public class Main {
        }
    }
    
-   /** Initialize a new client
+   /**
+    * Initializes a client.
     * 
     * @param args arguments to treat as if they were command-line arguments
     */
@@ -53,7 +53,8 @@ public class Main {
        client.init();
    }
    
-   /** Initialize a client for a specific team
+   /**
+    * Initialize a client for a specific team.
     * 
     * @param args arguments to treat as if they were command-line arguments
     * @param teamName a team name to override any other defaults
@@ -64,7 +65,8 @@ public class Main {
        client.init();
    }
    
-   /** Start a team of clients with the given arguments
+   /**
+    * Starts a team of clients with the given arguments.
     * 
     * @param args command-line arguments to pass to the created clients
     */
@@ -74,7 +76,8 @@ public class Main {
        }
    }
    
-   /** Start a team of clients with arguments and a team name
+   /**
+    * Starts a team of clients with arguments and a team name.
     * 
     * @param args command-line arguments to pass to the created clients
     * @param teamName a team name to override all others

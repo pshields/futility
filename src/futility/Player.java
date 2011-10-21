@@ -3,14 +3,12 @@
  * game client's player agent.
  * 
  * @author Team F(utility)
- * @date 20 October 2011
  */
 
 package futility;
 
-/** @class Player
- * Extension of the MobileObject class that represents a player of a team on
- * the game field.
+/**
+ * Representation of a player on the field.
  */
 public class Player extends MobileObject {
     public Brain brain;
@@ -27,9 +25,9 @@ public class Player extends MobileObject {
     }
    
     /**
-     * Initiate a player from soccer server name<br>
-     * (p ["Teamname" [UniformNumber [goalie]]])
-     * @param id
+     * Initiates a player from an ObjectId.
+     * 
+     * @param id the player's ObjectId
      */
     public Player(String id){
     	String[] parts = id.substring(1, id.length() - 1).split(" ");
@@ -50,6 +48,7 @@ public class Player extends MobileObject {
     
     /**
      * Build a player object on the game field with the given uniform number.
+     * 
      * @param number the uniform number of the player.
      */
     public Player(int number) {
@@ -58,6 +57,7 @@ public class Player extends MobileObject {
     
     /**
      * Builds a representation of this game client's player agent.
+     * 
      * @param client the interface for network communication
      */
     public Player(Client client) {
