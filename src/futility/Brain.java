@@ -10,7 +10,7 @@ import java.util.ArrayDeque;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 
-/** @class Brain
+/**
  * Threaded class that contains the player agent's sensory data parsing and
  * strategy computation algorithms.
  */
@@ -21,10 +21,17 @@ public class Brain implements Runnable {
      * 
      * DASH_AROUND_THE_FIELD_CLOCKWISE tells the player to dash around
      *   the field boundaries clockwise.
+     * DASH_TOWARDS_THE_BALL_AND KICK implements a simple soccer strategy:
+     *
+     * 1. Run towards the ball.
+     * 2. Rotate around it until you can see the opponent's goal.
+     * 3. Kick the ball towards said goal.
+     * 
      * LOOK_AROUND tells the player to look around in a circle.
      */
     public enum Strategy {
         DASH_AROUND_THE_FIELD_CLOCKWISE,
+        DASH_TOWARDS_BALL_AND_KICK,
         LOOK_AROUND
     }
 	
@@ -99,56 +106,12 @@ public class Brain implements Runnable {
         if (!player.inRectangle(field)) {
             return false;
         }
-        if (player.distanceTo(ball) > 0.7) {
+        double distanceTo = fieldObjects.get("(b)").distanceToLastSeen;
+        if (distanceTo > 0.7) {
             return false;
         }
         else {
             return true;
-        }
-    }
-    
-    /**
-     * This is a simple soccer strategy.
-     * 
-     * 1. Run towards the ball.
-     * 2. Rotate around it until you can see the opponent's goal.
-     * 3. Kick the ball towards said goal.
-     * 
-     */
-    public final void dashTowardsBallAndKickTowardsGoal() {
-        double approachAngle;
-        double power = Math.min(100, 10 + player.distanceTo(ball) * 20);
-        if (canKickBall()) {
-            if (canSeeGoal) {
-                kick(100.0, player.relativeAngleTo(goal));
-            }
-            else {
-                dash(30.0, 90.0);
-            }
-        }
-        else if (canSeeBall) {
-            if (canSeeGoal) {
-                double approachAngleDelta = player.distanceTo(ball)/10;
-                approachAngle = this.player.relativeAngleTo(ball) + Math.copySign(1.0, -this.player.relativeAngleTo(goal)) * approachAngleDelta;
-                if (this.player.relativeAngleTo(ball) > this.player.relativeAngleTo(goal)) {
-                    approachAngle =  + approachAngleDelta;
-                }
-                else {
-                    approachAngle = this.player.relativeAngleTo(goal) - approachAngleDelta;
-                }
-                dash(power, approachAngle);
-            }
-            else {
-                dash(power);
-            }
-        }
-        else {
-            if (this.player.relativeAngleTo(ball) > 0) {
-                turn(7.0);
-            }
-            else {
-                turn(-7.0);
-            }
         }
     }
 
@@ -231,6 +194,45 @@ public class Brain implements Runnable {
                 this.dash(50, this.player.relativeAngleTo(targetDirection));
             }
             break;
+        case DASH_TOWARDS_BALL_AND_KICK:
+            double approachAngle;
+            String goalString = "(g "+this.player.otherTeam.side +")";
+            if (fieldObjects.containsKey(goalString) && fieldObjects.containsKey("(b)")) {
+                FieldObject ball = this.fieldObjects.get("(b)");
+                FieldObject goal = this.fieldObjects.get(goalString);
+                double power = Math.min(100, 10 + player.distanceTo(ball) * 20);
+                if (ball != null && goal != null && canKickBall()) {
+                    if (this.canSeeGoal) {
+                        kick(100.0, this.player.relativeAngleTo(goal));
+                    }
+                    else {
+                        dash(30.0, 90.0);
+                    }
+                }
+                else if (ball != null && goal != null && this.canSeeBall) {
+                    if (this.canSeeGoal) {
+                        double approachAngleDelta = player.distanceTo(ball)/10;
+                        approachAngle = this.player.relativeAngleTo(ball) + Math.copySign(1.0, -this.player.relativeAngleTo(goal)) * approachAngleDelta;
+                        if (this.player.relativeAngleTo(ball) > this.player.relativeAngleTo(goal)) {
+                            approachAngle =  + approachAngleDelta;
+                        }
+                        else {
+                            approachAngle = this.player.relativeAngleTo(ball) - approachAngleDelta;
+                        }
+                        dash(power, approachAngle);
+                    }
+                    else {
+                        dash(power);
+                    }
+                }
+                else {
+                    turn(7.0);
+                }
+            }
+            else {
+                turn(7.0);
+            }
+            break;
         case LOOK_AROUND:
             turn(7);
             break;
@@ -266,15 +268,18 @@ public class Brain implements Runnable {
     private final double getUtility(Strategy strategy) {
         double utility = 0;
         switch (strategy) {
-            case DASH_AROUND_THE_FIELD_CLOCKWISE:
-                utility = 0.75;
-                break;
-            case LOOK_AROUND:
-                utility = 1 - this.player.position.getConfidence(this.time);
-                break;
-            default:
-                utility = 0;
-                break;
+        case DASH_AROUND_THE_FIELD_CLOCKWISE:
+            utility = 0.95;
+            break;
+        case DASH_TOWARDS_BALL_AND_KICK:        
+            utility = 1.01;
+            break;
+        case LOOK_AROUND:
+            utility = 1 - this.player.position.getConfidence(this.time);
+            break;
+        default:
+            utility = 0;
+            break;
         }
         return utility;
     }
@@ -306,7 +311,7 @@ public class Brain implements Runnable {
      * 
      * @param point the point to measure error against
      * @param objects one or more qualified field objects
-     * @return
+     * @return the error
      */
     public double measureError(Point point, FieldObject... objects) {
         double error = 0;
@@ -328,7 +333,7 @@ public class Brain implements Runnable {
         	// TODO better nested parentheses parsing logic; perhaps
         	//    reconcile with Patrick's parentheses logic?
         	collision = "none";
-            time = Integer.parseInt(message.substring(12, 16).split("\\s")[0]);
+            this.time = Integer.parseInt(message.substring(12, 16).split("\\s")[0]);
             String parts[] = message.split("\\(");
             for ( String i : parts ) // for each structured argument:
             {
@@ -397,7 +402,7 @@ public class Brain implements Runnable {
             // Standard times go up to 6000 so we'll only check four digits.
             // Split the string on any non-digit and take the first part
             String timePart = message.substring(5, 9).split("\\D")[0];
-            time = Integer.parseInt(timePart);
+            this.time = Integer.parseInt(timePart);
             // Following the time are parentheses-delimited ObjectInfos.
             // We're parsing them manually so we don't waste cycles on
             // pattern matching (not sure if/how much it helps.)
@@ -465,11 +470,11 @@ public class Brain implements Runnable {
 
         FieldObject obj = createFieldObject(id);
         if(obj == null) return id; //yet unsupported object or an error
-        obj.timeLastSeen = time;
+        obj.timeLastSeen = this.time;
         switch(args.length){
         case 1:
-        	obj.angleToLastSeen.update(Double.valueOf(args[0]), 0.95,  time);
-        	break;
+            obj.angleToLastSeen.update(Double.valueOf(args[0]), 0.95, this.time);
+            break;
         case 6:
         	obj.headFacing = Double.valueOf(args[5]);
         	obj.bodyFacing = Double.valueOf(args[4]);
@@ -477,14 +482,14 @@ public class Brain implements Runnable {
         	obj.directionChange = Double.valueOf(args[3]);
         	obj.distanceChange = Double.valueOf(args[2]);
         case 2:
-        	obj.distanceTo = Double.valueOf(args[0]);
+        	obj.distanceToLastSeen = Double.valueOf(args[0]);
         	// Since the soccer server presents items to the right with
         	// with positive angles, we reverse the angle before storing
         	// so its fits with our unit circle model.
-        	obj.angleToLastSeen.update(-Double.valueOf(args[1]), 0.95,  time);  
+        	obj.angleToLastSeen.update(-Double.valueOf(args[1]), 0.95, this.time);  
         	break;
         default:
-        	player.client.log(Settings.LOG_LEVELS.ERROR, "Invalid number of arguments for a FieldObject");
+        	this.player.client.log(Settings.LOG_LEVELS.ERROR, "Invalid number of arguments for a FieldObject");
         	return id;
         }
         
@@ -494,12 +499,12 @@ public class Brain implements Runnable {
             FieldObject object = fieldObjects.get(id);
             object.copyFieldObject(obj);
             
-            player.client.log(Settings.LOG_LEVELS.DEBUG, "Just updated field object with name " + object.id);
-            // TODO Update our conception of player /ball positions
+            this.player.client.log(Settings.LOG_LEVELS.DEBUG, "Just updated field object with name " + object.id);
+            // TODO Update the player's sense of player / ball positions
         }
         else {
-        	fieldObjects.put(id, obj);
-            player.client.log(Settings.LOG_LEVELS.DEBUG, "Just added " + id + " to the HashMap.");
+        	this.fieldObjects.put(id, obj);
+            this.player.client.log(Settings.LOG_LEVELS.DEBUG, "Just added " + id + " to the HashMap.");
         }
         return id;
     }
@@ -512,12 +517,14 @@ public class Brain implements Runnable {
      */
     private FieldObject createFieldObject(String name) {
 		if(name.startsWith("(b")){
-			return new Ball();
+            this.canSeeBall = true;
+		    return new Ball();
 		}
 		else if(name.startsWith("(p")){
 			return new Player(name);
 		}
 		else if(name.startsWith("(g")){
+	        this.canSeeGoal = true;
 			return new Goal(name);
 		}
 		else if(name.startsWith("(f")){
@@ -590,7 +597,7 @@ public class Brain implements Runnable {
         // Update the player's direction
         // TODO Potentially take magnitude of offset into account in the
         // determination of the new confidence in the player's position.
-        player.direction.update(player.direction.getDirection() + offset, 0.95 * player.direction.getConfidence(time), time);
+        player.direction.update(player.direction.getDirection() + offset, 0.95 * player.direction.getConfidence(this.time), this.time);
     }
     
     /** 

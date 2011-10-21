@@ -6,7 +6,7 @@
 
 package futility;
 
-/** @class Rectangle
+/**
  * Class representation of a rectangular area on the playing field.
  */
 public class Rectangle {

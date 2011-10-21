@@ -5,7 +5,7 @@
  */
 package futility;
 
-/** @class PositionEstimate
+/**
  * An estimate of a position, with confidence.
  */
 public class PositionEstimate extends Estimate {

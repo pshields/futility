@@ -6,8 +6,8 @@
 
 package futility;
 
-/** @class Flag
- * An extension of StationaryObject that represents a visible flag on the field
+/**
+ * An extension of StationaryObject that represents a visible flag on the field.
  */
 public class Flag extends StationaryObject {
     

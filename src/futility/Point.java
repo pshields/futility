@@ -6,7 +6,7 @@
 
 package futility;
 
-/** @class Point
+/**
  * Class representation of a point on a 2D plane, with helper functions for
  * finding distance and angles between Point objects.
  */
@@ -141,7 +141,7 @@ public class Point {
     
     /**
      * Retrieves the difference in x-coordinates between this Point and
-     * another Point object. The formula used is \f$\delta x = x_2 - x_1\f$.
+     * another Point object. The formula used is \f$\Delta x = x_2 - x_1\f$.
      * 
      * @param otherPoint the Point object to compute against
      * @return Difference in x-coordinates
@@ -152,7 +152,7 @@ public class Point {
     
     /**
      * Retrieves the difference in x-coordinates between this Point and
-     * another Point object. The formula used is \f$\delta y = y_2 - y_1\f$.
+     * another Point object. The formula used is \f$\Delta y = y_2 - y_1\f$.
      * 
      * @param otherPoint the Point object to compute against
      * @return Difference in x-coordinates
@@ -163,7 +163,7 @@ public class Point {
     
     /**
      * Retrieves the distance between this Point and another Point object.
-     * The formula used is \f$dist = \sqrt{\(\delta x\)^2 + \(\delta y\)^2}\f$.
+     * The formula used is \f$dist = \sqrt{(\Delta x)^2 + (\Delta y)^2}\f$.
      * 
      * @param otherPoint the Point object to compute against
      * @return Distance between Point objects
@@ -175,7 +175,7 @@ public class Point {
     /**
      * Builds a Point object representing the midpoint between this Point and
      * a specified Point object. The formula used is
-     * \f$\left(x_n, y_n\right) = \(x_1 + \frac{\delta x}{2}, y_1 + \frac{\delta y}{2}\)\f$.
+     * \f$\left(x_n, y_n\right) = \left(x_1 + \frac{\Delta x}{2}, y_1 + \frac{\Delta y}{2}\right)\f$.
      * 
      * @param otherPoint the Point object to compute against
      * @return a Point object representing the midpoint
@@ -190,6 +190,6 @@ public class Point {
      * @return a formatted string representation
      */
     public String render() {
-        return String.format("(%f, %f)", this.x - Settings.CENTER_FIELD.getX(), this.y - Settings.CENTER_FIELD.getY());
+        return String.format("(%f, %f)", this.x - Settings.CENTER_FIELD.getX(),  - (this.y - Settings.CENTER_FIELD.getY()));
     }
 }

@@ -6,7 +6,7 @@
 package futility;
 
 
-/** @class DirectionEstimate
+/**
  * An estimate of a direction, with confidence.
  */
 public class DirectionEstimate extends Estimate {

@@ -15,7 +15,7 @@ import java.net.UnknownHostException;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-/** @class Client
+/**
  * Network client that initializes a connection to the RoboCup 2D soccer server.
  * All UDP communication is handled by this class.
  */

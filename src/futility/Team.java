@@ -6,7 +6,7 @@
 
 package futility;
 
-/** @class Team
+/**
  * The player agent's conception of a team, including the team's name and its side.
  */
 public class Team {

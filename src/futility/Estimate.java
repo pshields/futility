@@ -6,7 +6,7 @@
 
 package futility;
 
-/** @class Estimate
+/**
  * An estimate of a value.
  */
 public class Estimate {

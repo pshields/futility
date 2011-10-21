@@ -6,7 +6,7 @@
 
 package futility;
 
-/** @class Goal
+/**
  * Extension of StationaryObject to represent a visible goal on the playing
  * field.
  */

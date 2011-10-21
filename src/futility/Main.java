@@ -6,7 +6,7 @@
 
 package futility;
 
-/** @class Main
+/**
  * Contains start-up subroutines for initializing the game client according to
  * specified command-line parameters.
  */

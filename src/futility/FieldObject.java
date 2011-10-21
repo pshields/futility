@@ -7,12 +7,10 @@
 
 package futility;
 
-/** @class FieldObject
+/**
  * Extension of GameObject; represents a given object on the playing field
  */
 public abstract class FieldObject extends GameObject {
-    public double distanceTo = 0;
-    public double lastSeenAngleTo = 0; // Assume things face east, degrees
     public double distanceChange = 0;
     public DirectionEstimate direction = new DirectionEstimate();
     public double directionChange = 0;
@@ -37,7 +35,6 @@ public abstract class FieldObject extends GameObject {
      * 
      * @param x the x-coordinate
      * @param y the y-coordinate
-     * @param time the current time step
      */
     public FieldObject(double x, double y) {
         this.position.update(x, y, 1.0, -1);
@@ -58,8 +55,8 @@ public abstract class FieldObject extends GameObject {
      * @param copy the given field object to copy.
      */
     public void copyFieldObject(FieldObject copy){
-    	this.lastSeenAngleTo = copy.lastSeenAngleTo;
-    	this.distanceTo = copy.distanceTo;
+    	this.angleToLastSeen = copy.angleToLastSeen;
+    	this.distanceToLastSeen = copy.distanceToLastSeen;
     	this.position = new PositionEstimate(copy.position);
     	this.distanceChange = copy.distanceChange;
     	this.directionChange = copy.directionChange;
@@ -113,7 +110,7 @@ public abstract class FieldObject extends GameObject {
      * Gets the distance from this object to the given field object.
      * Uses the formula
      * 
-     * \f$dist = \sqrt{\(x_2-x_1\)^2 + \(y_2-y_1\)^2}\f$.
+     * \f$dist = \sqrt{(x_2-x_1)^2 + (y_2-y_1)^2}\f$.
      * 
      * @param object the given field object
      * @return the distance from the this object to the given field object

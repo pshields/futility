@@ -7,7 +7,7 @@
 
 package futility;
 
-/** @class Player
+/**
  * Representation of a player on the field.
  */
 public class Player extends MobileObject {

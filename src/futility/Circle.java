@@ -6,7 +6,7 @@
 
 package futility;
 
-/** @class Circle
+/**
  * Circle class facilitating player triangulation.
  */
 public class Circle {
@@ -77,7 +77,7 @@ public class Circle {
      * an empty array of points because for this software, that cases should
      * be handled the same as non-intersection cases.
      * 
-     * @param circle
+     * @param otherCircle the other circle to caluclate intersection points with
      * @return an array of intersection points
      */
     public Point[] intersectionPointsWith(Circle otherCircle) {

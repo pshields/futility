@@ -12,7 +12,7 @@ import java.util.HashSet;
 
 import futility.Settings;
 
-/** @class Settings
+/**
  * Static class that stores all client parameters based on information
  * known about the simulation.
  */
@@ -52,7 +52,7 @@ public class Settings {
     public static final Point INITIAL_POSITION = new Point(-1.0, -1.0);
     public static final Point CENTER_FIELD = new Point(FIELD().getLeft() + FIELD_WIDTH/2, FIELD().getBottom() + FIELD_HEIGHT/2);
     
-    /** @class Commands
+    /**
      * Constant string literals representing the commands a client may send
      * to the server.
      */
@@ -82,7 +82,7 @@ public class Settings {
         return new Rectangle(FIELD_BUFFER * 2.0 + FIELD_HEIGHT, FIELD_BUFFER * 2.0 + FIELD_WIDTH, 0.0, 0.0);
     }
     
-    /** @class LOG_LEVELS
+    /**
      * Class representing the different verbosity levels for logging messages.
      */
     public static class LOG_LEVELS {

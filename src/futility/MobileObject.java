@@ -6,7 +6,7 @@
 
 package futility;
 
-/** @class MobileObject
+/**
  * Extension of FieldObject representing an object that can move.
  */
 public class MobileObject extends FieldObject{

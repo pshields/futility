@@ -7,7 +7,7 @@
 
 package futility;
 
-/** @class StationaryObject
+/**
  * Data structure extension of FieldObject that represents a stationary object
  * on the playing field.
  */
