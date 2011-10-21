@@ -1,7 +1,6 @@
 /** @file Ball.java
- * Representation of a visible Ball object.
- * @author Patrick Shields
- * @date 20 October 2011
+ * Representation of the soccer ball.
+ * @author Team F(utility)
  */
 
 package futility;

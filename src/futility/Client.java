@@ -1,7 +1,6 @@
 /** @file Client.java
  * Network agent that handles UDP communication with the game server.
  * @author Team F(utility)
- * @date 20 October 2011
  */
 
 package futility;
@@ -16,7 +15,7 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 /** @class Client
- * Network client that initializes a connection to the robocup soccer server.
+ * Network client that initializes a connection to the RoboCup 2D soccer server.
  * All UDP communication is handled by this class.
  */
 public class Client {
@@ -29,14 +28,13 @@ public class Client {
     public DatagramSocket soccerServerSocket;
     public int verbosity = Settings.VERBOSITY;
 
-    /** Client constructor
-     * 
-     * Set up a client to play some virtual soccer!
+    /**
+     * Client constructor. Set up a client to play some virtual soccer!
      * 
      * @param args the same arguments passed to the process
      */
     public Client(String[] args) {
-        player = new Player(this);  // Initialize an associated player
+        this.player = new Player(this);  // Initialize an associated player
         // Process command-line arguments
         for (int i = 0; i < args.length; i++ ) {
             try {
@@ -49,7 +47,7 @@ public class Client {
                 }
                 if (args[i].equals("-t") || args[i].equals("--team")) {
                     // Read the team name from the command-line
-                    player.team.name = args[i+1];
+                    this.player.team.name = args[i+1];
                 }
                 else if (args[i].equals("-h") || args[i].equals("--hide-received-messages")) {
                     this.hideReceivedMessages = true;
@@ -70,9 +68,9 @@ public class Client {
         }
     }
     
-    /** Initalize a client
-     * 
-     * Schedule and start related threads and connect to the server
+    /** 
+     * Initalizes a client. Schedules and starts related threads and connects
+     * to the server.
      */
     public void init() {
         try {
@@ -104,7 +102,8 @@ public class Client {
         responseExecutor.scheduleAtFixedRate(player.brain, 0, 100, TimeUnit.MILLISECONDS);
     }
     
-    /** Basic logging shortcut
+    /**
+     * Basic logging shortcut.
      * 
      * @param message what to send to the standard output
      */
@@ -112,9 +111,9 @@ public class Client {
         System.out.println(message);
     }
     
-    /** Log with verbosity
-     * 
-     * Allows the inclusion of a verbosity value with a message
+    /**
+     * Logs with verbosity. Allows the inclusion of a verbosity value with a
+     * message.
      * 
      * @param verbosity the minimum verbosity level the message should display at
      * @param message the message to display
@@ -136,7 +135,8 @@ public class Client {
         }
     }
     
-    /** Disconnect from the server
+    /**
+     * Disconnects from the server.
      * 
      */
     public final void quit() {
@@ -144,7 +144,8 @@ public class Client {
         soccerServerSocket.close();
     }
     
-    /** Receive a message from the soccer server
+    /**
+     * Receives a message from the server.
      * 
      * @return message sent by the server
      */
@@ -166,7 +167,8 @@ public class Client {
         return new String(buffer);
     }
 
-    /** Send a properly-formatted message to the soccer server
+    /**
+     * Sends a properly-formatted message to the server.
      * 
      * @param command the command to send
      * @param args any amount of object arguments
@@ -177,7 +179,7 @@ public class Client {
             partial += ' ' + arg.toString();
         }
         partial += ")\0";
-        sendMessage(partial);
+        this.sendMessage(partial);
     }
     
     /**
@@ -186,7 +188,7 @@ public class Client {
      * @param message to send to the server
      */
     private void sendMessage(String message) {
-        if (debugMode || (verbosity >= 1)) {
+        if (this.debugMode || (this.verbosity >= 1)) {
             System.out.println(message);
         }
         byte[] buffer = message.getBytes();

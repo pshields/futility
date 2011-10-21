@@ -1,8 +1,6 @@
 /** @file Flag.java
  * Representation of a flag object on the visible playing field.
- * 
  * @author Team F(utility)
- * @date 20 October 2011
  */
 
 package futility;
@@ -12,7 +10,8 @@ package futility;
  */
 public class Flag extends StationaryObject {
     
-    /** Flag constructor from ObjectInfo string
+    /**
+     * Flag constructor from ObjectInfo string.
      * 
      * Pass in an object info string, get back a flag! It's magic!
      * @param id the ObjectInfo string
@@ -171,6 +170,6 @@ public class Flag extends StationaryObject {
         if (x == -1 || y == -1) {
             System.err.println("Flag " + this.id + " didn't parse it's position correctly");
         }
-        position = new PositionEstimate(x, y, 1.0, true);
+        this.position = new PositionEstimate(x, y, 1.0, true);
     }
 }

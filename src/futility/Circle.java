@@ -1,13 +1,23 @@
 /** @file Circle.java
- * Represents a circle of ...
+ * A circle class facilitating player triangulation.
+ * @author Team F(utility)
  */
 
 package futility;
 
+/** @class Circle
+ * Circle class facilitating player triangulation.
+ */
 public class Circle {
     private Point centroid;
     private double radius;
     
+    /**
+     * Primary circle constructor.
+     * 
+     * @param centroid the center of the circle
+     * @param radius the radius of the circle
+     */
     public Circle(Point centroid, double radius) {
         this.centroid = centroid;
         this.radius = radius;
@@ -15,6 +25,7 @@ public class Circle {
     
     /**
      * Gets the distance to the specified point from the border of the circle.
+     * 
      * @param point the given point
      * @return the distance to the given point from this circle's border
      */

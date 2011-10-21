@@ -3,14 +3,12 @@
  * client to model states.
  * 
  * @author Team F(utility)
- * @date 20 October 2011
  */ 
 
 package futility;
 
 /** @class FieldObject
  * Extension of GameObject; represents a given object on the playing field
- *
  */
 public abstract class FieldObject extends GameObject {
     public double distanceTo = 0;
@@ -29,7 +27,7 @@ public abstract class FieldObject extends GameObject {
     public double distanceToLastSeen = -1;
     
     /**
-     * Default constructor, initializes the field object with default values.
+     * This default constructor initializes the field object with default values.
      */
     public FieldObject() {
     }
@@ -39,9 +37,10 @@ public abstract class FieldObject extends GameObject {
      * 
      * @param x the x-coordinate
      * @param y the y-coordinate
+     * @param time the current time step
      */
     public FieldObject(double x, double y) {
-        position.setPosition(x, y);
+        this.position.update(x, y, 1.0, -1);
     }
     
     /**
@@ -72,11 +71,11 @@ public abstract class FieldObject extends GameObject {
     
     /**
      * Calculates the absolute angle from this object to the given field
-     * object. The angle is retrieved using the formula: <br>
-     * \f$angle = \arctan\left(\frac{y_2-y_1}{x_2-x_1}\right)\f$
+     * object. The angle is retrieved using the formula 
+     * \f$angle = \arctan\left(\frac{y_2-y_1}{x_2-x_1}\right)\f$.
      * 
      * @param object the given field object to calculate an angle against.
-     * @return
+     * @return the angle to the object in degrees
      */
     public final double absoluteAngleTo(FieldObject object) {
         double angle;
@@ -137,8 +136,9 @@ public abstract class FieldObject extends GameObject {
     
     /**
      * Gets the distance from this object to the given field object.
-     * Distance formula: <br>
-     * \f$dist = \sqrt{\(x_2-x_1\)^2 + \(y_2-y_1\)^2}\f$
+     * Uses the formula
+     * 
+     * \f$dist = \sqrt{\(x_2-x_1\)^2 + \(y_2-y_1\)^2}\f$.
      * 
      * @param object the given field object
      * @return the distance from the this object to the given field object
@@ -150,9 +150,11 @@ public abstract class FieldObject extends GameObject {
     }
     
     /**
-     * Gets the difference in x coordinates from this object to the given object.
+     * Gets the difference in x coordinates from this object to the given
+     * object.
      * 
-     * @return the difference in x coordinates from this object to the given object.
+     * @return the difference in x coordinates from this object to the given
+     * object
      */
     public double deltaX(FieldObject object) {
         double x0 = this.position.getPosition().getX();
@@ -161,9 +163,11 @@ public abstract class FieldObject extends GameObject {
     }
     
     /**
-     * Gets the difference in y coordinates from this object to the given object.
+     * Gets the difference in y coordinates from this object to the given
+     * object.
      * 
-     * @return the difference in y coordinates from this object to the given object
+     * @return the difference in y coordinates from this object to the given
+     * object
      */
     public double deltaY(FieldObject object) {
         double y0 = this.position.getPosition().getY();

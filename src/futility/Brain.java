@@ -1,7 +1,6 @@
 /** @file Brain.java
  * Player agent's central logic and memory center.
  * @author Team F(utility)
- * @date 20 October 2011
  */
 
 package futility;
@@ -19,12 +18,12 @@ public class Brain implements Runnable {
      * Enumerator representing the possible strategies that may be used by this
      * player agent.
      * 
-     * DASH_AROUND_THE_FIELD_COUNTERCLOCKWISE tells the player to dash around
-     *   the field boundaries counter-clockwise.
-     * LOOK_AROUND tells the player to look around itself.
+     * DASH_AROUND_THE_FIELD_CLOCKWISE tells the player to dash around
+     *   the field boundaries clockwise.
+     * LOOK_AROUND tells the player to look around in a circle.
      */
     public enum Strategy {
-        DASH_AROUND_THE_FIELD_COUNTERCLOCKWISE,
+        DASH_AROUND_THE_FIELD_CLOCKWISE,
         LOOK_AROUND
     }
 	
@@ -89,7 +88,8 @@ public class Brain implements Runnable {
     ///////////////////////////////////////////////////////////////////////////
     // GAME LOGIC
     ///////////////////////////////////////////////////////////////////////////
-    /** A rough estimate of whether the player can kick the ball, dependent
+    /** 
+     * A rough estimate of whether the player can kick the ball, dependent
      * on its distance to the ball and whether it is inside the playing field.
      * 
      * @return true if the player is on the field and within kicking distance
@@ -151,9 +151,10 @@ public class Brain implements Runnable {
         }
     }
 
-    /** True if and only if the ball was seen in the most recently-parsed 'see' message.
+    /**
+     * True if and only if the ball was seen in the most recently-parsed 'see' message.
      * 
-     *  // TODO integrate this method into the standard game state modeling methods
+     *  TODO integrate this method into the standard game state modeling methods
      */
     public final boolean canSeeBall() {
         return this.canSeeBall;
@@ -169,10 +170,12 @@ public class Brain implements Runnable {
     }
 
     /**
-     * Accelerates the player in the direction of its body, offset by the given angle.
+     * Accelerates the player in the direction of its body, offset by the given
+     * angle.
      * 
      * @param power the power of the acceleration (0 to 100)
-     * @param offset an offset to be applied to the player's direction, yielding the direction of acceleration
+     * @param offset an offset to be applied to the player's direction,
+     * yielding the direction of acceleration
      */
     public final void dash(double power, double offset) {
         client.sendCommand(Settings.Commands.DASH, Double.toString(power), Double.toString(offset));
@@ -184,11 +187,11 @@ public class Brain implements Runnable {
      * @param object a field object to estimate the position of
      * @return a position estimate for the field object
      */
-    //private PositionEstimate estimatePositionOf(FieldObject object) {
-    //    PositionEstimate estimate = new PositionEstimate();
-    //    // TODO 
-    //    return estimate;
-    //}
+    private PositionEstimate estimatePositionOf(FieldObject object) {
+        PositionEstimate estimate = new PositionEstimate();
+        // TODO 
+        return estimate;
+    }
     
     /**
      * Executes a strategy for the player in the current time step.
@@ -197,7 +200,7 @@ public class Brain implements Runnable {
      */
     private final void executeStrategy(Strategy strategy) {
         switch (strategy) {
-        case DASH_AROUND_THE_FIELD_COUNTERCLOCKWISE:
+        case DASH_AROUND_THE_FIELD_CLOCKWISE:
             double x = player.position.getPosition().getX();
             double y = player.position.getPosition().getY();
             double targetDirection = 0;
@@ -262,7 +265,7 @@ public class Brain implements Runnable {
     private final double getUtility(Strategy strategy) {
         double utility = 0;
         switch (strategy) {
-            case DASH_AROUND_THE_FIELD_COUNTERCLOCKWISE:
+            case DASH_AROUND_THE_FIELD_CLOCKWISE:
                 utility = 0.75;
                 break;
             case LOOK_AROUND:
@@ -443,6 +446,7 @@ public class Brain implements Runnable {
     
     /**
      * Parses and handles an ObjectInfo string.
+     * 
      * @param objectInfo the ObjectInfo string
      * @return the objectId of the parsed ObjectInfo
      */
@@ -500,9 +504,10 @@ public class Brain implements Runnable {
     }
     
     /**
-     * Given a valid soccer server object name this method returns a proper FieldObject
-     * @param name
-     * @return a FieldObject based off the name
+     * Gets a FieldObject from a valid ObjectId.
+     * 
+     * @param name a valid ObjectId
+     * @return the corresponding FieldObject
      */
     private FieldObject createFieldObject(String name) {
 		if(name.startsWith("(b")){

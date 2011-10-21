@@ -1,8 +1,6 @@
 /** @file Goal.java
  * Representation of a visible goal object.
- * 
  * @author Team F(utility)
- * @date 20 October 2011
  */
 
 package futility;
@@ -15,6 +13,7 @@ public class Goal extends StationaryObject {
     
 	/**
 	 * Builds a goal object according to the side of the field it belongs on.
+	 * 
 	 * @param id literal string identifier, as sent by the server.
 	 */
     public Goal(String id) {
