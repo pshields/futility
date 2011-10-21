@@ -2,12 +2,11 @@
  * Represents a rectangular area on the playing field.
  * 
  * @author Team F(utility)
- * @date 20 October 2011
  */
 
 package futility;
 
-/** @class Rectangle
+/**
  * Class representation of a rectangular area on the playing field.
  */
 public class Rectangle {
@@ -18,6 +17,7 @@ public class Rectangle {
    
     /**
      * Constructor, builds a rectangle based on position of each border.
+     * 
      * @param top vertical position of the top border
      * @param right horizontal position of the right border
      * @param bottom vertical position of the bottom border
@@ -32,6 +32,7 @@ public class Rectangle {
     
     /**
      * Checks if an object lies within the area of this rectangle.
+     * 
      * @param object the field object to test for
      * @return true if the object is inside this rectangle, otherwise false.
      */
@@ -43,6 +44,7 @@ public class Rectangle {
     
     /**
      * Gets the center point of this rectangle.
+     * 
      * @return the center of the rectangle as a Point object.
      */
     public Point getCenter() {
@@ -52,7 +54,7 @@ public class Rectangle {
     }
 
     /**
-     * Gets the vertical position of the top border
+     * Gets the vertical position of the top border.
      * 
      * @return vertical position
      */
@@ -61,7 +63,7 @@ public class Rectangle {
     }
     
     /**
-     * Gets the horizontal position of the right border
+     * Gets the horizontal position of the right border.
      * 
      * @return horizontal position
      */
@@ -70,7 +72,7 @@ public class Rectangle {
     }
 
     /**
-     * Gets the vertical position of the bottom border
+     * Gets the vertical position of the bottom border.
      * 
      * @return vertical position
      */
@@ -79,7 +81,7 @@ public class Rectangle {
     }
     
     /**
-     * Gets the horizontal position of the left border
+     * Gets the horizontal position of the left border.
      * 
      * @return horizontal position
      */

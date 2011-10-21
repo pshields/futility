@@ -1,13 +1,24 @@
 /** @file Circle.java
- * Represents a circle of ...
+ * A circle class facilitating player triangulation.
+ * 
+ * @author Team F(utility)
  */
 
 package futility;
 
+/**
+ * Circle class facilitating player triangulation.
+ */
 public class Circle {
     private Point centroid;
     private double radius;
     
+    /**
+     * Primary circle constructor.
+     * 
+     * @param centroid the center of the circle
+     * @param radius the radius of the circle
+     */
     public Circle(Point centroid, double radius) {
         this.centroid = centroid;
         this.radius = radius;
@@ -15,6 +26,7 @@ public class Circle {
     
     /**
      * Gets the distance to the specified point from the border of the circle.
+     * 
      * @param point the given point
      * @return the distance to the given point from this circle's border
      */
@@ -65,7 +77,7 @@ public class Circle {
      * an empty array of points because for this software, that cases should
      * be handled the same as non-intersection cases.
      * 
-     * @param circle
+     * @param otherCircle the other circle to caluclate intersection points with
      * @return an array of intersection points
      */
     public Point[] intersectionPointsWith(Circle otherCircle) {
@@ -73,8 +85,8 @@ public class Circle {
             return new Point[] {};
         }
         else if (this.touches(otherCircle)){
-            double dx = Math.cos(Math.toRadians(this.centroid.angleTo(otherCircle.centroid))) * this.getRadius();
-            double dy = Math.sin(Math.toRadians(this.centroid.angleTo(otherCircle.centroid))) * this.getRadius();
+            double dx = Math.cos(Math.toRadians(this.centroid.absoluteAngleTo(otherCircle.centroid))) * this.getRadius();
+            double dy = Math.sin(Math.toRadians(this.centroid.absoluteAngleTo(otherCircle.centroid))) * this.getRadius();
             Point point = new Point(this.centroid.getX() + dx, this.centroid.getY() + dy);
             return new Point[] {point};
         }

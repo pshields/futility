@@ -27,7 +27,7 @@ public class PointTest {
 		};
 
 		for (int i = 0; i < otherPoints.length; i++) {
-			assertEquals(expectations[i], thisPoint.angleTo(otherPoints[i]), 0);
+			assertEquals(expectations[i], thisPoint.absoluteAngleTo(otherPoints[i]), 0);
 		}
     }
 
