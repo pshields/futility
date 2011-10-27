@@ -88,7 +88,7 @@ public class Brain implements Runnable {
         // Load the HashMap
         for (int i = 0; i < Settings.STATIONARY_OBJECTS.length; i++) {
             StationaryObject object = Settings.STATIONARY_OBJECTS[i];
-            //client.log(Settings.LOG_LEVELS.DEBUG, String.format("Adding %s to my HashMap...", object.id));
+            //client.log(Log.DEBUG, String.format("Adding %s to my HashMap...", object.id));
             fieldObjects.put(object.id, object);
         }
     }
@@ -185,7 +185,7 @@ public class Brain implements Runnable {
                 targetDirection = 90;
             }
             else {
-                client.log(Settings.LOG_LEVELS.ERROR, "Strategy " + strategy + " doesn't know how to handle position "+this.player.position.getPosition().render() + ".");
+                Log.e("Strategy " + strategy + " doesn't know how to handle position "+this.player.position.getPosition().render() + ".");
             }
             if (Math.abs(this.player.relativeAngleTo(targetDirection)) > 10) {
                 this.turnTo(targetDirection);
@@ -443,7 +443,7 @@ public class Brain implements Runnable {
             }
             else {
                 // Raise error
-                client.log(Settings.LOG_LEVELS.ERROR, "Could not parse teamSide.");
+                Log.e("Could not parse teamSide.");
             }
             player.number = Integer.parseInt(parts[2]);
             playMode = parts[3].split("\\)")[0];
@@ -489,7 +489,7 @@ public class Brain implements Runnable {
         	obj.angleToLastSeen.update(-Double.valueOf(args[1]), 0.95, this.time);  
         	break;
         default:
-        	this.player.client.log(Settings.LOG_LEVELS.ERROR, "Invalid number of arguments for a FieldObject");
+        	Log.e("Invalid number of arguments for a FieldObject");
         	return id;
         }
         
@@ -499,12 +499,12 @@ public class Brain implements Runnable {
             FieldObject object = fieldObjects.get(id);
             object.copyFieldObject(obj);
             
-            this.player.client.log(Settings.LOG_LEVELS.DEBUG, "Just updated field object with name " + object.id);
+            Log.d("Just updated field object with name " + object.id);
             // TODO Update the player's sense of player / ball positions
         }
         else {
         	this.fieldObjects.put(id, obj);
-            this.player.client.log(Settings.LOG_LEVELS.DEBUG, "Just added " + id + " to the HashMap.");
+            Log.d("Just added " + id + " to the HashMap.");
         }
         return id;
     }
@@ -551,7 +551,7 @@ public class Brain implements Runnable {
 			return null;
 		}
 		else{
-			player.client.log(Settings.LOG_LEVELS.ERROR, "invalid name detected for see parse");
+			Log.e("invalid name detected for see parse");
 			return null;
 		}
 	}
@@ -563,15 +563,15 @@ public class Brain implements Runnable {
     public void run() {
         // Possibly update the current strategy
         this.currentStrategy = this.getOptimalStrategy();
-        this.client.log("Current strategy: "+this.currentStrategy);
+        Log.i("Current strategy: "+this.currentStrategy);
         // Execute the current strategy
         this.executeStrategy(this.currentStrategy);
         // Clear variables for the current time step
         this.canSeeBall = false;
         this.canSeeGoal = false;
         // Log debug info
-        this.client.log(Settings.LOG_LEVELS.DEBUG, "Estimateed position: " + this.player.position.render(this.time) + ".");
-        this.client.log(Settings.LOG_LEVELS.DEBUG, "Estimated direction: " + this.player.direction.render(this.time) + ".");
+        Log.d("Estimateed position: " + this.player.position.render(this.time) + ".");
+        Log.d("Estimated direction: " + this.player.direction.render(this.time) + ".");
     }
     
     /** 
@@ -630,7 +630,7 @@ public class Brain implements Runnable {
                 }
             }
         }
-        this.client.log(Settings.LOG_LEVELS.DEBUG, "Found " + qualifiedObjects.size() + " qualified objects out of " + justSeenObjectIds.size() + " just seen objects at time " + this.time);
+        Log.d( "Found " + qualifiedObjects.size() + " qualified objects out of " + justSeenObjectIds.size() + " just seen objects at time " + this.time);
         // TODO Handle the near-ideal case of 3+ qualified objects
         // Update the player's position
         if (qualifiedObjects.size() >= 2) {
@@ -654,7 +654,7 @@ public class Brain implements Runnable {
                 }
                 if (bestError < 30) {
                     double updateConfidence = 25 / (25 + bestError);
-                    this.client.log(Settings.LOG_LEVELS.DEBUG, "Used two-circle triangulation to derive a new position estimate of " + bestPoint.render() + " with a confidence of " + Double.toString(updateConfidence));
+                    Log.d( "Used two-circle triangulation to derive a new position estimate of " + bestPoint.render() + " with a confidence of " + Double.toString(updateConfidence));
                     player.position.update(bestPoint, updateConfidence, this.time);
                     // Update the player's direction
                     double newDir1 = this.player.absoluteAngleTo(o1) + o1.angleToLastSeen.getDirection();
@@ -663,7 +663,7 @@ public class Brain implements Runnable {
                 }
             }
             else {
-                this.client.log(Settings.LOG_LEVELS.ERROR, "Two-circle triangulation returned no points.");
+                Log.e( "Two-circle triangulation returned no points.");
             }
         }
         else if (qualifiedObjects.size() >= 1){
@@ -681,7 +681,7 @@ public class Brain implements Runnable {
                 updateConfidence = updateConfidence * (10 / (10 + newPoint.distanceTo(this.player.position.getPosition())));
                 if (updateConfidence > this.player.position.getConfidence(time)) {
                     this.player.position.update(x, y, updateConfidence, time);
-                    this.client.log(Settings.LOG_LEVELS.DEBUG, "Thought it would be smart to update position to " + this.player.position.getPosition().render() + " with a confidence of " + Double.toString(updateConfidence) + ".");
+                    Log.d("Thought it would be smart to update position to " + this.player.position.getPosition().render() + " with a confidence of " + Double.toString(updateConfidence) + ".");
                 }    
             }
             // Alternative direction update function
@@ -693,7 +693,7 @@ public class Brain implements Runnable {
                 double y1 = object.position.getPosition().getY();
                 double newDirection = Math.toDegrees(Math.atan((y1 - y0)/(x1 - x0)));
                 this.player.direction.update(newDirection, updateConfidence, time);
-                this.client.log(Settings.LOG_LEVELS.DEBUG, "Thought it would be smart to update direction to " + Double.toString(this.player.direction.getDirection()) + " with a confidence of " + Double.toString(updateConfidence) + ".");
+                Log.d("Thought it would be smart to update direction to " + Double.toString(this.player.direction.getDirection()) + " with a confidence of " + Double.toString(updateConfidence) + ".");
             }
         }
         else {
