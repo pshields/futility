@@ -41,8 +41,8 @@ public class Player extends MobileObject {
     	case 1:
     		
     		break;
-    		default:
-    	//TODO log error
+    	default:
+    		Log.e("Error parsing a player unexpected number of attributes.");
     	}
     }
     

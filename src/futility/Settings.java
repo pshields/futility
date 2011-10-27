@@ -25,7 +25,7 @@ public class Settings {
     public static final int MSG_SIZE = 4096;
     public static final String TEAM_NAME = "futility";
     public static final String SOCCER_SERVER_VERSION = "15.0";
-    public static final int VERBOSITY = 0;
+    public static int VERBOSITY = Log.ERROR;
     
     // Field geometry for a standard field
     public static final double FIELD_WIDTH = 105.0;
@@ -85,11 +85,11 @@ public class Settings {
     /**
      * Class representing the different verbosity levels for logging messages.
      */
-    public static class LOG_LEVELS {
-        static int DEBUG = 2;
-        static int INFO = 1;
-        static int ERROR = 0;
-    }
+//    public static class LOG_LEVELS {
+//        static int DEBUG = 2;
+//        static int INFO = 1;
+//        static int ERROR = 0;
+//    }
     
     /**
      * Builds a rectangle representing the penalty region on the left team's 

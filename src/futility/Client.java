@@ -27,7 +27,6 @@ public class Client {
     public InetAddress soccerServerHost;
     public int soccerServerPort = Settings.INIT_PORT;
     public DatagramSocket soccerServerSocket;
-    public int verbosity = Settings.VERBOSITY;
 
     /**
      * Client constructor. Set up a client to play some virtual soccer!
@@ -42,8 +41,8 @@ public class Client {
                 if (args[i].equals("-d") || args[i].equals("--debug")) {
                     // Run in debug mode (no specific functionality right now)
                     this.debugMode = true;
-                    if (verbosity < Settings.LOG_LEVELS.DEBUG) {
-                        this.verbosity = Settings.LOG_LEVELS.DEBUG;
+                    if (Settings.VERBOSITY < Log.DEBUG) {
+                        Settings.VERBOSITY = Log.DEBUG;
                     }
                 }
                 if (args[i].equals("-t") || args[i].equals("--team")) {
@@ -60,11 +59,11 @@ public class Client {
                     //   * 2 is errors, important info and extra debug info
                     //   * 3 is 0-2 with the addition of received server messages
                     //  The default is specified in Settings.java.
-                    this.verbosity = Integer.parseInt(args[i+1]);
+                    Settings.VERBOSITY = Integer.parseInt(args[i+1]);
                 }
             }
             catch (Exception e) {
-                System.out.println("Invalid command-line parameters.");
+                Log.e("Invalid command-line parameters.");
             }
         }
     }
@@ -99,43 +98,11 @@ public class Client {
         });
         t.start();
         // Start sending commands back to the server
-        log(Settings.LOG_LEVELS.DEBUG, "Scheduling client to run every 100 milliseconds...");
+        Log.d("Scheduling client to run every 100 milliseconds...");
         responseExecutor.scheduleAtFixedRate(player.brain, 0, 100, TimeUnit.MILLISECONDS);
     }
     
-    /**
-     * Basic logging shortcut.
-     * 
-     * @param message what to send to the standard output
-     */
-    public void log(String message) {
-        System.out.println(message);
-    }
-    
-    /**
-     * Logs with verbosity. Allows the inclusion of a verbosity value with a
-     * message.
-     * 
-     * @param verbosity the minimum verbosity level the message should display at
-     * @param message the message to display
-     */
-    public void log(int verbosity, String message) {
-        if (this.verbosity >= verbosity) {
-            if (verbosity == Settings.LOG_LEVELS.DEBUG) {
-                log("DEBUG: " + message);
-            }
-            else if (verbosity == Settings.LOG_LEVELS.INFO) {
-                log("INFO: " + message);
-            }
-            else if (verbosity == Settings.LOG_LEVELS.ERROR) {
-                System.err.println("ERROR: " + message);
-            }
-            else {
-                log(String.format("UNKNOWN VERBOSITY LEVEL %d", verbosity) + message);
-            }
-        }
-    }
-    
+
     /**
      * Disconnects from the server.
      * 
@@ -163,7 +130,7 @@ public class Client {
             System.err.println("socket receiving error " + e);
         }
         if (!this.hideReceivedMessages) {
-            log(Settings.LOG_LEVELS.DEBUG, "RECEIVED: "+new String(buffer));
+            Log.d("RECEIVED: " + new String(buffer));
         }
         return new String(buffer);
     }
@@ -189,9 +156,7 @@ public class Client {
      * @param message to send to the server
      */
     private void sendMessage(String message) {
-        if (this.debugMode || (this.verbosity >= 1)) {
-            System.out.println(message);
-        }
+    	Log.i(message);
         byte[] buffer = message.getBytes();
         DatagramPacket packet = new DatagramPacket(buffer, buffer.length, soccerServerHost, soccerServerPort);
         try {
