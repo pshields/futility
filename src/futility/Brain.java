@@ -448,6 +448,35 @@ public class Brain implements Runnable {
             player.number = Integer.parseInt(parts[2]);
             playMode = parts[3].split("\\)")[0];
         }
+        else if (message.startsWith("(server_param")) {
+        	parseServerParameters(message);
+        }
+    }
+    
+    public void parseServerParameters(String message)
+    {
+        String parts[] = message.split("\\(");
+        for ( String i : parts ) // for each structured argument:
+        {
+        	// Clean the string, and break it down into the base arguments.
+        	String nMsg = i.split("\\)")[0].trim();
+        	if ( nMsg.isEmpty() ) continue;
+        	String nArgs[] = nMsg.split("\\s");
+        	
+        	// Check for specific argument types; ignore unknown arguments.
+        	if ( nArgs[0].startsWith("goal_width") )
+        		Settings.setGoalHeight(Double.parseDouble(nArgs[1]));
+        	// Ball arguments:
+        	else if ( nArgs[0].startsWith("ball") )
+        		ServerParams_Ball.Builder.dataParser(nArgs);
+        	// Player arguments:
+        	else if ( nArgs[0].startsWith("player") || nArgs[0].startsWith("min")
+        			|| nArgs[0].startsWith("max") )
+        		ServerParams_Player.Builder.dataParser(nArgs);
+        }
+        
+        // Rebuild all parameter objects with updated parameters.
+        Settings.rebuildParams();
     }
     
     /**

@@ -38,11 +38,11 @@ public class Flag extends StationaryObject {
             // Set the horizontal value
             if (parts[3].equals("t")) {
                 // The flag marks the top goalpost
-                y = Settings.FIELD().getCenter().getY() + Settings.GOAL_HEIGHT / 2;
+                y = Settings.FIELD().getCenter().getY() + Settings.getGoalHeight() / 2;
             }
             else if (parts[3].equals("b")) {
                 // The flag marks the bottom goalpost
-                y = Settings.FIELD().getCenter().getY() - Settings.GOAL_HEIGHT / 2;
+                y = Settings.FIELD().getCenter().getY() - Settings.getGoalHeight() / 2;
             }
         }
         // Handle center flags
