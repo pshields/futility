@@ -17,21 +17,24 @@ import futility.Settings;
  * known about the simulation.
  */
 public class Settings {
+	// Client initialization settings:
+    public static int VERBOSITY = Log.ERROR;
     public static final boolean DEBUG = false;
     public static final String HOSTNAME = "localhost";
     public static final int INIT_PORT = 6000;
-    public static final int INITIAL_HASH_MAP_SIZE = 50;
-    public static final String OTHER_TEAM_NAME = "adversary";
-    public static final int MSG_SIZE = 4096;
-    public static final String TEAM_NAME = "futility";
     public static final String SOCCER_SERVER_VERSION = "15.0";
-    public static int VERBOSITY = Log.ERROR;
+    public static final int INITIAL_HASH_MAP_SIZE = 50;
+    public static final int MSG_SIZE = 4096;
+    
+    // Spin-up script team names
+    public static final String TEAM_NAME = "futility";
+    public static final String OTHER_TEAM_NAME = "adversary";
     
     // Field geometry for a standard field
+    private static double GOAL_HEIGHT = 14.02;
     public static final double FIELD_WIDTH = 105.0;
     public static final double FIELD_HEIGHT = 68.0;
     public static final double FIELD_BUFFER = 5.0;
-    public static final double GOAL_HEIGHT = 14.02;
     public static final double PENALTY_AREA_WIDTH = 16.5; // 97.4% confirmed in robocup; based on size of actual field
     public static final double PENALTY_AREA_HEIGHT = 40.3; // 97.4% confirmed in robocup; based on size of actual field
     
@@ -40,8 +43,10 @@ public class Settings {
     public static final char RIGHT_SIDE = 'r';
     
     // Server parameters
-    public static final double TEAM_FAR_LENGTH = 40.0;
-    public static final double TEAM_TOO_FAR_LENGTH = 60.0;
+    public static ServerParams_Ball   BALL_PARAMS   = new ServerParams_Ball();
+    public static ServerParams_Player PLAYER_PARAMS = new ServerParams_Player();
+    public static final double        TEAM_FAR_LENGTH = 40.0;
+    public static final double        TEAM_TOO_FAR_LENGTH = 60.0;
     
     // Inferences
     public static final double DISTANCE_ESTIMATE = 0.333333 * TEAM_FAR_LENGTH + 0.666666 * TEAM_TOO_FAR_LENGTH;
@@ -63,8 +68,34 @@ public class Settings {
         public static final String KICK = "kick";
         public static final String TURN = "turn";
     }
-    
-    /**
+
+	/**
+	 * Gets the height of the goal.
+	 * @return the goal's height.
+	 */
+	public static double getGoalHeight() {
+		return GOAL_HEIGHT;
+	}
+	
+	/**
+	 * Sets the height of the goal.
+	 * @param height the height of the goal.
+	 */
+	public static void setGoalHeight(double height) {
+		GOAL_HEIGHT = height;
+	}
+
+	/**
+	 * Rebuilds all server parameter data stamps according to each object's
+	 *   Builder settings.
+	 */
+    public static void rebuildParams()
+    {
+    	BALL_PARAMS = new ServerParams_Ball();
+    	PLAYER_PARAMS = new ServerParams_Player();
+    }
+	
+	/**
      * Builds a Rectangle object based on the dimensions of the field.
      * 
      * @return a rectangle spanning the playing field.
