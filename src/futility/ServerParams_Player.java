@@ -92,8 +92,8 @@ public class ServerParams_Player {
 	    private static double DASH_POWER_MAX    =  100.0;
 	    private static double DASH_ANGLE_MIN    = -180.0;
 	    private static double DASH_ANGLE_MAX    =  180.0;
-	    private static double MOMENT_MAX        = -180.0;
 	    private static double MOMENT_MIN        = -180.0;
+	    private static double MOMENT_MAX        =  180.0;
 	    private static double NECK_ANGLE_MIN    = -90.0;
 	    private static double NECK_ANGLE_MAX    =  90.0;
 	    private static double NECK_MOMENT_MIN   = -180.0;

@@ -3,6 +3,7 @@
  * 
  * @author Team F(utility)
  */
+
 package futility;
 
 /**
@@ -54,7 +55,8 @@ public class PositionEstimate extends Estimate {
             return this.initialConfidence;
         }
         else {
-            return this.initialConfidence * (3 / (3 + Math.abs(time - this.timeEstimated)));
+            double confidence = (3 * this.initialConfidence) / (3 + Math.abs(time - this.timeEstimated)); 
+            return confidence;
         }
     }
     

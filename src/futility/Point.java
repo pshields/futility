@@ -3,7 +3,6 @@
  * 
  * @author Team F(utility)
  */
-
 package futility;
 
 /**
@@ -18,8 +17,8 @@ public class Point {
      * Default constructor, initializes this point to default values.
      */
     public Point() {
-        x = Settings.INITIAL_POSITION.x;
-        y = Settings.INITIAL_POSITION.y;
+        x = Double.NaN;
+        y = Double.NaN;
     }
 
     /**
@@ -41,53 +40,18 @@ public class Point {
      * @return the angle between this Point and otherPoint
      */
     public final double absoluteAngleTo(Point otherPoint) {
-        double angle;
         double dx = this.deltaX(otherPoint);
         double dy = this.deltaY(otherPoint);
-        // If the points have the same x-coordinate, arctangent will fail
-        // We handle that case independently here
-        if (dx == 0) {
-            if (dy >= 0) {
-                angle = 90;
+        // Handle Math.atan() failure case
+        if (dx == 0.0) {
+            if (dy >= 0.0) {
+                return 90.0;
             }
             else {
-                angle = -90;
+                return -90.0;
             }
         }
-        // In all other cases, arctangent produces the correct angle
-        else {
-            angle = Math.toDegrees(Math.atan(dy/dx));
-        }
-        // Simply the angle
-        while (angle > 180) {
-            angle -= 360;
-        }
-        while (angle < -180) {
-            angle += 360;
-        }
-        return angle;
-    }
-    
-    /**
-     * Retrieves the closest Point object to this Point from the provided
-     * collection of Point objects.
-     * 
-     * @param points array of Point objects to consider.
-     * @return the Point object closest to this Point.
-     */
-    public final Point closestOf(Point[] points) {
-        if (points.length == 0) {
-            return this;
-        }
-        else {
-            Point closest = points[0];
-            for (int i=1; i < points.length; i++) {
-                if (this.distanceTo(points[i]) < this.distanceTo(closest)) {
-                    closest = points[i];
-                }
-            }
-            return closest;
-        }
+        return Math.toDegrees(Math.atan(dy/dx));
     }
     
     /**
@@ -173,23 +137,11 @@ public class Point {
     }
     
     /**
-     * Builds a Point object representing the midpoint between this Point and
-     * a specified Point object. The formula used is
-     * \f$\left(x_n, y_n\right) = \left(x_1 + \frac{\Delta x}{2}, y_1 + \frac{\Delta y}{2}\right)\f$.
-     * 
-     * @param otherPoint the Point object to compute against
-     * @return a Point object representing the midpoint
-     */
-    public Point midpointTo(Point otherPoint) {
-        return new Point(this.getX() + this.deltaX(otherPoint) / 2, this.getY() + this.deltaY(otherPoint) /2);
-    }
-    
-    /**
      * Builds a formatted textual representation of this Point object.
      * 
      * @return a formatted string representation
      */
     public String render() {
-        return String.format("(%f, %f)", this.x - Settings.CENTER_FIELD.getX(),  - (this.y - Settings.CENTER_FIELD.getY()));
+        return String.format("(%f, %f)", this.x, this.y);
     }
 }

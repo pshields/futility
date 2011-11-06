@@ -19,16 +19,19 @@ public class StationaryObject extends FieldObject {
 	 */
     public StationaryObject() {
     }
-    
+
     /**
-     * Constructor; Builds a StationaryObject with a unique identifying string
-     * and the provided coordinates.
+     * Primary constructor.
      * 
      * @param id identifying string literal
      * @param x the x-coordinate
      * @param y the y-coordinate
      */
     public StationaryObject(String id, double x, double y) {
+        if (!Futil.isCorrectlyFormatted(id)) {
+            Log.e("id sent to stationary object constructor: " + id);
+            return;
+        }
         this.id = id;
         this.position = new PositionEstimate(x, y, 1.0, true);
     }

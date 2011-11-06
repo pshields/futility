@@ -13,7 +13,6 @@ import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Network client that initializes a connection to the RoboCup 2D soccer server.
@@ -97,9 +96,6 @@ public class Client {
             }
         });
         t.start();
-        // Start sending commands back to the server
-        Log.d("Scheduling client to run every 100 milliseconds...");
-        responseExecutor.scheduleAtFixedRate(player.brain, 0, 100, TimeUnit.MILLISECONDS);
     }
     
 
