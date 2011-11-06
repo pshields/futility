@@ -27,7 +27,7 @@ public class Main {
        boolean customStart = false;
        for (int i = 0; i < args.length; i++ )
        {
-           // Depending on these settings, initalize one or more clients
+           // Depending on these settings, initialize one or more clients
            if (args[i].equals("-c") || args[i].equals("--compete")) {
                customStart = true;
                startTeam(args);

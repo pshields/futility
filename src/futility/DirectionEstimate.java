@@ -3,8 +3,8 @@
  * 
  * @author Team F(utility)
  */
-package futility;
 
+package futility;
 
 /**
  * An estimate of a direction, with confidence.
@@ -58,7 +58,10 @@ public class DirectionEstimate extends Estimate {
         if (keepConfidenceForever) {
             return initialConfidence;
         }
-        else return (5 * this.initialConfidence) / (5 + Math.abs(time - this.timeEstimated));
+        else {
+            double confidence = (5 * this.initialConfidence) / (5 + Math.abs(time - this.timeEstimated)); 
+            return confidence;
+        }
     }
     
     /**

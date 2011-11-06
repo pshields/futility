@@ -30,16 +30,6 @@ public class PointTest {
 			assertEquals(expectations[i], thisPoint.absoluteAngleTo(otherPoints[i]), 0);
 		}
     }
-
-	@Test
-    public void testClosestOf() {
-		Point[] otherPoints = {};
-		Point thisPoint = new Point(0, 0);
-		
-		Point result = thisPoint.closestOf(otherPoints);
-
-		fail("Not implemented yet");
-    }
     
 	@Test
 	public void testUpdateFromAnotherPoint() {
