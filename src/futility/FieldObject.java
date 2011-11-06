@@ -8,21 +8,13 @@
 package futility;
 
 /**
- * Extension of GameObject; represents a given object on the playing field
+ * Represents an object on the playing field.
  */
 public abstract class FieldObject extends GameObject {
-    public double distanceChange = 0;
+    public SeeInfo info = new SeeInfo();  // the last see info received about the object
     public DirectionEstimate direction = new DirectionEstimate();
-    public double directionChange = 0;
-    public double bodyFacing = 0; //degrees
-    public double headFacing = 0; 
     public PositionEstimate position = new PositionEstimate();
     public String id = "UNKNOWN_ID";
-    
-    // Variables used by the player with the brain
-    public int timeLastSeen = -1;
-    public DirectionEstimate angleToLastSeen = new DirectionEstimate();
-    public double distanceToLastSeen = -1;
     
     /**
      * This default constructor initializes the field object with default values.
@@ -41,29 +33,42 @@ public abstract class FieldObject extends GameObject {
     }
     
     /**
-     * Initializes this field object as a deep copy of the given field object.
+     * Creates the appropriate field object or subclass thereof, given a valid object id.
      * 
-     * @param copy the given field object to copy
+     * @param id the object's id
+     * @return the corresponding FieldObject
      */
-    public FieldObject(FieldObject copy){
-    	copyFieldObject(copy);
-    }
-
-    /**
-     * Builds a deep copy of the given field object.
-     * 
-     * @param copy the given field object to copy.
-     */
-    public void copyFieldObject(FieldObject copy){
-    	this.angleToLastSeen = copy.angleToLastSeen;
-    	this.distanceToLastSeen = copy.distanceToLastSeen;
-    	this.position = new PositionEstimate(copy.position);
-    	this.distanceChange = copy.distanceChange;
-    	this.directionChange = copy.directionChange;
-    	this.bodyFacing = copy.bodyFacing;
-    	this.headFacing = copy.headFacing;
-    	this.id = copy.id;
-    	this.timeLastSeen = copy.timeLastSeen;
+    public static final FieldObject create(String id) {
+        if(id.startsWith("(b")){
+            return new Ball();
+        }
+        else if(id.startsWith("(p")){
+            return new Player(id);
+        }
+        else if(id.startsWith("(l")){
+            //TODO return whatever an l is
+            return null;
+        }
+        else if(id.startsWith("(B")){
+            //TODO return whatever a B is
+            return null;
+        }
+        else if(id.startsWith("(F")){
+            //TODO return whatver an F is
+            return null;
+        }
+        else if(id.startsWith("(G")){
+            //TODO return whatever a G is
+            return null;
+        }
+        else if(id.startsWith("(P")){
+            //TODO return whatever a P is
+            return null;
+        }
+        else{
+            Log.e("invalid name detected for see parse");
+            return null;
+        }
     }
     
     /**
@@ -85,25 +90,7 @@ public abstract class FieldObject extends GameObject {
      */
     public final double relativeAngleTo(FieldObject object) {
         double angle = this.absoluteAngleTo(object) - this.direction.getDirection();
-        // Simplify the angle
-        while (angle > 180) {
-            angle -= 360;
-        }
-        while (angle < -180) {
-            angle += 360;
-        }
-        return angle;
-    }
-    
-    /**
-     * Gets a circle for triangulation. The circle's radius is the last known
-     * distance to the object.
-     * 
-     * @return a circle with radius equal to the last known distance to this 
-     * object from the player with the brain
-     */
-    public final Circle asCircle() {
-        return new Circle(this.position.getPosition(), this.distanceToLastSeen);
+        return Futil.simplifyAngle(angle);
     }
     
     /**
@@ -173,14 +160,54 @@ public abstract class FieldObject extends GameObject {
      * yield the given direction
      */
     public final double relativeAngleTo(double direction) {
-        double offset = direction - this.direction.getDirection();
-        // Simplify the offset so that it is within [-180, 180] degrees
-        while (offset > 180) {
-            offset -= 360;
+        double angle = direction - this.direction.getDirection();
+        return Futil.simplifyAngle(angle);
+    }
+    
+    /**
+     * Updates this field object's last see info.
+     * 
+     * @param info the object's info from the `see` message
+     * @param time the soccer server time from the `see` message
+     */
+    public final void update(String info, int time) {
+        this.info.reset();
+        this.info.time = time;
+        String[] args = Futil.extractArgs(info);
+        int offset = 0;  // indicates number of optional parameters read so far
+        if (args.length > 3 && args[args.length - 1].equals("t")) {
+            this.info.tackling = true;
+            offset++;
         }
-        while (offset < -180) {
-            offset += 360;
+        else if (args.length > 3 && args[args.length - 1].equals("k")) {
+            this.info.kicking = true;
+            offset++;
         }
-        return offset;
+        // If there was more than one argument and the number of arguments plus the offset mod 2
+        // is equal to 1, then the last argument (minus the current offset) must be the pointingDir
+        // argument.
+        if (args.length >= 3 && (args.length + offset) % 2 == 1) {
+            this.info.pointingDir = Double.valueOf(args[args.length - 1 - offset]);
+            offset++;
+        }
+        switch(args.length - offset) {
+        case 6:
+            this.info.headFacingDir = Double.valueOf(args[5]);
+        case 5:
+            this.info.bodyFacingDir = Double.valueOf(args[4]);
+        case 4:
+            this.info.dirChange = Double.valueOf(args[3]);
+        case 3:
+            this.info.distChange = Double.valueOf(args[2]);
+        case 2:
+            this.info.direction = Double.valueOf(args[1]);
+            this.info.distance = Double.valueOf(args[0]);
+            break;
+        case 1:
+            this.info.direction = Double.valueOf(args[0]);
+            break;
+        default:
+            Log.e("Field object had " + args.length + " arguments.");
+        }
     }
 }
