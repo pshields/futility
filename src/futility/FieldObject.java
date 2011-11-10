@@ -55,9 +55,15 @@ public abstract class FieldObject extends GameObject {
             //TODO return whatever a B is
             return null;
         }
+        else if(id.startsWith("(f")){
+        	return new Flag(id);
+        }
         else if(id.startsWith("(F")){
             //TODO return whatver an F is
             return null;
+        }
+        else if(id.startsWith("(goal")){
+        	return new Goal(id);
         }
         else if(id.startsWith("(G")){
             //TODO return whatever a G is

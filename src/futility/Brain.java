@@ -147,10 +147,37 @@ public class Brain implements Runnable {
     		   ); 
     }
     
-    /** 
+    /**
+     * A rough estimate of whether the player can catch the ball, dependent
+     * on their distance to the ball, whether they are a goalie, and whether
+     * they are within their own penalty area.
+     *
+     * @return true if the player can catch the ball
+     */
+    public final boolean canCatchBall() {
+    	if (!player.isGoalie) {
+    		return false;
+    	}
+
+    	//TODO: check if ball is within catchable distance
+
+        if (player.team.side == Settings.LEFT_SIDE) {
+        	if (player.inRectangle(Settings.PENALTY_AREA_LEFT)) {
+        		return true;
+        	}
+        } else {
+        	if (player.inRectangle(Settings.PENALTY_AREA_RIGHT)) {
+        		return true;
+        	}
+        }
+
+        return false;
+    }
+
+    /**
      * A rough estimate of whether the player can kick the ball, dependent
      * on its distance to the ball and whether it is inside the playing field.
-     * 
+     *
      * @return true if the player is on the field and within kicking distance
      */
     public final boolean canKickBall() {
