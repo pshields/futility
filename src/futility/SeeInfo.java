@@ -1,8 +1,8 @@
 package futility;
 
 // Encapsulates the data received in a see message
-public class SeeInfo {
-    public int time;
+public class SeeInfo extends Info{
+    
     double distance;
     double direction;
     double distChange;
@@ -17,14 +17,15 @@ public class SeeInfo {
      * Primary constructor.
      */
     public SeeInfo() {
-        this.reset();
+    	super();
     }
     
     /**
      * Resets this object 
      */
+    @Override
     public void reset() {
-        this.time = -1;
+    	super.reset();
         this.distance = -1.0;
         this.direction = -181.0;
         this.distChange = -1.0;
@@ -34,5 +35,22 @@ public class SeeInfo {
         this.pointingDir = -1.0;
         this.tackling = false;
         this.kicking = false;
+    }
+    
+    /**
+     * Copies the values from this into the parameter
+     * @param info to copy too
+     */
+    public void copy(SeeInfo info){
+    	info.time = time;
+    	info.distance = distance;
+    	info.direction = direction;
+    	info.distChange = distChange;
+    	info.dirChange = dirChange;
+    	info.bodyFacingDir = bodyFacingDir;
+    	info.headFacingDir = headFacingDir;
+    	info.pointingDir = pointingDir;
+    	info.tackling = tackling;
+    	info.kicking = kicking;
     }
 }

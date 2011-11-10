@@ -32,6 +32,8 @@ public class Player extends MobileObject {
     public Player(String id){
     	String[] parts = id.substring(1, id.length() - 1).split(" ");
     	switch(parts.length){
+    	case 5:
+    		//is kicking/tackling? 
     	case 4:
     		//is goalie??
     	case 3:
@@ -42,7 +44,7 @@ public class Player extends MobileObject {
     		
     		break;
     	default:
-    		Log.e("Error parsing a player unexpected number of attributes.");
+    		Log.e("Error parsing a player unexpected number of attributes. " + id);
     	}
     }
     

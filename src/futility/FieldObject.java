@@ -11,10 +11,12 @@ package futility;
  * Represents an object on the playing field.
  */
 public abstract class FieldObject extends GameObject {
-    public SeeInfo info = new SeeInfo();  // the last see info received about the object
+    public SeeInfo curInfo = new SeeInfo();  // the last see info received about the object
+    public SeeInfo oldInfo = new SeeInfo();
     public DirectionEstimate direction = new DirectionEstimate();
     public PositionEstimate position = new PositionEstimate();
     public String id = "UNKNOWN_ID";
+    private double acceleration;
     
     /**
      * This default constructor initializes the field object with default values.
@@ -172,41 +174,42 @@ public abstract class FieldObject extends GameObject {
      * @param time the soccer server time from the `see` message
      */
     public final void update(Player player, String info, int time) {
-        this.info.reset();
-        this.info.time = time;
+    	this.curInfo.copy(oldInfo);
+        this.curInfo.reset();
+        this.curInfo.time = time;
         String[] args = Futil.extractArgs(info);
         int offset = 0;  // indicates number of optional parameters read so far
         if (args.length > 3 && args[args.length - 1].equals("t")) {
-            this.info.tackling = true;
+            this.curInfo.tackling = true;
             offset++;
         }
         else if (args.length > 3 && args[args.length - 1].equals("k")) {
-            this.info.kicking = true;
+            this.curInfo.kicking = true;
             offset++;
         }
         // If there was more than one argument and the number of arguments plus the offset mod 2
         // is equal to 1, then the last argument (minus the current offset) must be the pointingDir
         // argument.
         if (args.length >= 3 && (args.length + offset) % 2 == 1) {
-            this.info.pointingDir = Double.valueOf(args[args.length - 1 - offset]);
+            this.curInfo.pointingDir = Double.valueOf(args[args.length - 1 - offset]);
             offset++;
         }
         switch(args.length - offset) {
         case 6:
-            this.info.headFacingDir = Double.valueOf(args[5]);
+            this.curInfo.headFacingDir = Double.valueOf(args[5]);
         case 5:
-            this.info.bodyFacingDir = Double.valueOf(args[4]);
+            this.curInfo.bodyFacingDir = Double.valueOf(args[4]);
         case 4:
-            this.info.dirChange = Double.valueOf(args[3]);
+            this.curInfo.dirChange = Double.valueOf(args[3]);
         case 3:
-            this.info.distChange = Double.valueOf(args[2]);
+            this.curInfo.distChange = Double.valueOf(args[2]);
         case 2:
-            this.info.direction = Double.valueOf(args[1]);
-            this.info.distance = Double.valueOf(args[0]);
+            this.curInfo.direction = Double.valueOf(args[1]);
+            this.curInfo.distance = Double.valueOf(args[0]);
             // Calculate this object's probable position
             if (!this.isStationaryObject()) {
-                double absDir = Math.toRadians(player.direction.getDirection() + this.info.direction);
-                double dist = this.info.distance;
+                double absDir = Math.toRadians(player.direction.getDirection() + this.curInfo.direction);
+                double dist = this.curInfo.distance;
                 double px = player.position.getX();
                 double py = player.position.getY();
                 double confidence = player.position.getConfidence(time) * 0.95;
@@ -216,10 +219,24 @@ public abstract class FieldObject extends GameObject {
             }
             break;   
         case 1:
-            this.info.direction = Double.valueOf(args[0]);
+            this.curInfo.direction = Double.valueOf(args[0]);
             break;
         default:
             Log.e("Field object had " + args.length + " arguments.");
         }
+        
+        //calculate acceleration
+        //TODO if SeeInfo goes to NaN check for it
+        final double dt = curInfo.time - oldInfo.time;
+        final double dv = curInfo.distChange - oldInfo.distChange;
+        acceleration = dv/dt;
     }
+
+	public void setAcceleration(double acceleration) {
+		this.acceleration = acceleration;
+	}
+
+	public double getAcceleration() {
+		return acceleration;
+	}
 }
