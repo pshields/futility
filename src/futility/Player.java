@@ -42,7 +42,7 @@ public class Player extends MobileObject {
     		
     		break;
     	default:
-    		Log.e("Error parsing a player unexpected number of attributes.");
+    		Log.e("Error parsing a player unexpected number of attributes. " + id);
     	}
     }
     

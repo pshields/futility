@@ -569,6 +569,27 @@ public class Brain implements Runnable {
     }
     
     /**
+     * Send commands to move the player to a point at maximum power
+     * @param point the point to move to
+     */
+    private final void moveTowards(Point point){
+    	moveTowards(point, 100d);
+    }
+    
+    /**
+     * Send commands to move the player to a point with the given power
+     * @param point to move towards
+     * @param power to move at
+     */
+    private final void moveTowards(Point point, double power){
+    	final double x = player.position.getX() - point.getX();
+    	final double y = player.position.getY() - point.getY();
+    	final double theta = Math.toDegrees(Math.atan2(y, x));
+    	turnTo(theta);
+    	dash(power);
+    }
+    
+    /**
      * Updates this this brain's belief about the associated player's position and direction
      * at the current time step. 
      */
