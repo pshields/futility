@@ -63,6 +63,7 @@ public class Settings {
         public static final String INIT = "init";
         public static final String KICK = "kick";
         public static final String TURN = "turn";
+        public static final String MOVE = "move";
     }
     
     public static enum RESPONSE {
@@ -134,6 +135,23 @@ public class Settings {
     		"offside_l",
     		"offside_r"
     ));
+    
+    // Starting formation for pre kick off game states
+    // Index 0 is unused; index 1 onward corresponds to a uniform number.
+    public static final Point[] FORMATION = {
+        new Point(  0.0,   0.0),  // Center of field
+    	new Point(-52.5,   0.0),  // Player 1
+    	new Point(-30.0,  20.0),
+    	new Point(-30.0, -20.0),
+    	new Point(-30.0,   0.0),
+    	new Point(-15.0, -20.0),
+    	new Point(-15.0,  20.0),
+    	new Point(-15.0,   0.0),
+    	new Point(-20.0,  30.0),
+    	new Point(-20.0, -30.0),
+    	new Point(-20.0,  15.0),
+    	new Point(-20.0, -15.0)   // Player 11
+    };
     
     // Groupings of stationary flags
     public static final String[][] BOUNDARY_FLAG_GROUPS = {
