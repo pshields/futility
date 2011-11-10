@@ -31,6 +31,8 @@ public class Brain implements Runnable {
      * LOOK_AROUND tells the player to look around in a circle.
      */
     public enum Strategy {
+    	PRE_KICK_OFF_POSITION,
+    	PRE_KICK_OFF_ANGLE,
         DASH_AROUND_THE_FIELD_CLOCKWISE,
         DASH_TOWARDS_BALL_AND_KICK,
         LOOK_AROUND
@@ -55,6 +57,7 @@ public class Brain implements Runnable {
     private double speedDirection;
     private double headAngle;
     private String collision = "none";
+    private boolean isPositioned = false;
     
     // Object models
     public Rectangle field = Settings.FIELD;
@@ -105,8 +108,21 @@ public class Brain implements Runnable {
     private final double assessUtility(Strategy strategy) {
         double utility = 0;
         switch (strategy) {
+        case PRE_KICK_OFF_POSITION:
+        	// Check play mode, reposition as necessary.
+        	if ( canUseMove() )
+        		utility = 1 - (isPositioned ? 1 : 0);
+        	break;
+        case PRE_KICK_OFF_ANGLE:
+        	if ( isPositioned )
+        	{
+        	    utility = this.player.team.side == 'r' ?
+        			      ( this.canSee("(b)") ? 0.0 : 1.0 ) :
+        			      0.0;
+            }
+        	break;
         case DASH_AROUND_THE_FIELD_CLOCKWISE:
-            utility = 0.95;
+            utility = 0;// 0.95;
             break;
         case DASH_TOWARDS_BALL_AND_KICK:        
             utility = 0.94;
@@ -119,6 +135,19 @@ public class Brain implements Runnable {
             break;
         }
         return utility;
+    }
+    
+    /**
+     * Checks if the play mode allows Move commands
+     * 
+     * @return true if move commands can be issued.
+     */
+    private final boolean canUseMove() {
+    	return (
+    			 playMode.equals( "before_kick_off" ) ||
+    			 playMode.startsWith( "goal_r_") ||
+    			 playMode.startsWith( "goal_l_" )
+    		   ); 
     }
     
     /** 
@@ -207,6 +236,15 @@ public class Brain implements Runnable {
      */
     private final void executeStrategy(Strategy strategy) {
         switch (strategy) {
+        case PRE_KICK_OFF_POSITION:
+        	this.move(Settings.FORMATION[player.number]);
+        	this.isPositioned = true;
+        	// Since we have now moved back into formation, derivatives
+        	// strategies such as LOOK_AROUND should become dominant.        
+        	break;
+        case PRE_KICK_OFF_ANGLE:
+        	this.turn(30);
+        	break;
         case DASH_AROUND_THE_FIELD_CLOCKWISE:
             double x = player.position.getPosition().getX();
             double y = player.position.getPosition().getY();
@@ -334,6 +372,26 @@ public class Brain implements Runnable {
         double y = o1.position.getY() - o1.info.distance * Math.sin(Math.toRadians(direction + o1.info.direction));
         double distance = this.player.position.getPosition().distanceTo(new Point(x, y)); 
         this.player.position.update(x, y, 0.95, this.time);
+    }
+
+    /**
+     * Moves the player to the specified coordinates (server coords).
+     * 
+     * @param p the Point object to pass coordinates with (must be in server coordinates).
+     */
+    public void move(Point p)
+    {
+    	move(p.getX(), p.getY());
+    }
+    
+    /**
+     * Moves the player to the specified coordinates (server coords).
+     * 
+     * @param x x-coordinate
+     * @param y y-coordinate
+     */
+    public void move(double x, double y) {
+        client.sendCommand(Settings.Commands.MOVE, Double.toString(x), Double.toString(y));
     }
     
     /**
