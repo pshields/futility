@@ -46,17 +46,11 @@ public class Brain implements Runnable {
     private int time;
     
     // Self info & Play mode
-    // TODO Encapsulate this information as needed.
     private String playMode;
-    private String viewQuality;
-    private String viewWidth;
-    private double stamina;
-    private double staminaEffort;
-    private double staminaCapacity;
-    private double speedAmount;
-    private double speedDirection;
-    private double headAngle;
-    private String collision = "none";
+
+    private SenseInfo curSenseInfo, lastSenseInfo;
+    private double playerAcceleration;
+    
     private boolean isPositioned = false;
     
     HashMap<String, FieldObject> fieldObjects = new HashMap<String, FieldObject>(100);
@@ -80,6 +74,9 @@ public class Brain implements Runnable {
     public Brain(Player player, Client client) {
         this.player = player;
         this.client = client;
+        curSenseInfo = new SenseInfo();
+        lastSenseInfo = new SenseInfo();
+        playerAcceleration = Double.NaN;
         // Load the HashMap
         for (int i = 0; i < Settings.STATIONARY_OBJECTS.length; i++) {
             StationaryObject object = Settings.STATIONARY_OBJECTS[i];
@@ -161,10 +158,10 @@ public class Brain implements Runnable {
             return false;
         }
         FieldObject ball = fieldObjects.get("(b)");
-        if (ball.info.time != time) {
+        if (ball.curInfo.time != time) {
             return false;
         }
-        return ball.info.distance < 0.7;
+        return ball.curInfo.distance < 0.7;
     }
 
     /**
@@ -176,7 +173,7 @@ public class Brain implements Runnable {
             return false;
         }
         FieldObject obj = this.fieldObjects.get(id);
-        return obj.info.time == this.time;
+        return obj.curInfo.time == this.time;
     }
 
     /**
@@ -336,10 +333,10 @@ public class Brain implements Runnable {
      */
     private final void inferPositionAndDirection(FieldObject o1, FieldObject o2) {
         // x1, x2, y1 and y2 are relative Cartesian coordinates to the flags
-        double x1 = Math.cos(Math.toRadians(o1.info.direction)) * o1.info.distance;
-        double y1 = Math.sin(Math.toRadians(o1.info.direction)) * o1.info.distance;
-        double x2 = Math.cos(Math.toRadians(o2.info.direction)) * o2.info.distance;
-        double y2 = Math.sin(Math.toRadians(o2.info.direction)) * o2.info.distance;
+        double x1 = Math.cos(Math.toRadians(o1.curInfo.direction)) * o1.curInfo.distance;
+        double y1 = Math.sin(Math.toRadians(o1.curInfo.direction)) * o1.curInfo.distance;
+        double x2 = Math.cos(Math.toRadians(o2.curInfo.direction)) * o2.curInfo.distance;
+        double y2 = Math.sin(Math.toRadians(o2.curInfo.direction)) * o2.curInfo.distance;
         double direction = -Math.toDegrees(Math.atan((y2 - y1) / (x2 - x1)));
         // Need to reverse the direction if looking closer to west and using horizontal boundary flags
         if (o1.position.getY() == o2.position.getY()) {
@@ -357,8 +354,8 @@ public class Brain implements Runnable {
             }
         }
         this.player.direction.update(Futil.simplifyAngle(direction), 0.95, this.time);
-        double x = o1.position.getX() - o1.info.distance * Math.cos(Math.toRadians(direction + o1.info.direction));
-        double y = o1.position.getY() - o1.info.distance * Math.sin(Math.toRadians(direction + o1.info.direction));
+        double x = o1.position.getX() - o1.curInfo.distance * Math.cos(Math.toRadians(direction + o1.curInfo.direction));
+        double y = o1.position.getY() - o1.curInfo.distance * Math.sin(Math.toRadians(direction + o1.curInfo.direction));
         double distance = this.player.position.getPosition().distanceTo(new Point(x, y)); 
         this.player.position.update(x, y, 0.95, this.time);
     }
@@ -413,11 +410,16 @@ public class Brain implements Runnable {
         message = Futil.sanitize(message);
         // Handle `sense_body` messages
         if (message.startsWith("(sense_body")) {
+        	curSenseInfo.copy(lastSenseInfo);
+        	curSenseInfo.reset();
+        	
             this.timeLastSenseBody = timeReceived;
+            curSenseInfo.time = Futil.extractTime(message);
+            this.time = curSenseInfo.time;
+            
         	// TODO better nested parentheses parsing logic; perhaps
         	//    reconcile with Patrick's parentheses logic?            
-        	collision = "none";
-        	this.time = Futil.extractTime(message);
+        	
             Log.d("Received a `sense_body` message at time step " + time + ".");
             String parts[] = message.split("\\(");
             for ( String i : parts ) // for each structured argument:
@@ -430,32 +432,40 @@ public class Brain implements Runnable {
             	// Check for specific argument types; ignore unknown arguments.
             	if ( nArgs[0].contains("view_mode") )
             	{ // Player's current view mode
-            		viewQuality = nArgs[1];
-            		viewWidth = nArgs[2];
+            		curSenseInfo.viewQuality = nArgs[1];
+            		curSenseInfo.viewWidth = nArgs[2];
             	}
             	else if ( nArgs[0].contains("stamina") )
             	{ // Player's stamina data
-            		stamina = Double.parseDouble(nArgs[1]);
-            		staminaEffort = Double.parseDouble(nArgs[2]);
-            		staminaCapacity = Double.parseDouble(nArgs[3]);
+            		curSenseInfo.stamina = Double.parseDouble(nArgs[1]);
+            		curSenseInfo.effort = Double.parseDouble(nArgs[2]);
+            		curSenseInfo.staminaCapacity = Double.parseDouble(nArgs[3]);
             	}
             	else if ( nArgs[0].contains("speed") )
             	{ // Player's speed data
-            		speedAmount = Double.parseDouble(nArgs[1]);
-            		speedDirection = Double.parseDouble(nArgs[2]);
+            		curSenseInfo.amountOfSpeed = Double.parseDouble(nArgs[1]);
+            		curSenseInfo.directionOfSpeed = Double.parseDouble(nArgs[2]);
             	}
             	else if ( nArgs[0].contains("head_angle") )
             	{ // Player's head angle
-            		headAngle = Double.parseDouble(nArgs[1]);
+            		curSenseInfo.headAngle = Double.parseDouble(nArgs[1]);
             	}
             	else if ( nArgs[0].contains("ball") || nArgs[0].contains("player")
             			       || nArgs[0].contains("post") )
             	{ // COLLISION flags; limitation of this loop approach is we
             	  //   can't handle nested parentheses arguments well.
             	  // Luckily these flags only occur in the collision structure.
-            		collision = nArgs[0];
+            		curSenseInfo.collision = nArgs[0];
             	}
             }
+            //update acceleration
+            if(lastSenseInfo.amountOfSpeed != Double.NaN){
+	            final double dt = curSenseInfo.time - lastSenseInfo.time;
+	            final double dv = curSenseInfo.amountOfSpeed - lastSenseInfo.amountOfSpeed;
+	            playerAcceleration = dv/dt;
+            }
+            
+            
             // If the brain has responded to two see messages in a row, it's time to respond to a sense_body.
             if (this.responseHistory.get(0) == Settings.RESPONSE.SEE && this.responseHistory.get(1) == Settings.RESPONSE.SEE) {
                 this.run();
@@ -644,7 +654,7 @@ public class Brain implements Runnable {
             LinkedList<FieldObject> flagsOnSide = new LinkedList<FieldObject>();
             for (String id : Settings.BOUNDARY_FLAG_GROUPS[i]) {
                 FieldObject flag = this.fieldObjects.get(id);
-                if (flag.info.time == this.time) {
+                if (flag.curInfo.time == this.time) {
                     flagsOnSide.add(flag);
                 }
                 else {
