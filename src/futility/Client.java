@@ -22,7 +22,6 @@ public class Client {
     public boolean debugMode = Settings.DEBUG;
     public boolean hideReceivedMessages = false;
     public Player player;
-    public ScheduledThreadPoolExecutor responseExecutor;
     public InetAddress soccerServerHost;
     public int soccerServerPort = Settings.INIT_PORT;
     public DatagramSocket soccerServerSocket;
@@ -84,18 +83,9 @@ public class Client {
         
         sendCommand(Settings.Commands.INIT, player.team.name, String.format("(version %s)", Settings.SOCCER_SERVER_VERSION));
         // Start reading input from the server
-        responseExecutor = new ScheduledThreadPoolExecutor(1);
-        responseExecutor.setContinueExistingPeriodicTasksAfterShutdownPolicy(false);
-        Thread t = new Thread(new Runnable() {
-
-            @Override
-            public void run() {
-                while(true){
-                    player.brain.parseMessage(receiveMessage());
-                }
-            }
-        });
-        t.start();
+        while(true){
+            player.brain.parseMessage(receiveMessage());
+        }
     }
     
 
@@ -152,7 +142,7 @@ public class Client {
      * @param message to send to the server
      */
     private void sendMessage(String message) {
-    	Log.i(message);
+    	Log.d("Sending: " + message);
         byte[] buffer = message.getBytes();
         DatagramPacket packet = new DatagramPacket(buffer, buffer.length, soccerServerHost, soccerServerPort);
         try {

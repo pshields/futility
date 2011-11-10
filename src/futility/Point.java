@@ -54,6 +54,10 @@ public class Point {
         return Math.toDegrees(Math.atan(dy/dx));
     }
     
+    public final boolean isUnknown() {
+        return Double.isNaN(this.x) || Double.isNaN(this.y);
+    }
+    
     /**
      * Sets this Point's coordinates to the specified coordinates.
      * 
