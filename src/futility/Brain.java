@@ -59,11 +59,6 @@ public class Brain implements Runnable {
     private String collision = "none";
     private boolean isPositioned = false;
     
-    // Object models
-    public Rectangle field = Settings.FIELD;
-    public MobileObject ball = new MobileObject();
-    public StationaryObject goal = new StationaryObject();
-    
     HashMap<String, FieldObject> fieldObjects = new HashMap<String, FieldObject>(100);
     ArrayDeque<String> hearMessages = new ArrayDeque<String>();
     LinkedList<Settings.RESPONSE>responseHistory = new LinkedList<Settings.RESPONSE>();
@@ -122,13 +117,18 @@ public class Brain implements Runnable {
             }
         	break;
         case DASH_AROUND_THE_FIELD_CLOCKWISE:
-            utility = 0;// 0.95;
+            utility = 0.93;
             break;
         case DASH_TOWARDS_BALL_AND_KICK:        
             utility = 0.94;
             break;
         case LOOK_AROUND:
-            utility = 1 - this.player.position.getConfidence(this.time);
+            if (this.player.position.getPosition().isUnknown()) {
+                utility = 1.0;
+            }
+            else {
+                utility = 1 - this.player.position.getConfidence(this.time);
+            }
             break;
         default:
             utility = 0;
@@ -157,7 +157,7 @@ public class Brain implements Runnable {
      * @return true if the player is on the field and within kicking distance
      */
     public final boolean canKickBall() {
-        if (!player.inRectangle(field)) {
+        if (!player.inRectangle(Settings.FIELD)) {
             return false;
         }
         FieldObject ball = fieldObjects.get("(b)");
@@ -172,6 +172,7 @@ public class Brain implements Runnable {
      */
     public final boolean canSee(String id) {
         if (!this.fieldObjects.containsKey(id)) {
+            Log.e("Can't see " + id + "!");
             return false;
         }
         FieldObject obj = this.fieldObjects.get(id);
@@ -249,20 +250,20 @@ public class Brain implements Runnable {
             double x = player.position.getPosition().getX();
             double y = player.position.getPosition().getY();
             double targetDirection = 0;
-            if (player.inRectangle(field)) {
+            if (player.inRectangle(Settings.FIELD)) {
                 targetDirection = -90;
             }
             // Then run around clockwise between the physical boundary and the field
-            else if (y <= field.getTop() && x <= field.getRight()) {
+            else if (y <= Settings.FIELD.getTop() && x <= Settings.FIELD.getRight()) {
                 targetDirection = 0;        
             }
-            else if (x >= field.getRight() && y <= field.getBottom()) {
+            else if (x >= Settings.FIELD.getRight() && y <= Settings.FIELD.getBottom()) {
                 targetDirection = 90;
             }
-            else if (y >= field.getBottom() && x >= field.getLeft()) {
+            else if (y >= Settings.FIELD.getBottom() && x >= Settings.FIELD.getLeft()) {
                 targetDirection = 180;
             }
-            else if (x <= field.getLeft() && y >= field.getTop()) {
+            else if (x <= Settings.FIELD.getLeft() && y >= Settings.FIELD.getTop()) {
                 targetDirection = -90;
             }
             else {
@@ -277,38 +278,26 @@ public class Brain implements Runnable {
             }
             break;
         case DASH_TOWARDS_BALL_AND_KICK:
-            double approachAngle;
-            String goalString = "(g "+this.player.otherTeam.side +")";
-            if (fieldObjects.containsKey(goalString) && fieldObjects.containsKey("(b)")) {
-                FieldObject ball = this.fieldObjects.get("(b)");
-                FieldObject goal = this.fieldObjects.get(goalString);
-                double power = Math.min(100, 10 + player.distanceTo(ball) * 20);
-                if (ball != null && goal != null && canKickBall()) {
-                    if (this.canSee("(g)")) {
-                        kick(100.0, this.player.relativeAngleTo(goal));
-                    }
-                    else {
-                        dash(30.0, 90.0);
-                    }
-                }
-                else if (ball != null && goal != null && this.canSee("(b)")) {
-                    if (this.canSee("(g)")) {
-                        double approachAngleDelta = player.distanceTo(ball)/10;
-                        approachAngle = this.player.relativeAngleTo(ball) + Math.copySign(1.0, -this.player.relativeAngleTo(goal)) * approachAngleDelta;
-                        if (this.player.relativeAngleTo(ball) > this.player.relativeAngleTo(goal)) {
-                            approachAngle =  + approachAngleDelta;
-                        }
-                        else {
-                            approachAngle = this.player.relativeAngleTo(ball) - approachAngleDelta;
-                        }
-                        dash(power, approachAngle);
-                    }
-                    else {
-                        dash(power);
-                    }
+            FieldObject ball = this.getOrCreate("(b)");
+            FieldObject goal = this.getOrCreate(this.player.getOpponentGoalId());
+            Log.d("Estimated ball position: " + ball.position.render(this.time));
+            Log.d("Estimated goal position: " + goal.position.render(this.time));
+            if (this.canKickBall()) {
+                if (this.canSee(this.player.getOpponentGoalId())) {
+                    kick(100.0, this.player.relativeAngleTo(goal));
                 }
                 else {
-                    turn(7.0);
+                    dash(30.0, 90.0);
+                }
+            }
+            else if (ball.position.getConfidence(this.time) > 0.1) {
+                double approachAngle;
+                approachAngle = Futil.simplifyAngle(this.player.relativeAngleTo(ball));
+                if (Math.abs(approachAngle) > 10) {
+                    this.turn(approachAngle);
+                }
+                else {
+                    dash(50.0, approachAngle);
                 }
             }
             else {
@@ -428,10 +417,7 @@ public class Brain implements Runnable {
         	// TODO better nested parentheses parsing logic; perhaps
         	//    reconcile with Patrick's parentheses logic?            
         	collision = "none";
-            int time = Integer.parseInt(message.substring(12, 17).split("\\s")[0]);
-            if (time != this.time) {
-                this.time = time;
-            }
+        	this.time = Futil.extractTime(message);
             Log.d("Received a `sense_body` message at time step " + time + ".");
             String parts[] = message.split("\\(");
             for ( String i : parts ) // for each structured argument:
@@ -472,7 +458,7 @@ public class Brain implements Runnable {
             }
             // If the brain has responded to two see messages in a row, it's time to respond to a sense_body.
             if (this.responseHistory.get(0) == Settings.RESPONSE.SEE && this.responseHistory.get(1) == Settings.RESPONSE.SEE) {
-                this.client.responseExecutor.execute(this);
+                this.run();
                 this.responseHistory.push(Settings.RESPONSE.SENSE_BODY);
                 this.responseHistory.removeLast();
             }
@@ -481,7 +467,7 @@ public class Brain implements Runnable {
         else if (message.startsWith("(hear"))
         {
         	String parts[] = message.split("\\s");
-        	time = Integer.parseInt(parts[1]);
+        	this.time = Integer.parseInt(parts[1]);
         	if ( parts[2].startsWith("s") || parts[2].startsWith("o") || parts[2].startsWith("c") )
         	{
         		// TODO logic for self, on-line coach, and trainer coach.
@@ -511,13 +497,14 @@ public class Brain implements Runnable {
                 String id = Futil.extractId(info);
                 if (Futil.isUniqueFieldObject(id)) {
                     FieldObject obj = this.getOrCreate(id);
-                    obj.update(info, this.time);
+                    obj.update(this.player, info, this.time);
+                    this.fieldObjects.put(id, obj);
                 }
             }
             // Immediately run for the current step. Since our computations takes only a few
             // milliseconds, it's okay to start running over half-way into the 100ms cycle.
             // That means two out of every three time steps will be executed here.
-            this.client.responseExecutor.execute(this);
+            this.run();
             // Make sure we stay in sync with the mid-way `see`s
             if (this.timeLastSee - this.timeLastSenseBody > 30) {
                 this.responseHistory.clear();
@@ -594,8 +581,8 @@ public class Brain implements Runnable {
         this.currentStrategy = this.determineOptimalStrategy();
         Log.i("Current strategy: " + this.currentStrategy);
         this.executeStrategy(this.currentStrategy);
-        Log.d("Estimated position: " + this.player.position.render(this.time) + ".");
-        Log.d("Estimated direction: " + this.player.direction.render(this.time) + ".");
+        Log.d("Estimated player position: " + this.player.position.render(this.time) + ".");
+        Log.d("Estimated player direction: " + this.player.direction.render(this.time) + ".");
         endTime = System.currentTimeMillis();
         final long duration = endTime - startTime;
         Log.d("Took " + duration + " ms (plus small overhead) to run at time " + this.time + ".");
@@ -670,6 +657,6 @@ public class Brain implements Runnable {
             }
         }
         // TODO Handle other cases
-        Log.i("Did not update position or direction at time " + this.time);
+        Log.e("Did not update position or direction at time " + this.time);
     }
 }

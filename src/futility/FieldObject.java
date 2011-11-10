@@ -167,10 +167,11 @@ public abstract class FieldObject extends GameObject {
     /**
      * Updates this field object's last see info.
      * 
+     * @param player the player whose brain is modeling this object
      * @param info the object's info from the `see` message
      * @param time the soccer server time from the `see` message
      */
-    public final void update(String info, int time) {
+    public final void update(Player player, String info, int time) {
         this.info.reset();
         this.info.time = time;
         String[] args = Futil.extractArgs(info);
@@ -202,7 +203,18 @@ public abstract class FieldObject extends GameObject {
         case 2:
             this.info.direction = Double.valueOf(args[1]);
             this.info.distance = Double.valueOf(args[0]);
-            break;
+            // Calculate this object's probable position
+            if (!this.isStationaryObject()) {
+                double absDir = Math.toRadians(player.direction.getDirection() + this.info.direction);
+                double dist = this.info.distance;
+                double px = player.position.getX();
+                double py = player.position.getY();
+                double confidence = player.position.getConfidence(time) * 0.95;
+                double x = px + dist * Math.cos(absDir);
+                double y = py + dist * Math.sin(absDir);
+                this.position.update(x, y, confidence, time);
+            }
+            break;   
         case 1:
             this.info.direction = Double.valueOf(args[0]);
             break;

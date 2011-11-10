@@ -66,4 +66,8 @@ public class Player extends MobileObject {
         brain = new Brain(this, client);
         this.client = client;
     }
+    
+    public String getOpponentGoalId() {
+        return new String("(g r)");
+    }
 }
