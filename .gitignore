@@ -1,5 +1,6 @@
 # Files from the build
 build/
+bin/
 
 # Eclipse files
 .classpath
