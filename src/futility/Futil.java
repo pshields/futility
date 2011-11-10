@@ -244,4 +244,21 @@ public final class Futil {
         }
         return angle;
     }
+
+	/**
+	 * Utility function, computes the radius of the player agent's kickable
+	 * area. <br><br>
+	 * Uses the formula:<br>
+	 * \f$kickable_area = player_size + ball_size + kickable_margin\f$
+	 * <br><br>As defined by the server parameters.
+	 * 
+	 * @return the kickable area radius.
+	 */
+	public static double kickable_radius() {
+		return  (
+			Settings.PLAYER_PARAMS.PLAYER_SIZE +
+			Settings.PLAYER_PARAMS.KICKABLE_MARGIN +
+            Settings.BALL_PARAMS.BALL_SIZE
+        );
+	}
 }
