@@ -47,6 +47,9 @@ public class Player extends MobileObject {
     	default:
     		Log.e("Error parsing a player unexpected number of attributes. " + id);
     	}
+    	if (this.number == 1) {
+    		this.isGoalie = true;
+    	}
     }
     
     /**
@@ -66,6 +69,9 @@ public class Player extends MobileObject {
     public Player(Client client) {
         brain = new Brain(this, client);
         this.client = client;
+    	if (this.number == 1) {
+    		this.isGoalie = true;
+    	}
     }
     
     public String getOpponentGoalId() {
