@@ -137,19 +137,19 @@ public class Brain implements Runnable {
             break;
         case GET_BETWEEN_BALL_AND_GOAL:
         	// estimate our confidence of where the ball and the player are on the field
-        	double ballConf = this.ball.position.getConfidence(this.time);
+        	double ballConf = this.getOrCreate("(b)").position.getConfidence(this.time);
         	double playerConf = this.player.position.getConfidence(this.time);
         	double conf = (ballConf + playerConf) / 2;
 
         	double initial = 1;
         	if (this.player.team.side == Settings.LEFT_SIDE) {
-        		if (this.ball.position.getX() < this.player.position.getX()) {
+        		if (this.getOrCreate("(b)").position.getX() < this.player.position.getX()) {
         			initial = 0.6;
         		} else {
         			initial = 0.9;
         		}
         	} else {
-        		if (this.ball.position.getX() > this.player.position.getX()) {
+        		if (this.getOrCreate("(b)").position.getX() > this.player.position.getX()) {
         			initial = 0.6;
         		} else {
         			initial = 0.9;
