@@ -159,7 +159,7 @@ public class Brain implements Runnable {
         }
         return utility;
     }
-    
+
     /**
      * Checks if the play mode allows Move commands
      * 
@@ -173,7 +173,7 @@ public class Brain implements Runnable {
     		   ); 
     }
     
-    /**
+    /** 
      * A rough estimate of whether the player can catch the ball, dependent
      * on their distance to the ball, whether they are a goalie, and whether
      * they are within their own penalty area.
