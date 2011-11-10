@@ -129,6 +129,8 @@ public class Settings {
     		"free_kick_r",
     		"corner_kick_l",
     		"corner_kick_r",
+    		"goal_l_",
+    		"goal_r_",
     		"goal_kick_l",
     		"goal_kick_r",
     		"drop_ball",

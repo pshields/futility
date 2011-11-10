@@ -21,6 +21,7 @@ public class ServerParams_Player {
     // Other Player Parameters
     public final double PLAYER_SIZE;
     public final double PLAYER_WEIGHT;
+    public final double KICKABLE_MARGIN;
     
     // Dash Angle / Power
     public final double DASH_POWER_MIN;
@@ -55,8 +56,9 @@ public class ServerParams_Player {
 		PLAYER_DECAY     = Builder.PLAYER_DECAY;
 		PLAYER_SIZE      = Builder.PLAYER_SIZE;
 		PLAYER_WEIGHT    = Builder.PLAYER_WEIGHT;
-	    DASH_POWER_MIN   = Builder.DASH_POWER_MAX;
-	    DASH_POWER_MAX   = Builder.DASH_POWER_MIN;
+		KICKABLE_MARGIN  = Builder.KICKABLE_MARGIN;
+	    DASH_POWER_MIN   = Builder.DASH_POWER_MIN;
+	    DASH_POWER_MAX   = Builder.DASH_POWER_MAX;
 	    DASH_ANGLE_MIN   = Builder.DASH_ANGLE_MIN;
 	    DASH_ANGLE_MAX   = Builder.DASH_ANGLE_MAX;
 		MOMENT_MAX       = Builder.MOMENT_MAX;
@@ -88,6 +90,7 @@ public class ServerParams_Player {
 	    private static double PLAYER_DECAY      =  0.4;
 	    private static double PLAYER_SIZE       =  0.3;
 	    private static double PLAYER_WEIGHT     =  60.0;
+	    private static double KICKABLE_MARGIN   =  0.7;
 	    private static double DASH_POWER_MIN    = -100.0;
 	    private static double DASH_POWER_MAX    =  100.0;
 	    private static double DASH_ANGLE_MIN    = -180.0;
@@ -180,6 +183,8 @@ public class ServerParams_Player {
 				
 		        else if ( args[0].contains("stamina_inc_max") )
 		        	set_stamina_inc_max(val);
+		        else if ( args[0].contains("kickable_margin"))
+		        	set_kickable_margin(val);
 			}
 			catch ( NullPointerException ne )
 			{
@@ -198,6 +203,14 @@ public class ServerParams_Player {
 		///////////////////////////////////////////////////////////////////////
 		// SETTERS
 		///////////////////////////////////////////////////////////////////////
+		/**
+		 * 
+		 * @param val Kickable margin
+		 */
+	    public static void set_kickable_margin(double val) {
+			KICKABLE_MARGIN = val;
+		}
+
 		/**
 		 * 
 		 * @param player_accel_max Maximum acceleration

@@ -33,6 +33,7 @@ public class Brain implements Runnable {
     public enum Strategy {
     	PRE_KICK_OFF_POSITION,
     	PRE_KICK_OFF_ANGLE,
+        DRIBBLE_KICK,
         DASH_AROUND_THE_FIELD_CLOCKWISE,
         DASH_TOWARDS_BALL_AND_KICK,
         LOOK_AROUND
@@ -113,6 +114,10 @@ public class Brain implements Runnable {
         			      0.0;
             }
         	break;
+        case DRIBBLE_KICK: // Unimplemented
+        	utility = 0.0;
+        	//utility = ( this.canKickBall() ) ? 0.0 : 0.0;
+        	break;
         case DASH_AROUND_THE_FIELD_CLOCKWISE:
             utility = 0.93;
             break;
@@ -161,7 +166,7 @@ public class Brain implements Runnable {
         if (ball.curInfo.time != time) {
             return false;
         }
-        return ball.curInfo.distance < 0.7;
+        return ball.curInfo.distance < Futil.kickable_radius();
     }
 
     /**
@@ -243,6 +248,39 @@ public class Brain implements Runnable {
         case PRE_KICK_OFF_ANGLE:
         	this.turn(30);
         	break;
+        case DRIBBLE_KICK:
+        	/*
+        	 *  Find a dribble angle, weighted by presence of opponents.
+        	 *  Determine dribble velocity based on current velocity.
+        	 *  Dribble!
+        	 */
+        	
+			// Predict next position:
+			Point p_target = predictFuturePosition();
+			
+			// Find a dribble angle and distance from future position
+			double d_angle = findDribbleAngle();
+			double d_length = Math.min(1.0, Futil.kickable_radius() );
+			FieldObject ba = this.fieldObjects.get("(b)");
+			
+			// Calculate target ball position:
+			// PROBLEM: d_angle is a relative angle.
+			p_target.update(
+					p_target.getX() + d_length * Math.cos(d_angle),
+					p_target.getY() + d_length * Math.sin(d_angle));  
+			
+			// Calculate trajectory:
+			p_target.update(
+					p_target.getX() - ba.position.getX(),
+					p_target.getY() - ba.position.getY());
+			
+			double traj_power = Math.min(Settings.PLAYER_PARAMS.POWER_MAX,
+					                this.player.position.getPosition().distanceTo(p_target)
+					                  / (1 + Settings.BALL_PARAMS.BALL_DECAY ));
+			
+			// Kick!
+			//kick(traj_power, ba.relativeAngleTo(p_target));
+        	break;
         case DASH_AROUND_THE_FIELD_CLOCKWISE:
             double x = player.position.getPosition().getX();
             double y = player.position.getPosition().getY();
@@ -308,6 +346,58 @@ public class Brain implements Runnable {
             break;
         }
     }
+
+
+    /**
+     * Predicts the future position of the player agent in the next cycle
+     * 
+     * @return the predicted position of the agent
+     */
+    private final Point predictFuturePosition()
+    {
+    	// TODO STUB: returns the player's current position.
+    	return this.player.position.getPosition();
+		/* Intended formula:
+		     future position = 
+		               current position + current velocity +
+		               ( current velocity * player_decay + current acceleration)
+		               Must account for vector arithmetic as related to the
+		               coordinate system.
+ 
+		double dir_x = Math.cos(this.player.direction.getDirection());
+		double dir_y = Math.sin(this.player.direction.getDirection());
+		double vel_x = (curSenseInfo.amountOfSpeed * Math.cos(curSenseInfo.directionOfSpeed) );
+		double vel_y = (curSenseInfo.amountOfSpeed * Math.sin(curSenseInfo.directionOfSpeed) );
+		double x = this.player.position.getPosition().getX() +
+				vel_x + (vel_x * Settings.PLAYER_PARAMS.PLAYER_DECAY + (dash_power * dir_x));
+		double y = this.player.position.getPosition().getY() +
+				(speedAmount * dir_y) + ((speedAmount * dir_y) *
+				Settings.PLAYER_PARAMS.PLAYER_DECAY + (dash_power * dir_y));
+		*/
+    }
+    
+    /**
+     * Finds the optimum angle to kick the ball toward within a kickable
+     * area.
+     * 
+     * @return the angle to dribble toward.
+     */
+    private final double findDribbleAngle() {
+    	// TODO STUB: Need algorithm for a weighted dribble angle.
+    	return 5.0;
+    	
+    	/*
+    	 * Proposed algorithm:
+    	 * 
+    	 * Finding highest weight opponent:
+    	 *   W_i = ( 1 / opponent_distance ) * abs( 1 / opponent_angle ) ) 
+    	 * 
+    	 * Finding RELATIVE angle:
+    	 *   d_angle = max( abs( Opp_w_relative_angle ) - 180, - 90 )
+    	 *              * signum( Opp_w_relative_angle )  
+    	 */
+    }
+
     
     /**
      * Gets a field object from fieldObjects, or creates it if it doesn't yet exist.
@@ -490,9 +580,16 @@ public class Brain implements Runnable {
         	{
         		// Check for a referee message, otherwise continue.
         		String nMsg = parts[3].split("\\)")[0];         // Retrieve the message.
+        		if ( nMsg.startsWith("goal_l_") )
+        			nMsg = "goal_l_";
+        		else if ( nMsg.startsWith("goal_r_") )
+        			nMsg = "goal_r_";
         		if ( parts[2].startsWith("r")                   // Referee;
         			   && Settings.PLAY_MODES.contains(nMsg) )  // Play Mode?
+        		{
             		playMode = nMsg;
+            		this.isPositioned = false;
+        		}
             	else
             		hearMessages.add( nMsg );
         	}
