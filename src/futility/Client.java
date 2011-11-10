@@ -12,7 +12,6 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 /**
  * Network client that initializes a connection to the RoboCup 2D soccer server.
