@@ -27,7 +27,8 @@ public class Brain implements Runnable {
      * 1. Run towards the ball.
      * 2. Rotate around it until you can see the opponent's goal.
      * 3. Kick the ball towards said goal.
-     * 
+     * 4. Get between the ball and the goal (for goalies)
+     *
      * LOOK_AROUND tells the player to look around in a circle.
      */
     public enum Strategy {
@@ -35,7 +36,8 @@ public class Brain implements Runnable {
     	PRE_KICK_OFF_ANGLE,
         DASH_AROUND_THE_FIELD_CLOCKWISE,
         DASH_TOWARDS_BALL_AND_KICK,
-        LOOK_AROUND
+        LOOK_AROUND,
+        GET_BETWEEN_BALL_AND_GOAL
     }
 	
     ///////////////////////////////////////////////////////////////////////////
@@ -116,7 +118,7 @@ public class Brain implements Runnable {
         case DASH_AROUND_THE_FIELD_CLOCKWISE:
             utility = 0.93;
             break;
-        case DASH_TOWARDS_BALL_AND_KICK:        
+        case DASH_TOWARDS_BALL_AND_KICK:
             utility = 0.94;
             break;
         case LOOK_AROUND:
@@ -127,6 +129,30 @@ public class Brain implements Runnable {
                 utility = 1 - this.player.position.getConfidence(this.time);
             }
             break;
+        case GET_BETWEEN_BALL_AND_GOAL:
+        	// estimate our confidence of where the ball and the player are on the field
+        	double ballConf = this.ball.position.getConfidence(this.time);
+        	double playerConf = this.player.position.getConfidence(this.time);
+        	double conf = (ballConf + playerConf) / 2;
+
+        	double initial = 1;
+        	/**
+        	 * if player is left team
+        	 *     if ball is to right of player
+        	 *         initial = .4;
+        	 *     else
+        	 *         initial = .8
+        	 *     endif
+        	 * else
+        	 *     if ball is to left of player
+        	 *         initial = .4
+        	 *     else
+        	 *         initial = .8
+        	 *     endif
+        	 * endif
+        	 */
+        	utility = initial - conf;
+        	break;
         default:
             utility = 0;
             break;
@@ -331,6 +357,8 @@ public class Brain implements Runnable {
         case LOOK_AROUND:
             turn(7);
             break;
+        case GET_BETWEEN_BALL_AND_GOAL:
+        	break;
         default:
             break;
         }
