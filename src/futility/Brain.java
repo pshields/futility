@@ -22,13 +22,15 @@ public class Brain implements Runnable {
      * 
      * DASH_AROUND_THE_FIELD_CLOCKWISE tells the player to dash around
      *   the field boundaries clockwise.
+     * 
      * DASH_TOWARDS_THE_BALL_AND KICK implements a simple soccer strategy:
-     *
      * 1. Run towards the ball.
      * 2. Rotate around it until you can see the opponent's goal.
      * 3. Kick the ball towards said goal.
-     * 
+     *
      * LOOK_AROUND tells the player to look around in a circle.
+     * 
+     * GET_BETWEEN_BALL_AND_GOAL is pretty self explanatory
      */
     public enum Strategy {
     	PRE_KICK_OFF_POSITION,
@@ -36,7 +38,11 @@ public class Brain implements Runnable {
         DRIBBLE_KICK,
         DASH_AROUND_THE_FIELD_CLOCKWISE,
         DASH_TOWARDS_BALL_AND_KICK,
-        LOOK_AROUND
+        LOOK_AROUND,
+        GET_BETWEEN_BALL_AND_GOAL,
+        GOALIE_CATCH_BALL,
+        PRE_FREE_KICK_POSITION,
+        PRE_CORNER_KICK_POSITION
     }
 	
     ///////////////////////////////////////////////////////////////////////////
@@ -101,6 +107,8 @@ public class Brain implements Runnable {
     private final double assessUtility(Strategy strategy) {
         double utility = 0;
         switch (strategy) {
+        case PRE_FREE_KICK_POSITION:
+        case PRE_CORNER_KICK_POSITION:
         case PRE_KICK_OFF_POSITION:
         	// Check play mode, reposition as necessary.
         	if ( canUseMove() )
@@ -121,8 +129,8 @@ public class Brain implements Runnable {
         case DASH_AROUND_THE_FIELD_CLOCKWISE:
             utility = 0.93;
             break;
-        case DASH_TOWARDS_BALL_AND_KICK:        
-            utility = 0.94;
+        case DASH_TOWARDS_BALL_AND_KICK:
+            utility = 0.6;
             break;
         case LOOK_AROUND:
             if (this.player.position.getPosition().isUnknown()) {
@@ -132,13 +140,40 @@ public class Brain implements Runnable {
                 utility = 1 - this.player.position.getConfidence(this.time);
             }
             break;
+        case GET_BETWEEN_BALL_AND_GOAL:
+        	// estimate our confidence of where the ball and the player are on the field
+        	double ballConf = this.getOrCreate("(b)").position.getConfidence(this.time);
+        	double playerConf = this.player.position.getConfidence(this.time);
+        	double conf = (ballConf + playerConf) / 2;
+
+        	double initial = 1;
+        	if (this.player.team.side == Settings.LEFT_SIDE) {
+        		if (this.getOrCreate("(b)").position.getX() < this.player.position.getX()) {
+        			initial = 0.6;
+        		} else {
+        			initial = 0.9;
+        		}
+        	} else {
+        		if (this.getOrCreate("(b)").position.getX() > this.player.position.getX()) {
+        			initial = 0.6;
+        		} else {
+        			initial = 0.9;
+        		}
+        	}
+
+        	if (!this.player.isGoalie) {
+        		initial *= 0.9;
+        	}
+        	
+        	utility = initial * conf;
+        	break;
         default:
             utility = 0;
             break;
         }
         return utility;
     }
-    
+
     /**
      * Checks if the play mode allows Move commands
      * 
@@ -148,14 +183,43 @@ public class Brain implements Runnable {
     	return (
     			 playMode.equals( "before_kick_off" ) ||
     			 playMode.startsWith( "goal_r_") ||
-    			 playMode.startsWith( "goal_l_" )
+    			 playMode.startsWith( "goal_l_" ) ||
+	    	 	 playMode.startsWith( "free_kick_" ) ||
+	    	 	 playMode.startsWith( "corner_kick_" )
     		   ); 
     }
     
     /** 
+     * A rough estimate of whether the player can catch the ball, dependent
+     * on their distance to the ball, whether they are a goalie, and whether
+     * they are within their own penalty area.
+     *
+     * @return true if the player can catch the ball
+     */
+    public final boolean canCatchBall() {
+    	if (!player.isGoalie) {
+    		return false;
+    	}
+
+    	//TODO: check if ball is within catchable distance
+
+        if (player.team.side == Settings.LEFT_SIDE) {
+        	if (player.inRectangle(Settings.PENALTY_AREA_LEFT)) {
+        		return true;
+        	}
+        } else {
+        	if (player.inRectangle(Settings.PENALTY_AREA_RIGHT)) {
+        		return true;
+        	}
+        }
+
+        return false;
+    }
+
+    /**
      * A rough estimate of whether the player can kick the ball, dependent
      * on its distance to the ball and whether it is inside the playing field.
-     * 
+     *
      * @return true if the player is on the field and within kicking distance
      */
     public final boolean canKickBall() {
@@ -239,6 +303,46 @@ public class Brain implements Runnable {
      */
     private final void executeStrategy(Strategy strategy) {
         switch (strategy) {
+        case PRE_FREE_KICK_POSITION:
+        	if (playMode.equals("free_kick_l")) {
+        		if (this.player.team.side == Settings.LEFT_SIDE) {
+        			//TODO
+        		} else {
+        			//TODO
+        		}
+            	this.move(Settings.FREE_KICK_L_FORMATION[player.number]);
+        	} else {
+        		if (this.player.team.side == Settings.LEFT_SIDE) {
+        			//TODO
+        		} else {
+        			//TODO
+        		}
+            	this.move(Settings.FREE_KICK_R_FORMATION[player.number]);
+        	}
+        	this.isPositioned = true;
+        	// Since we have now moved back into formation, derivatives
+        	// strategies such as LOOK_AROUND should become dominant.        
+        	break;
+        case PRE_CORNER_KICK_POSITION:
+        	if (playMode.equals("corner_kick_l")) {
+        		if (this.player.team.side == Settings.LEFT_SIDE) {
+        			//TODO
+        		} else {
+        			//TODO
+        		}
+            	this.move(Settings.CORNER_KICK_L_FORMATION[player.number]);
+        	} else {
+        		if (this.player.team.side == Settings.LEFT_SIDE) {
+        			//TODO
+        		} else {
+        			//TODO
+        		}
+            	this.move(Settings.CORNER_KICK_R_FORMATION[player.number]);
+        	}
+        	this.isPositioned = true;
+        	// Since we have now moved back into formation, derivatives
+        	// strategies such as LOOK_AROUND should become dominant.        
+        	break;
         case PRE_KICK_OFF_POSITION:
         	this.move(Settings.FORMATION[player.number]);
         	this.isPositioned = true;
@@ -342,6 +446,12 @@ public class Brain implements Runnable {
         case LOOK_AROUND:
             turn(7);
             break;
+        case GET_BETWEEN_BALL_AND_GOAL:
+        	//TODO
+        	break;
+        case GOALIE_CATCH_BALL:
+        	//TODO
+        	break;
         default:
             break;
         }

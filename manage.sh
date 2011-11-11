@@ -21,7 +21,7 @@ function start_team() {
 }
 
 function stop_players() {
-  for PID in `ps -ef | grep "java -cp build/ futility.Main" | grep -v grep | awk '{print $2}'`; do
+  for PID in `ps -ef | grep "java -cp bin/ futility.Main" | grep -v grep | awk '{print $2}'`; do
     echo "Stopping player with pid $PID..."
     kill $PID
   done

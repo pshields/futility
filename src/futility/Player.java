@@ -14,19 +14,20 @@ public class Player extends MobileObject {
     public Brain brain;
     public Client client;
     public int number;
+    public Boolean isGoalie = false;
     public Team otherTeam = new Team();
     public Team team = new Team();
-    
+
     /**
      * Default constructor, builds a Player with no central logic data or
      * known information.
      */
     public Player() {
     }
-   
+
     /**
      * Initiates a player from an ObjectId.
-     * 
+     *
      * @param id the player's ObjectId
      */
     public Player(String id){
@@ -45,6 +46,9 @@ public class Player extends MobileObject {
     		break;
     	default:
     		Log.e("Error parsing a player unexpected number of attributes. " + id);
+    	}
+    	if (this.number == 1) {
+    		this.isGoalie = true;
     	}
     }
     
@@ -65,6 +69,9 @@ public class Player extends MobileObject {
     public Player(Client client) {
         brain = new Brain(this, client);
         this.client = client;
+    	if (this.number == 1) {
+    		this.isGoalie = true;
+    	}
     }
     
     public String getOpponentGoalId() {
