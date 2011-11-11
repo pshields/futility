@@ -230,10 +230,19 @@ public abstract class FieldObject extends GameObject {
         acceleration = dv/dt;
     }
 
+    /**
+     * Set the acceleration of this FieldObject<br>
+     * Based on Soccer Server units of time and velocity
+     * @param acceleration
+     */
 	public void setAcceleration(double acceleration) {
 		this.acceleration = acceleration;
 	}
 
+	/**
+	 * Based on Soccer Server units of time and velocity
+	 * @return the acceleration of the FieldObject
+	 */
 	public double getAcceleration() {
 		return acceleration;
 	}
