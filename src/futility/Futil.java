@@ -1,3 +1,9 @@
+/** @file Futil.java
+ * F(utility) utilities.
+ * 
+ * @author Team F(utility)
+ */
+
 package futility;
 
 import java.util.LinkedList;
@@ -163,6 +169,12 @@ public final class Futil {
         return true;
     }
     
+    /**
+     * Cleans up a received message from the soccer server.
+     * 
+     * @param s a raw message from the soccer server
+     * @return a clean message (leading / trailing space removed, confirmed to start with '(' and end with ')')
+     */
     public static final String sanitize(String s) {
         s = s.trim();
         int beginIndex = 0;

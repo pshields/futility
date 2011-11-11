@@ -1,7 +1,12 @@
+/** @file SenseInfo.java
+ * Represents the information encoded in a `sense_body` message.
+ * 
+ * @author Team F(utility)
+ */ 
 package futility;
 
 /**
- *  Class to encapsulate sense commands to the server
+ *  Encapsulates information from `sense_body` messages from the server.
  */
 public class SenseInfo extends Info {
 
@@ -15,6 +20,9 @@ public class SenseInfo extends Info {
 	String viewQuality;
 	String viewWidth;
 	
+	/**
+	 * Resets this object's data.
+	 */
 	@Override
 	public void reset() {
 		super.reset();
@@ -30,8 +38,9 @@ public class SenseInfo extends Info {
 	}
 	
 	/**
-	 * copies the values of this into the parameter
-	 * @param info to copy to
+	 * Copies another sense info.
+	 * 
+	 * @param info the other sense info to copy
 	 */
 	public void copy(SenseInfo info){
 		info.time = time;
