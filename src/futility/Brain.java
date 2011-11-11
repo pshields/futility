@@ -11,8 +11,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 
 /**
- * Threaded class that contains the player agent's sensory data parsing and
- * strategy computation algorithms.
+ * This class contains the player's sensory data parsing and strategy computation algorithms.
  */
 public class Brain implements Runnable {
     
@@ -457,7 +456,6 @@ public class Brain implements Runnable {
         }
     }
 
-
     /**
      * Predicts the future position of the player agent in the next cycle
      * 
@@ -507,7 +505,6 @@ public class Brain implements Runnable {
     	 *              * signum( Opp_w_relative_angle )  
     	 */
     }
-
     
     /**
      * Gets a field object from fieldObjects, or creates it if it doesn't yet exist.
@@ -757,6 +754,11 @@ public class Brain implements Runnable {
         }
     }
     
+    /**
+     * Parses the initial parameters received from the server.
+     *     
+     * @param message the parameters message received from the server
+     */
     public void parseServerParameters(String message)
     {
         String parts[] = message.split("\\(");

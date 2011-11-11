@@ -20,6 +20,12 @@ function start_team() {
   done
 }
 
+function start_three() {
+  for (( i=1; i<=3; i++ )); do
+    start_player $@ $i
+  done
+}
+
 function stop_players() {
   for PID in `ps -ef | grep "java -cp bin/ futility.Main" | grep -v grep | awk '{print $2}'`; do
     echo "Stopping player with pid $PID..."
@@ -32,6 +38,10 @@ case "$1" in
     start_team "--team" "futility" "${@:2}"
     start_team "--team" "adversary" "${@:2}"
     ;;
+  scrimmage)
+    start_three "--team" "futility" "${@:2}"
+    start_three "--team" "adversary" "${@:2}"
+    ;;
   start)
     start_team "${@:2}"
     ;;
@@ -42,7 +52,7 @@ case "$1" in
     stop_players
     ;;
   *)
-    echo $"Usage: $0 {compete|start|startone|stop}"
+    echo $"Usage: $0 {compete|scrimmage|start|startone|stop}"
     exit 1
 esac
 

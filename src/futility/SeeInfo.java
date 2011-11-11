@@ -1,6 +1,14 @@
+/** @file SeeInfo.java
+ * Represents the information encoded in a `see` message.
+ * 
+ * @author Team F(utility)
+ */ 
+
 package futility;
 
-// Encapsulates the data received in a see message
+/**
+ * Encapsulates the data received in a `see` message.
+ */
 public class SeeInfo extends Info{
     
     double distance;
@@ -21,7 +29,7 @@ public class SeeInfo extends Info{
     }
     
     /**
-     * Resets this object 
+     * Resets this object.
      */
     @Override
     public void reset() {
@@ -38,8 +46,9 @@ public class SeeInfo extends Info{
     }
     
     /**
-     * Copies the values from this into the parameter
-     * @param info to copy too
+     * Copies another see info.
+     * 
+     * @param info to copy
      */
     public void copy(SeeInfo info){
     	info.time = time;

@@ -1,5 +1,14 @@
+/** @file Log.java
+ * Logging class.
+ * 
+ * @author Team F(utility)
+ */ 
+
 package futility;
 
+/**
+ * Logging class.
+ */
 public final class Log {
 
 	//verbosity levels for logging messages
