@@ -9,7 +9,6 @@ import org.junit.Test;
 
 import futility.FieldObject;
 import futility.Flag;
-import futility.StationaryObject;
 
 public class FlagTest {
 

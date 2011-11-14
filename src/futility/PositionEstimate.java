@@ -27,7 +27,6 @@ public class PositionEstimate extends Estimate {
         this.position.update(estimate.getPosition());
         this.initialConfidence = estimate.getInitialConfidence();
         this.timeEstimated = estimate.getTimeEstimated();
-        this.keepConfidenceForever = estimate.getKeepConfidenceForever();
     }
     
     /**
@@ -38,10 +37,10 @@ public class PositionEstimate extends Estimate {
      * @param confidence the confidence in the value
      * @param keepConfidenceForever whether or not to keep confidence the same over time.
      */
-    public PositionEstimate(double x, double y, double confidence, boolean keepConfidenceForever) {
+    public PositionEstimate(double x, double y, double confidence, int time) {
         this.position.update(x, y);
         this.initialConfidence = confidence;
-        this.keepConfidenceForever = keepConfidenceForever;
+        this.timeEstimated = time;
     }
     
     /**
@@ -51,7 +50,7 @@ public class PositionEstimate extends Estimate {
      * @return the confidence at that time step
      */
     public final double getConfidence(int time) {
-        if (this.keepConfidenceForever) {
+        if (this.keepConfidenceForever()) {
             return this.initialConfidence;
         }
         else {
@@ -68,7 +67,6 @@ public class PositionEstimate extends Estimate {
     public final Point getPosition() {
         return this.position;
     }
-    
 
     /**
      * Gets the x-coordinate of the estimate's position.

@@ -9,10 +9,7 @@ import org.junit.After;
 import org.junit.Before;
 
 import futility.FieldObject;
-import futility.Flag;
 import futility.Goal;
-import futility.PositionEstimate;
-import futility.Settings;
 
 public class GoalTest {
 

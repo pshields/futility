@@ -18,12 +18,12 @@ public class Goal extends StationaryObject {
     protected PositionEstimate setPosition() {
     	//A switch{} would be better, but not sure if we will have JRE 1.7 available
     	if (this.id == "(goal l)") {
-            return new PositionEstimate(-52.5, 0, 1.0, true);
+            return new PositionEstimate(-52.5, 0, 1.0, -1);
         }
     	else if (this.id == "(goal r)") {
-            return new PositionEstimate(52.5, 0, 1.0, true);
+            return new PositionEstimate(52.5, 0, 1.0, -1);
         }
 
-    	return new PositionEstimate(-1.0, -1.0, 0.0, true);
+    	return new PositionEstimate(-1.0, -1.0, 0.0, -1);
     }
 }

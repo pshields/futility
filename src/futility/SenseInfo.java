@@ -38,9 +38,9 @@ public class SenseInfo extends Info {
 	}
 	
 	/**
-	 * Copies another sense info.
+	 * Copies this info to another sense info.
 	 * 
-	 * @param info the other sense info to copy
+	 * @param info the sense info to copy to
 	 */
 	public void copy(SenseInfo info){
 		info.time = time;

@@ -28,7 +28,6 @@ public class DirectionEstimate extends Estimate {
     public DirectionEstimate(DirectionEstimate estimate) {
         this.direction = estimate.getDirection();
         this.initialConfidence = estimate.getInitialConfidence();
-        this.keepConfidenceForever = estimate.getKeepConfidenceForever();
         this.timeEstimated = estimate.getTimeEstimated();
     }
     
@@ -55,7 +54,7 @@ public class DirectionEstimate extends Estimate {
      * @return a measure of the confidence in the direction value
      */
     public double getConfidence(int time) {
-        if (keepConfidenceForever) {
+        if (this.keepConfidenceForever()) {
             return initialConfidence;
         }
         else {
@@ -85,7 +84,6 @@ public class DirectionEstimate extends Estimate {
     public void setForever(double direction) {
         this.direction = direction;
         this.initialConfidence = 1.0;
-        this.keepConfidenceForever = false;
         this.timeEstimated = -1;
     }
     

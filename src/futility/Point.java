@@ -54,6 +54,20 @@ public class Point {
         return Math.toDegrees(Math.atan(dy/dx));
     }
     
+    /**
+     * Returns a 2D vector representing the point.
+     * 
+     * @return a 2D vector representing the point
+     */
+    public final Vector2D asVector() {
+        return new Vector2D(this.x, this.y);
+    }
+    
+    /**
+     * Returns true if either of this point's x and y are unknown.
+     * 
+     * @return true if either of this point's x and y are unknown
+     */
     public final boolean isUnknown() {
         return Double.isNaN(this.x) || Double.isNaN(this.y);
     }

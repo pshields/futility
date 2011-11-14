@@ -16,6 +16,8 @@ public class ServerParams_Player {
 	// Player speed
 	public final double PLAYER_ACCEL_MAX;
     public final double PLAYER_SPEED_MAX;
+    public final double PLAYER_SPEED_MAX_DELTA_MIN;
+    public final double PLAYER_SPEED_MAX_DELTA_MAX;
     public final double PLAYER_DECAY;
     
     // Other Player Parameters
@@ -53,6 +55,8 @@ public class ServerParams_Player {
 	public ServerParams_Player() {
 		PLAYER_ACCEL_MAX = Builder.PLAYER_ACCEL_MAX;
 		PLAYER_SPEED_MAX = Builder.PLAYER_SPEED_MAX;
+		PLAYER_SPEED_MAX_DELTA_MIN = Builder.PLAYER_SPEED_MAX_DELTA_MIN;
+		PLAYER_SPEED_MAX_DELTA_MAX = Builder.PLAYER_SPEED_MAX_DELTA_MAX;
 		PLAYER_DECAY     = Builder.PLAYER_DECAY;
 		PLAYER_SIZE      = Builder.PLAYER_SIZE;
 		PLAYER_WEIGHT    = Builder.PLAYER_WEIGHT;
@@ -87,6 +91,8 @@ public class ServerParams_Player {
 		// These can be changed by calling individual setters or dataParser()
 		private static double PLAYER_ACCEL_MAX  =  1.0;
 	    private static double PLAYER_SPEED_MAX  =  1.05;
+	    private static double PLAYER_SPEED_MAX_DELTA_MIN = 0.0;
+	    private static double PLAYER_SPEED_MAX_DELTA_MAX = 0.0;
 	    private static double PLAYER_DECAY      =  0.4;
 	    private static double PLAYER_SIZE       =  0.3;
 	    private static double PLAYER_WEIGHT     =  60.0;
