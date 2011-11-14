@@ -11,8 +11,7 @@ package futility;
  */
 public class Estimate {
     protected double initialConfidence;
-    protected int timeEstimated = -1;
-    protected boolean keepConfidenceForever = false;
+    protected int timeEstimated;
     
     /**
      * Gets the confidence as originally provided.
@@ -24,12 +23,13 @@ public class Estimate {
     }
     
     /**
-     * Gets whether or not this estimate keeps its confidence forever.
+     * Returns whether this estimate should keeps its confidence forever.
+     * By convention, this happens when timeEstimated < 0.
      * 
      * @return whether or not this estimate keeps its confidence forever
      */
-    public boolean getKeepConfidenceForever() {
-        return this.keepConfidenceForever;
+    public boolean keepConfidenceForever() {
+        return this.timeEstimated < 0;
     }
     
     /**

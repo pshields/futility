@@ -44,6 +44,10 @@ public class Settings {
     // Server parameters
     public static ServerParams_Ball   BALL_PARAMS   = new ServerParams_Ball();
     public static ServerParams_Player PLAYER_PARAMS = new ServerParams_Player();
+    public static double              DASH_POWER_RATE = 0.006;
+    public static final double        EFFORT_DEC    = 0.05;
+    public static final double        PLAYER_ACCEL_MAX = 1.0;
+    public static final double        PLAYER_SPEED_MAX = 1.0;
     public static final double        TEAM_FAR_LENGTH = 40.0;
     public static final double        TEAM_TOO_FAR_LENGTH = 60.0;
     
@@ -71,6 +75,14 @@ public class Settings {
         SENSE_BODY,
         NONE
     }
+    
+    public static double getDashPowerRate() {
+        return DASH_POWER_RATE;
+    }
+    public static void setDashPowerRate(double rate) {
+        DASH_POWER_RATE = rate;
+    }
+    
 
 	/**
 	 * Gets the height of the goal.

@@ -5,7 +5,6 @@ import static org.junit.Assert.*;
 import org.junit.Test;
 
 import futility.Point;
-import futility.Settings;
 
 public class PointTest {
 
