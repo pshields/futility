@@ -33,7 +33,7 @@ public class StationaryObject extends FieldObject {
             return;
         }
         this.id = id;
-        this.position = new PositionEstimate(x, y, 1.0, true);
+        this.position = new PositionEstimate(x, y, 1.0, -1);
     }
     
     /**

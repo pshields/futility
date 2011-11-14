@@ -55,8 +55,8 @@ public class Brain implements Runnable {
     private String playMode;
 
     private SenseInfo curSenseInfo, lastSenseInfo;
-    private double playerAcceleration;
-    
+    private AccelerationVector acceleration;
+    private VelocityVector velocity;
     private boolean isPositioned = false;
     
     HashMap<String, FieldObject> fieldObjects = new HashMap<String, FieldObject>(100);
@@ -80,9 +80,10 @@ public class Brain implements Runnable {
     public Brain(Player player, Client client) {
         this.player = player;
         this.client = client;
-        curSenseInfo = new SenseInfo();
-        lastSenseInfo = new SenseInfo();
-        playerAcceleration = Double.NaN;
+        this.curSenseInfo = new SenseInfo();
+        this.lastSenseInfo = new SenseInfo();
+        this.velocity = new VelocityVector();
+        this.acceleration = new AccelerationVector();
         // Load the HashMap
         for (int i = 0; i < Settings.STATIONARY_OBJECTS.length; i++) {
             StationaryObject object = Settings.STATIONARY_OBJECTS[i];
@@ -97,6 +98,13 @@ public class Brain implements Runnable {
     ///////////////////////////////////////////////////////////////////////////
     // GAME LOGIC
     ///////////////////////////////////////////////////////////////////////////
+    /**
+     * Returns the direction, in radians, of the player at the current time.
+     */
+    private final double dir() {
+        return Math.toRadians(this.player.direction.getDirection());
+    }
+    
     /**
      * Assesses the utility of a strategy for the current time step.
      * 
@@ -129,7 +137,7 @@ public class Brain implements Runnable {
             utility = 0.93;
             break;
         case DASH_TOWARDS_BALL_AND_KICK:
-            utility = 0.6;
+            utility = 0.94;
             break;
         case LOOK_AROUND:
             if (this.player.position.getPosition().isUnknown()) {
@@ -250,6 +258,8 @@ public class Brain implements Runnable {
      * @param power the power of the acceleration (0 to 100)
      */
     private final void dash(double power) {
+        // Update this player's acceleration
+        this.acceleration.addPolar(this.dir(), this.effort());
         this.client.sendCommand(Settings.Commands.DASH, Double.toString(power));
     }
 
@@ -262,6 +272,7 @@ public class Brain implements Runnable {
      * yielding the direction of acceleration
      */
     public final void dash(double power, double offset) {
+        this.acceleration.addPolar(this.dir() + offset, this.edp(power));
         client.sendCommand(Settings.Commands.DASH, Double.toString(power), Double.toString(offset));
     }
     
@@ -282,17 +293,34 @@ public class Brain implements Runnable {
         }
         return optimalStrategy;
     }
-    
-    /** 
-     * Estimates the position of a field object.
+    /**
+     * Returns this player's effective dash power. Refer to the soccer server manual for more information.
      * 
-     * @param object a field object to estimate the position of
-     * @return a position estimate for the field object
+     * @return this player's effective dash power
      */
-    private PositionEstimate estimatePositionOf(FieldObject object) {
-        PositionEstimate estimate = new PositionEstimate();
-        // TODO 
-        return estimate;
+    private final double edp(double power) {
+        return this.effort() * Settings.DASH_POWER_RATE * power;
+    }
+    
+    /**
+     * Returns an effort value for this player. If one wasn't received this time step, we guess.
+     */
+    private final double effort() {
+        return this.curSenseInfo.effort;
+    }
+    
+    /**
+     * Estimates this player's next position. Assumes any actions for the current turn
+     * have already been executed. Refer to the soccer server manual for more information. 
+     * 
+     * @return estimated position of the player in the next time step
+     */
+    private PositionEstimate estimateNextPlayerPosition() {
+        double x = this.x() + this.velX();
+        double y = this.y() + this.velY();
+        double confidence = this.player.position.getConfidence(this.time) * 0.95;
+        Log.d("Next player position estimate (delta): " + this.velX() + ", " + this.velY() + ".");
+        return new PositionEstimate(x, y, confidence, this.time);
     }
     
     /**
@@ -359,7 +387,7 @@ public class Brain implements Runnable {
         	 */
         	
 			// Predict next position:
-			Point p_target = predictFuturePosition();
+			Point p_target = estimateNextPlayerPosition().getPosition();
 			
 			// Find a dribble angle and distance from future position
 			double d_angle = findDribbleAngle();
@@ -454,34 +482,6 @@ public class Brain implements Runnable {
         default:
             break;
         }
-    }
-
-    /**
-     * Predicts the future position of the player agent in the next cycle
-     * 
-     * @return the predicted position of the agent
-     */
-    private final Point predictFuturePosition()
-    {
-    	// TODO STUB: returns the player's current position.
-    	return this.player.position.getPosition();
-		/* Intended formula:
-		     future position = 
-		               current position + current velocity +
-		               ( current velocity * player_decay + current acceleration)
-		               Must account for vector arithmetic as related to the
-		               coordinate system.
- 
-		double dir_x = Math.cos(this.player.direction.getDirection());
-		double dir_y = Math.sin(this.player.direction.getDirection());
-		double vel_x = (curSenseInfo.amountOfSpeed * Math.cos(curSenseInfo.directionOfSpeed) );
-		double vel_y = (curSenseInfo.amountOfSpeed * Math.sin(curSenseInfo.directionOfSpeed) );
-		double x = this.player.position.getPosition().getX() +
-				vel_x + (vel_x * Settings.PLAYER_PARAMS.PLAYER_DECAY + (dash_power * dir_x));
-		double y = this.player.position.getPosition().getY() +
-				(speedAmount * dir_y) + ((speedAmount * dir_y) *
-				Settings.PLAYER_PARAMS.PLAYER_DECAY + (dash_power * dir_y));
-		*/
     }
     
     /**
@@ -642,6 +642,9 @@ public class Brain implements Runnable {
             	{ // Player's speed data
             		curSenseInfo.amountOfSpeed = Double.parseDouble(nArgs[1]);
             		curSenseInfo.directionOfSpeed = Double.parseDouble(nArgs[2]);
+            		// Update velocity variable
+            		double dir = this.dir() + Math.toRadians(curSenseInfo.directionOfSpeed);
+            		this.velocity.setPolar(dir, curSenseInfo.amountOfSpeed);
             	}
             	else if ( nArgs[0].contains("head_angle") )
             	{ // Player's head angle
@@ -655,14 +658,7 @@ public class Brain implements Runnable {
             		curSenseInfo.collision = nArgs[0];
             	}
             }
-            //update acceleration
-            if(lastSenseInfo.amountOfSpeed != Double.NaN){
-	            final double dt = curSenseInfo.time - lastSenseInfo.time;
-	            final double dv = curSenseInfo.amountOfSpeed - lastSenseInfo.amountOfSpeed;
-	            playerAcceleration = dv/dt;
-            }
-            
-            
+
             // If the brain has responded to two see messages in a row, it's time to respond to a sense_body.
             if (this.responseHistory.get(0) == Settings.RESPONSE.SEE && this.responseHistory.get(1) == Settings.RESPONSE.SEE) {
                 this.run();
@@ -770,6 +766,8 @@ public class Brain implements Runnable {
         	String nArgs[] = nMsg.split("\\s");
         	
         	// Check for specific argument types; ignore unknown arguments.
+        	if (nArgs[0].startsWith("dash_power_rate")) 
+        	    Settings.setDashPowerRate(Double.parseDouble(nArgs[1]));
         	if ( nArgs[0].startsWith("goal_width") )
         		Settings.setGoalHeight(Double.parseDouble(nArgs[1]));
         	// Ball arguments:
@@ -796,12 +794,14 @@ public class Brain implements Runnable {
             Log.e("Brain did not run during time step " + expectedNextRun + ".");
         }
         this.lastRan = this.time;
+        this.acceleration.reset();
         this.updatePositionAndDirection();
         this.currentStrategy = this.determineOptimalStrategy();
         Log.i("Current strategy: " + this.currentStrategy);
         this.executeStrategy(this.currentStrategy);
         Log.d("Estimated player position: " + this.player.position.render(this.time) + ".");
         Log.d("Estimated player direction: " + this.player.direction.render(this.time) + ".");
+        this.estimateNextPlayerPosition();
         endTime = System.currentTimeMillis();
         final long duration = endTime - startTime;
         Log.d("Took " + duration + " ms (plus small overhead) to run at time " + this.time + ".");
@@ -877,5 +877,41 @@ public class Brain implements Runnable {
         }
         // TODO Handle other cases
         Log.e("Did not update position or direction at time " + this.time);
+    }
+    
+    /**
+     * Returns this player's x velocity. Takes this player's current acceleration into account.
+     * 
+     * @return this player's x velocity
+     */
+    private final double velX() {
+        return this.velocity.getX() + this.acceleration.getX();
+    }
+    
+    /**
+     * Returns this player's y velocity. Takes this player's current acceleration into account.
+     * 
+     * @return this player's y velocity
+     */
+    private final double velY() {
+        return this.velocity.getY() + this.acceleration.getY();
+    }
+    
+    /**
+     * Returns this player's x.
+     * 
+     * @return this player's x-coordinate
+     */
+    private final double x() {
+        return this.player.position.getPosition().getX();
+    }
+    
+    /**
+     * Returns this player's y.
+     * 
+     * @return this player's y coordinate
+     */
+    private final double y() {
+        return this.player.position.getPosition().getY();
     }
 }
