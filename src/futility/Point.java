@@ -51,7 +51,13 @@ public class Point {
                 return -90.0;
             }
         }
-        return Math.toDegrees(Math.atan(dy/dx));
+        double angle = Math.toDegrees(Math.atan(dy/dx));
+        if (dx > 0) {
+            return angle;
+        }
+        else {
+            return 180.0 + angle;
+        }
     }
     
     /**
