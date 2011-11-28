@@ -412,6 +412,7 @@ public class Brain implements Runnable {
 	                ( v_ball.magnitude() / (1 + Settings.BALL_PARAMS.BALL_DECAY ) ) * 10); // values of 1 or 2 do not give very useful kicks.
 			
 			// Kick!
+			Log.i("Kick trajectory power: " + traj_power);
 			kick( traj_power, Futil.simplifyAngle( Math.toDegrees(v_ball.direction()) ) );
         	break;
         case DASH_AROUND_THE_FIELD_CLOCKWISE:
@@ -495,9 +496,11 @@ public class Brain implements Runnable {
     	// TODO STUB: Need algorithm for a weighted dribble angle.
     	double d_length = Math.max(1.0, Futil.kickable_radius() );
     	
-    	// 5.0 is arbitrary; "smart" dribbling would require weighing opponent
-    	// positions; unimplemented.
+    	// 5.0 is arbitrary in case nothing is visible; attempt to kick
+    	//   toward the lateral center of the field.
     	double d_angle = 5.0 * -1.0 * Math.signum( this.player.position.getY() );
+    	
+    	// If opponents are visible, try to kick away from them.
     	if ( !lastSeenOpponents.isEmpty() )
     	{
     		double weight = 0.0d;
@@ -512,8 +515,10 @@ public class Brain implements Runnable {
     				w_angle = i_angle;
     		}
     		
+    		// Keep the angle within [-90,90]. Kick forward, not backward!
     		d_angle = Math.max( Math.abs( w_angle ) - 180, -90 ) * Math.signum( w_angle );
     	}
+    	// Otherwise kick toward the goal.
     	else if ( this.canSee( this.player.getOpponentGoalId() ) )
     		d_angle += this.player.relativeAngleTo(
     				this.getOrCreate(this.player.getOpponentGoalId()));
