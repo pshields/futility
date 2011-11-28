@@ -75,6 +75,6 @@ public class Player extends MobileObject {
     }
     
     public String getOpponentGoalId() {
-        return new String("(g r)");
+        return new String("(g " + (this.team.side == 'r' ? "l" : "r") + ")");
     }
 }

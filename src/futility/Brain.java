@@ -62,6 +62,7 @@ public class Brain implements Runnable {
     
     HashMap<String, FieldObject> fieldObjects = new HashMap<String, FieldObject>(100);
     ArrayDeque<String> hearMessages = new ArrayDeque<String>();
+    LinkedList<Player> lastSeenOpponents = new LinkedList<Player>();
     LinkedList<Settings.RESPONSE>responseHistory = new LinkedList<Settings.RESPONSE>();
     private long timeLastSee = 0;
     private long timeLastSenseBody = 0;
@@ -409,26 +410,9 @@ public class Brain implements Runnable {
         	
 			double traj_power = Math.min(Settings.PLAYER_PARAMS.POWER_MAX,
 	                ( v_ball.magnitude() / (1 + Settings.BALL_PARAMS.BALL_DECAY ) ) * 10); // values of 1 or 2 do not give very useful kicks.
-        	
-			// Find a dribble angle and distance from future position
-			//Vector2D d_vector = findDribbleAngle();
-			//p_target = p_new.( findDribbleAngle() );
-			//target.add( new Vector2D( -1 * ball.position.getX(), -1 * ball.position.getY() ) );
-			// Calculate target ball position:
-			// PROBLEM: d_angle is a relative angle.
-			/*
-			p_target.update(
-					p_target.getX() + d_length * Math.cos(d_angle),
-					p_target.getY() + d_length * Math.sin(d_angle));  
-			
-			// Calculate trajectory:
-			p_target.update(
-					p_target.getX() - ba.position.getX(),
-					p_target.getY() - ba.position.getY());
-			*/
-			
 			
 			// Kick!
+			Log.i("Kick trajectory power: " + traj_power);
 			kick( traj_power, Futil.simplifyAngle( Math.toDegrees(v_ball.direction()) ) );
         	break;
         case DASH_AROUND_THE_FIELD_CLOCKWISE:
@@ -512,13 +496,34 @@ public class Brain implements Runnable {
     	// TODO STUB: Need algorithm for a weighted dribble angle.
     	double d_length = Math.max(1.0, Futil.kickable_radius() );
     	
-    	// 5.0 is arbitrary; "smart" dribbling would require weighing opponent
-    	// positions; unimplemented.
+    	// 5.0 is arbitrary in case nothing is visible; attempt to kick
+    	//   toward the lateral center of the field.
     	double d_angle = 5.0 * -1.0 * Math.signum( this.player.position.getY() );
-    	if ( this.canSee( this.player.getOpponentGoalId() ) )
+    	
+    	// If opponents are visible, try to kick away from them.
+    	if ( !lastSeenOpponents.isEmpty() )
+    	{
+    		double weight = 0.0d;
+    		double w_angle = 0.0d;
+    		for ( Player i : lastSeenOpponents )
+    		{
+    			double i_angle = player.relativeAngleTo(i);
+    			double new_weight = Math.max(weight, Math.min(1.0,
+    					    1 / player.distanceTo(i) * Math.abs(
+    					    		1 / ( i_angle == 0.0 ? 1.0 : i_angle ) ) ) );
+    			if ( new_weight > weight )
+    				w_angle = i_angle;
+    		}
+    		
+    		// Keep the angle within [-90,90]. Kick forward, not backward!
+    		d_angle = Math.max( Math.abs( w_angle ) - 180, -90 ) * Math.signum( w_angle );
+    	}
+    	// Otherwise kick toward the goal.
+    	else if ( this.canSee( this.player.getOpponentGoalId() ) )
     		d_angle += this.player.relativeAngleTo(
     				this.getOrCreate(this.player.getOpponentGoalId()));
     	
+    	Log.i("Dribble angle chosen: " + d_angle);
     	Vector2D d_vec = new Vector2D(0.0, 0.0);
     	d_vec = d_vec.addPolar(Math.toRadians(d_angle), d_length); // ?!
     	return d_vec;	
@@ -732,12 +737,15 @@ public class Brain implements Runnable {
             this.time = Futil.extractTime(message);
             Log.d("Received `see` message at time step " + this.time);
             LinkedList<String> infos = Futil.extractInfos(message);
+            lastSeenOpponents.clear();
             for (String info : infos) {
                 String id = Futil.extractId(info);
                 if (Futil.isUniqueFieldObject(id)) {
                     FieldObject obj = this.getOrCreate(id);
                     obj.update(this.player, info, this.time);
                     this.fieldObjects.put(id, obj);
+                    if ( id.startsWith("(p \"") && !( id.startsWith(this.player.team.name, 4) ) )
+                    	lastSeenOpponents.add( (Player)obj );
                 }
             }
             // Immediately run for the current step. Since our computations takes only a few
