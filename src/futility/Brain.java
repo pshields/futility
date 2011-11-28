@@ -35,6 +35,7 @@ public class Brain implements Runnable {
     	PRE_KICK_OFF_POSITION,
     	PRE_KICK_OFF_ANGLE,
         DRIBBLE_KICK,
+        ACTIVE_INTERCEPT,
         DASH_AROUND_THE_FIELD_CLOCKWISE,
         DASH_TOWARDS_BALL_AND_KICK,
         LOOK_AROUND,
@@ -125,13 +126,12 @@ public class Brain implements Runnable {
         	if ( isPositioned )
         	{
         	    utility = this.player.team.side == 'r' ?
-        			      ( this.canSee("(b)") ? 0.0 : 1.0 ) :
-        			      0.0;
+        			      ( this.canSee("(b)") ? 0.0 : 1.0 ) : 0.0;
             }
         	break;
         case DRIBBLE_KICK: // Unimplemented
-        	Rectangle OPP_PENALTY_AREA = ( this.player.team.side == 'l' ?
-        			Settings.PENALTY_AREA_RIGHT : Settings.PENALTY_AREA_LEFT );
+        	Rectangle OPP_PENALTY_AREA = ( this.player.team.side == 'l' ) ?
+        			Settings.PENALTY_AREA_RIGHT : Settings.PENALTY_AREA_LEFT;
         
         	// If the agent is a goalie, don't dribble!
         	// If we're in the opponent's strike zone, don't dribble! Go for score!
@@ -139,7 +139,9 @@ public class Brain implements Runnable {
         		utility = 0.0;
         	}
         	else {
-        		utility = ( this.canKickBall() ) ? 0.95 : 0.0;
+        		utility = ( this.canKickBall() && this.canSee(
+        				    this.player.getOpponentGoalId()) ) ?
+        				  0.95 : 0.0;
         	}
         	break;
         case DASH_AROUND_THE_FIELD_CLOCKWISE:
@@ -242,7 +244,7 @@ public class Brain implements Runnable {
         if (!player.inRectangle(Settings.FIELD)) {
             return false;
         }
-        FieldObject ball = fieldObjects.get("(b)");
+        FieldObject ball = this.getOrCreate("(b)");
         if (ball.curInfo.time != time) {
             return false;
         }
@@ -339,6 +341,7 @@ public class Brain implements Runnable {
      */
     private final void executeStrategy(Strategy strategy) {
     	FieldObject ball = this.getOrCreate("(b)");
+        FieldObject goal = this.getOrCreate(this.player.getOpponentGoalId());
     	
         switch (strategy) {
         case PRE_FREE_KICK_POSITION:
@@ -398,13 +401,19 @@ public class Brain implements Runnable {
         	 */
         	
 			// Predict next position:
-        	Vector2D target = estimateNextPlayerPosition().getPosition().asVector();
-			//Point p_target = estimateNextPlayerPosition().getPosition();
-			
+        	Vector2D v_new = estimateNextPlayerPosition().getPosition().asVector();
+        	v_new = v_new.add(new Vector2D(this.velX(), this.velY())); // Predict two cycles from now, not one
+			Vector2D v_target = v_new.add( findDribbleAngle() );
+        	Vector2D v_ball = v_target.add( new Vector2D( -1 * ball.position.getX(),
+        			                        -1 * ball.position.getY() ) );
+        	
+			double traj_power = Math.min(Settings.PLAYER_PARAMS.POWER_MAX,
+	                ( v_ball.magnitude() / (1 + Settings.BALL_PARAMS.BALL_DECAY ) ) * 10); // values of 1 or 2 do not give very useful kicks.
+        	
 			// Find a dribble angle and distance from future position
 			//Vector2D d_vector = findDribbleAngle();
-			target.add( findDribbleAngle() );
-			target.add( new Vector2D( -1 * ball.position.getX(), -1 * ball.position.getY() ) );
+			//p_target = p_new.( findDribbleAngle() );
+			//target.add( new Vector2D( -1 * ball.position.getX(), -1 * ball.position.getY() ) );
 			// Calculate target ball position:
 			// PROBLEM: d_angle is a relative angle.
 			/*
@@ -418,11 +427,9 @@ public class Brain implements Runnable {
 					p_target.getY() - ba.position.getY());
 			*/
 			
-			double traj_power = Math.min(Settings.PLAYER_PARAMS.POWER_MAX,
-					                target.magnitude() / (1 + Settings.BALL_PARAMS.BALL_DECAY ));
 			
 			// Kick!
-			kick( traj_power, Futil.simplifyAngle( Math.toDegrees(target.direction()) ) );
+			kick( traj_power, Futil.simplifyAngle( Math.toDegrees(v_ball.direction()) ) );
         	break;
         case DASH_AROUND_THE_FIELD_CLOCKWISE:
             double x = player.position.getPosition().getX();
@@ -456,7 +463,6 @@ public class Brain implements Runnable {
             }
             break;
         case DASH_TOWARDS_BALL_AND_KICK:
-            FieldObject goal = this.getOrCreate(this.player.getOpponentGoalId());
             Log.d("Estimated ball position: " + ball.position.render(this.time));
             Log.d("Estimated goal position: " + goal.position.render(this.time));
             if (this.canKickBall()) {
@@ -504,22 +510,18 @@ public class Brain implements Runnable {
      */
     private final Vector2D findDribbleAngle() {
     	// TODO STUB: Need algorithm for a weighted dribble angle.
-    	double d_length = Math.min(1.0, Futil.kickable_radius() );
-    	double d_angle = 5.0;
-    	Vector2D d_vec = new Vector2D();
-    	d_vec.addPolar(Math.toRadians(d_angle), d_length);
-    	return d_vec;
-
-    	/*FieldObject goal = this.getOrCreate(this.player.getOpponentGoalId());
+    	double d_length = Math.max(1.0, Futil.kickable_radius() );
     	
-        if ( this.canSee( this.player.getOpponentGoalId() ) )
-        {
-        	return p.
-        }
-        
-    	return 5.0;
-    	*/
+    	// 5.0 is arbitrary; "smart" dribbling would require weighing opponent
+    	// positions; unimplemented.
+    	double d_angle = 5.0 * -1.0 * Math.signum( this.player.position.getY() );
+    	if ( this.canSee( this.player.getOpponentGoalId() ) )
+    		d_angle += this.player.relativeAngleTo(
+    				this.getOrCreate(this.player.getOpponentGoalId()));
     	
+    	Vector2D d_vec = new Vector2D(0.0, 0.0);
+    	d_vec = d_vec.addPolar(Math.toRadians(d_angle), d_length); // ?!
+    	return d_vec;	
     	
     	/*
     	 * Proposed algorithm:
