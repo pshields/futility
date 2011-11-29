@@ -44,7 +44,7 @@ public final class Futil {
     }
     
     /**
-     * Gets the object id from an ObjectInfo string
+     * Gets the object id from an ObjectInfo string.
      * 
      * @param info ObjectInfo string
      * @return the object id
@@ -62,6 +62,76 @@ public final class Futil {
             result = "(b)";
         }
         return result; 
+    }
+    
+    public static AccelerationVector estimateAccelerationOf(FieldObject obj, int timeOffset, int currentTime) {
+        if (timeOffset < -1) {
+            return AccelerationVector.ZeroVector();
+        }
+        else if (timeOffset == 1) {
+            if (obj.hasBrain()) {
+                Player player = (Player) obj;
+                return player.brain.acceleration;
+            }
+            else {
+                return AccelerationVector.ZeroVector();
+            }
+        }
+        else {
+            return AccelerationVector.ZeroVector();
+        }
+    }
+    
+    /**
+     * Estimates the position of a FieldObject.
+     * 
+     * @param timeOffset time step offset from the current soccer server time step
+     * @param currentTime the current soccer server time step
+     * @return estimated position of the player in the next time step
+     */
+    public static PositionEstimate estimatePositionOf(FieldObject obj, int timeOffset, int currentTime) {
+        if (timeOffset < -1) {
+            return PositionEstimate.Unknown(currentTime);
+        }
+        else if (timeOffset == -1) {
+            return obj.prevPosition;
+        }
+        else if (timeOffset == 0) {
+            return obj.position;
+        }
+        else {
+            PositionEstimate est = new PositionEstimate(obj.position);
+            for (int i=0; i<timeOffset; i++) {
+                VelocityVector v = Futil.estimateVelocityOf(obj, i, currentTime);
+                AccelerationVector a = Futil.estimateAccelerationOf(obj, i, currentTime);
+                double x = est.getX() + v.getX() + a.getX();
+                double y = est.getY() + v.getY() + a.getY();
+                double confidence = est.getConfidence(currentTime + i) * 0.95;
+                est.update(x, y, confidence, currentTime + i);
+            }
+            return est;
+        }
+    }
+    
+    /**
+     * Estimates the velocity of a FieldObject at some time offset.
+     * 
+     * @param obj the FieldObject to estimate the velocity for
+     * @param timeOffset offset from the current time step for the time step to estimate for
+     * @param currentTime the current soccer server time step
+     * @return the estimated velocity of the object
+     */
+    public static VelocityVector estimateVelocityOf(FieldObject obj, int timeOffset, int currentTime) {
+        if (timeOffset < 0) {
+            return new VelocityVector();
+        }
+        else if (timeOffset == 0) {
+            return obj.velocity();
+        }
+        else {
+            // Assume for now the object retains its current velocity vector into the future
+            return obj.velocity();
+        }
     }
     
     /**

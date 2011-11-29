@@ -30,17 +30,52 @@ public class PositionEstimate extends Estimate {
     }
     
     /**
+     * PositionEstimate constructor.
+     * 
+     * @param p point representing the position
+     * @param confidence the confidence in the value
+     * @param time the soccer server time step in which the estimate is made
+     */
+    public PositionEstimate(Point p, double confidence, int time) {
+        this.position.update(p);
+        this.initialConfidence = confidence;
+        this.timeEstimated = time;
+    }
+    
+    /**
      * Full position estimate constructor.
      * 
      * @param x the x-coordinate of the position
      * @param y the y-coordinate of the position
      * @param confidence the confidence in the value
-     * @param keepConfidenceForever whether or not to keep confidence the same over time.
+     * @param time the soccer server time step in which the estimate is made
      */
     public PositionEstimate(double x, double y, double confidence, int time) {
         this.position.update(x, y);
         this.initialConfidence = confidence;
         this.timeEstimated = time;
+    }
+    
+    ///////////////////////////////////////////////////////////////////////////
+    // STATIC FUNCTIONS
+    ///////////////////////////////////////////////////////////////////////////
+    /**
+     * Returns a PositionEstimate with no confidence and an unknown value.
+     * 
+     * @return a PositionEstimate with no confidence and an unknown value
+     */
+    public final static PositionEstimate Unknown() {
+        return PositionEstimate.Unknown(-1);
+    }
+    
+    /**
+     * Returns a PositionEstimate with no confidence and an unknown value.
+     * 
+     * @param time the soccer server time step in which the estimate is made
+     * @return a PositionEstimate with no confidence and an unknown value
+     */
+    public final static PositionEstimate Unknown(int time) {
+        return new PositionEstimate(Point.Unknown(), 0.0, time);
     }
     
     /**
