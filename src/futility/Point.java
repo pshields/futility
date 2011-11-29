@@ -32,6 +32,18 @@ public class Point {
         this.y = y;
     }
     
+    ///////////////////////////////////////////////////////////////////////////
+    // STATIC FUNCTIONS
+    ///////////////////////////////////////////////////////////////////////////
+    /**
+     * Returns a Point with NaN values.
+     * 
+     * @return a Point with NaN values.
+     */
+    public final static Point Unknown() {
+        return new Point(Double.NaN, Double.NaN);
+    }
+    
     /** 
      * Gets the angle between this Point and another Point object.
      * Uses the formula \f$angle = \arctan\left(\frac{y_2-y_1}{x_2-x_1}\right)\f$.

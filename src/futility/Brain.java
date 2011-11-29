@@ -56,8 +56,8 @@ public class Brain implements Runnable {
     private String playMode;
 
     private SenseInfo curSenseInfo, lastSenseInfo;
-    private AccelerationVector acceleration;
-    private VelocityVector velocity;
+    public AccelerationVector acceleration;
+    public VelocityVector velocity;
     private boolean isPositioned = false;
     
     HashMap<String, FieldObject> fieldObjects = new HashMap<String, FieldObject>(100);
@@ -100,6 +100,27 @@ public class Brain implements Runnable {
     ///////////////////////////////////////////////////////////////////////////
     // GAME LOGIC
     ///////////////////////////////////////////////////////////////////////////
+    
+    /**
+     * Returns this player's acceleration along the x axis. Shortcut function. Remember that
+     * accelerations are usually reset to 0 by the soccer server at the beginning of each time
+     * step.
+     * 
+     * @return this player's acceleration along the x axis
+     */
+    private final double accelX() {
+        return this.acceleration.getX();
+    }
+    
+    /**
+     * Returns this player's acceleration along the y axis. Shortcut function.
+     * 
+     * @return this player's acceleration along the y axis
+     */
+    private final double accelY() {
+        return this.acceleration.getY();
+    }
+    
     /**
      * Returns the direction, in radians, of the player at the current time.
      */
@@ -322,20 +343,6 @@ public class Brain implements Runnable {
     }
     
     /**
-     * Estimates this player's next position. Assumes any actions for the current turn
-     * have already been executed. Refer to the soccer server manual for more information. 
-     * 
-     * @return estimated position of the player in the next time step
-     */
-    private PositionEstimate estimateNextPlayerPosition() {
-        double x = this.x() + this.velX();
-        double y = this.y() + this.velY();
-        double confidence = this.player.position.getConfidence(this.time) * 0.95;
-        Log.d("Next player position estimate (delta): " + this.velX() + ", " + this.velY() + ".");
-        return new PositionEstimate(x, y, confidence, this.time);
-    }
-    
-    /**
      * Executes a strategy for the player in the current time step.
      * 
      * @param strategy the strategy to execute
@@ -402,8 +409,7 @@ public class Brain implements Runnable {
         	 */
         	
 			// Predict next position:
-        	Vector2D v_new = estimateNextPlayerPosition().getPosition().asVector();
-        	v_new = v_new.add(new Vector2D(this.velX(), this.velY())); // Predict two cycles from now, not one
+        	Vector2D v_new =  Futil.estimateVelocityOf(this.player, 2, this.time);
 			Vector2D v_target = v_new.add( findDribbleAngle() );
         	Vector2D v_ball = v_target.add( new Vector2D( -1 * ball.position.getX(),
         			                        -1 * ball.position.getY() ) );
@@ -838,7 +844,6 @@ public class Brain implements Runnable {
         this.executeStrategy(this.currentStrategy);
         Log.d("Estimated player position: " + this.player.position.render(this.time) + ".");
         Log.d("Estimated player direction: " + this.player.direction.render(this.time) + ".");
-        this.estimateNextPlayerPosition();
         endTime = System.currentTimeMillis();
         final long duration = endTime - startTime;
         Log.d("Took " + duration + " ms (plus small overhead) to run at time " + this.time + ".");
@@ -917,21 +922,21 @@ public class Brain implements Runnable {
     }
     
     /**
-     * Returns this player's x velocity. Takes this player's current acceleration into account.
+     * Returns this player's x velocity. Shortcut function.
      * 
      * @return this player's x velocity
      */
     private final double velX() {
-        return this.velocity.getX() + this.acceleration.getX();
+        return this.velocity.getX();
     }
     
     /**
-     * Returns this player's y velocity. Takes this player's current acceleration into account.
+     * Returns this player's y velocity. Shortcut function.
      * 
      * @return this player's y velocity
      */
     private final double velY() {
-        return this.velocity.getY() + this.acceleration.getY();
+        return this.velocity.getY();
     }
     
     /**

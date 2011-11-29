@@ -7,6 +7,11 @@ public class VelocityVector extends Vector2D {
         super();
     }
     
+    public VelocityVector(double magnitude) {
+        super(magnitude);
+        this.normalize();
+    }
+    
     public VelocityVector(double x, double y) {
         super(x, y);
         this.normalize();
