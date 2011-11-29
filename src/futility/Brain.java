@@ -409,7 +409,7 @@ public class Brain implements Runnable {
         	 */
         	
 			// Predict next position:
-        	Vector2D v_new =  Futil.estimateVelocityOf(this.player, 2, this.time);
+        	Vector2D v_new = Futil.estimatePositionOf(this.player, 2, this.time).getPosition().asVector();
 			Vector2D v_target = v_new.add( findDribbleAngle() );
         	Vector2D v_ball = v_target.add( new Vector2D( -1 * ball.position.getX(),
         			                        -1 * ball.position.getY() ) );
