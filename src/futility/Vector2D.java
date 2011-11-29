@@ -4,16 +4,38 @@ public class Vector2D {
     private double x;
     private double y;
 
-    // Constructors
+    ///////////////////////////////////////////////////////////////////////////
+    // CONSTRUCTORS
+    ///////////////////////////////////////////////////////////////////////////
     public Vector2D() {
         this.reset();
     }
+    
+    /**
+     * Constructor taking only a magnitude. Current implementation assumes the direction is the
+     * positive x axis.
+     *  
+     * @param magnitude
+     */
+    public Vector2D(double magnitude) {
+        this.x = magnitude;
+    }
+    
     public Vector2D(double x, double y) {
         this.x = x;
         this.y = y;
     }
 
-    // Getters and setters
+    ///////////////////////////////////////////////////////////////////////////
+    // METHODS
+    ///////////////////////////////////////////////////////////////////////////
+    public static Vector2D ZeroVector() {
+        return new Vector2D(0.0, 0.0);
+    }
+    
+    ///////////////////////////////////////////////////////////////////////////
+    // GETTERS AND SETTERS
+    ///////////////////////////////////////////////////////////////////////////
     public final double getX() {
         return this.x;
     }

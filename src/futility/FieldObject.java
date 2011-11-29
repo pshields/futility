@@ -14,10 +14,15 @@ public abstract class FieldObject extends GameObject {
     public SeeInfo curInfo = new SeeInfo();  // the last see info received about the object
     public SeeInfo oldInfo = new SeeInfo();
     public DirectionEstimate direction = new DirectionEstimate();
+    public DirectionEstimate prevDirection = new DirectionEstimate();
     public PositionEstimate position = new PositionEstimate();
+    public PositionEstimate prevPosition = new PositionEstimate();
     public String id = "UNKNOWN_ID";
     private double acceleration;
     
+    ///////////////////////////////////////////////////////////////////////////
+    // CONSTRUCTORS
+    ///////////////////////////////////////////////////////////////////////////    
     /**
      * This default constructor initializes the field object with default values.
      */
@@ -135,6 +140,14 @@ public abstract class FieldObject extends GameObject {
     }
     
     /**
+     * Returns true if this FieldObject has is a player with a brain associated with it. This
+     * method is overridden in the Player class.
+     */
+    public boolean hasBrain() {
+        return false;
+    }
+    
+    /**
      * Gets if this object is within the given rectangle boundary.
      * 
      * @param rectangle a rectangle to check if this object is in
@@ -229,19 +242,32 @@ public abstract class FieldObject extends GameObject {
         final double dv = curInfo.distChange - oldInfo.distChange;
         acceleration = dv/dt;
     }
-
+    
     /**
-     * Set the acceleration of this FieldObject<br>
-     * Based on Soccer Server units of time and velocity
-     * @param acceleration
+     * Returns the estimated velocity of this FieldObject. Overridden by Player class.
+     * 
+     * @return the estimated velocity of this FieldObject
+     */
+    public VelocityVector velocity() {
+        return new VelocityVector(this.curInfo.distChange);
+    }
+    
+    ///////////////////////////////////////////////////////////////////////////
+    // GETTERS AND SETTERS
+    ///////////////////////////////////////////////////////////////////////////
+    /**
+     * Sets the acceleration of this FieldObject.
+     * 
+     * @param acceleration the value of the acceleration
      */
 	public void setAcceleration(double acceleration) {
 		this.acceleration = acceleration;
 	}
 
 	/**
-	 * Based on Soccer Server units of time and velocity
-	 * @return the acceleration of the FieldObject
+	 * Gets the acceleration of this FieldObject.
+	 * 
+	 * @return the acceleration of this FieldObject
 	 */
 	public double getAcceleration() {
 		return acceleration;

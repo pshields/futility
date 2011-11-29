@@ -2,7 +2,9 @@ package futility;
 
 public class AccelerationVector extends Vector2D {
     
-    // Constructors
+    ///////////////////////////////////////////////////////////////////////////
+    // CONSTRUCTORS
+    ///////////////////////////////////////////////////////////////////////////
     public AccelerationVector() {
         super();
     }
@@ -12,7 +14,9 @@ public class AccelerationVector extends Vector2D {
         this.normalize();
     }
     
-    // Methods
+    ///////////////////////////////////////////////////////////////////////////
+    // METHODS
+    ///////////////////////////////////////////////////////////////////////////
     /**
      * Normalizes this vector's magnitude.
      */
@@ -24,8 +28,20 @@ public class AccelerationVector extends Vector2D {
         }
     }
     
+    /**
+     * Resets this vector to zero.
+     */
     public final void reset() {
         this.setX(0.0);
         this.setY(0.0);
+    }
+    
+    /**
+     * Returns the zero vector.
+     * 
+     * @return the zero vector
+     */
+    public static final AccelerationVector ZeroVector() {
+        return new AccelerationVector(0.0, 0.0);
     }
 }

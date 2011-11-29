@@ -11,8 +11,8 @@ package futility;
  * Representation of a player on the field.
  */
 public class Player extends MobileObject {
-    public Brain brain;
-    public Client client;
+    public Brain brain = null;
+    public Client client = null;
     public int number;
     public Boolean isGoalie = false;
     public Team otherTeam = new Team();
@@ -76,5 +76,28 @@ public class Player extends MobileObject {
     
     public String getOpponentGoalId() {
         return new String("(g " + (this.team.side == 'r' ? "l" : "r") + ")");
+    }
+    
+    /**
+     * Returns true if this Player has a brain associated with it.
+     * 
+     * @return true if this Player has a brain associated with it
+     */
+    public boolean hasBrain() {
+        return this.brain != null;
+    }
+    
+    /**
+     * Returns the estimated velocity of this Player.
+     * 
+     * @return the estimated velocity of this Player
+     */
+    public VelocityVector velocity() {
+        if (this.hasBrain()) {
+            return this.brain.velocity;
+        }
+        else {
+            return super.velocity();
+        }
     }
 }
