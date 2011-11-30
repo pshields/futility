@@ -1,4 +1,4 @@
-package tests.futility;
+package futility;
 
 import static org.junit.Assert.*;
 
