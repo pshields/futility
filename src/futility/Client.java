@@ -42,6 +42,14 @@ public class Client {
                         Settings.VERBOSITY = Log.DEBUG;
                     }
                 }
+                if (args[i].equals("-s") || args[i].equals("--strategy")) {
+                    try {
+                        this.player.brain.overrideStrategy(Brain.Strategy.valueOf(args[i+1]));
+                    }
+                    catch (IllegalArgumentException e) {
+                        e.printStackTrace();
+                    }
+                }
                 if (args[i].equals("-t") || args[i].equals("--team")) {
                     // Read the team name from the command-line
                     this.player.team.name = args[i+1];

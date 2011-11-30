@@ -42,7 +42,8 @@ public class Brain implements Runnable {
         GET_BETWEEN_BALL_AND_GOAL,
         GOALIE_CATCH_BALL,
         PRE_FREE_KICK_POSITION,
-        PRE_CORNER_KICK_POSITION
+        PRE_CORNER_KICK_POSITION,
+        TEST_TURNS
     }
 	
     ///////////////////////////////////////////////////////////////////////////
@@ -69,6 +70,7 @@ public class Brain implements Runnable {
     private int lastRan = -1;
 
     private Strategy currentStrategy = Strategy.LOOK_AROUND;
+    private boolean updateStrategy = true;
 
     ///////////////////////////////////////////////////////////////////////////
     // CONSTRUCTORS
@@ -207,6 +209,8 @@ public class Brain implements Runnable {
         	
         	utility = initial * conf;
         	break;
+        case TEST_TURNS:
+            turn(7.0);
         default:
             utility = 0;
             break;
@@ -316,12 +320,14 @@ public class Brain implements Runnable {
      */
     private final Strategy determineOptimalStrategy() {
         Strategy optimalStrategy = this.currentStrategy;
-        double bestUtility = 0;
-        for (Strategy strategy : Strategy.values()) {
-            double utility = this.assessUtility(strategy);
-            if (utility > bestUtility) {
-                bestUtility = utility;
-                optimalStrategy = strategy;
+        if (this.updateStrategy) {
+            double bestUtility = 0;
+            for (Strategy strategy : Strategy.values()) {
+                double utility = this.assessUtility(strategy);
+                if (utility > bestUtility) {
+                    bestUtility = utility;
+                    optimalStrategy = strategy;
+                }
             }
         }
         return optimalStrategy;
@@ -615,6 +621,14 @@ public class Brain implements Runnable {
      */
     public void move(double x, double y) {
         client.sendCommand(Settings.Commands.MOVE, Double.toString(x), Double.toString(y));
+    }
+    
+    /**
+     * Overrides the strategy selection system. Used in tests.
+     */
+    public void overrideStrategy(Strategy strategy) {
+        this.currentStrategy = strategy;
+        this.updateStrategy = false;
     }
     
     /**
