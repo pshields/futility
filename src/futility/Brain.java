@@ -210,7 +210,13 @@ public class Brain implements Runnable {
         	utility = initial * conf;
         	break;
         case TEST_TURNS:
-            turn(7.0);
+            if (this.currentStrategy == Strategy.TEST_TURNS && !this.updateStrategy) {
+                utility = 1.0;
+            }
+            else {
+                utility = 0.0;
+            }
+            break;
         default:
             utility = 0;
             break;
@@ -492,6 +498,9 @@ public class Brain implements Runnable {
         case GOALIE_CATCH_BALL:
         	//TODO
         	break;
+        case TEST_TURNS:
+            turn(7.0);
+            break;
         default:
             break;
         }
