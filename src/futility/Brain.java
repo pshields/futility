@@ -190,20 +190,21 @@ public class Brain implements Runnable {
             }
             break;
         case GET_BETWEEN_BALL_AND_GOAL:
+        	FieldObject ball = this.getOrCreate("(b)");
         	// estimate our confidence of where the ball and the player are on the field
-        	double ballConf = this.getOrCreate("(b)").position.getConfidence(this.time);
+        	double ballConf = ball.position.getConfidence(this.time);
         	double playerConf = this.player.position.getConfidence(this.time);
         	double conf = (ballConf + playerConf) / 2;
 
         	double initial = 1;
         	if (this.player.team.side == Settings.LEFT_SIDE) {
-        		if (this.getOrCreate("(b)").position.getX() < this.player.position.getX()) {
+        		if (ball.position.getX() < this.player.position.getX()) {
         			initial = 0.6;
         		} else {
         			initial = 0.9;
         		}
         	} else {
-        		if (this.getOrCreate("(b)").position.getX() > this.player.position.getX()) {
+        		if (ball.position.getX() > this.player.position.getX()) {
         			initial = 0.6;
         		} else {
         			initial = 0.9;
@@ -214,6 +215,8 @@ public class Brain implements Runnable {
         		initial = 0;
         	}
 
+        	initial = .99;
+        	
         	if (!this.player.isGoalie) {
         		initial *= 0.9;
         	}
