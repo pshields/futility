@@ -8,7 +8,8 @@ function start_player() {
     PLAYER="Player #$3 on team $2"
   fi
   echo "Starting $PLAYER with arguments: $@..."
-  java -cp bin/ futility.Main $@ &
+  java -cp bin/ futility.Main $@ & 
+  sleep .1 	
 }
 
 function start_team() {

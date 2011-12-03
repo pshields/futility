@@ -88,6 +88,17 @@ public abstract class FieldObject extends GameObject {
     }
     
     /**
+     * Calculates the absolute angle from this object to the given field
+     * object.
+     * 
+     * @param object the given field object to calculate an angle against.
+     * @return the angle to the object in degrees
+     */
+    public final double absoluteAngleTo(Point p) {
+        return this.position.getPosition().absoluteAngleTo(p);
+    }
+    
+    /**
      * Gets the offset from the current object's direction to another object.
      * 
      * @return an offset in degrees from this object's direction to the other
@@ -95,6 +106,17 @@ public abstract class FieldObject extends GameObject {
      */
     public final double relativeAngleTo(FieldObject object) {
         double angle = this.absoluteAngleTo(object) - this.direction.getDirection();
+        return Futil.simplifyAngle(angle);
+    }
+    
+    /**
+     * Gets the offset from the current object's direction to another object.
+     * 
+     * @return an offset in degrees from this object's direction to the other
+     * object
+     */
+    public final double relativeAngleTo(Point p) {
+        double angle = this.absoluteAngleTo(p) - this.direction.getDirection();
         return Futil.simplifyAngle(angle);
     }
     

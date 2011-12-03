@@ -168,7 +168,7 @@ public class Settings {
     // Index 0 is unused; index 1 onward corresponds to a uniform number.
     public static final Point[] FORMATION = {
         new Point(  0.0,   0.0),  // Center of field
-    	new Point(-52.5,   0.0),  // Player 1
+        new Point(-20.0, -15.0) ,  // Player 1
     	new Point(-30.0,  20.0),
     	new Point(-30.0, -20.0),
     	new Point(-30.0,   0.0),
@@ -178,12 +178,12 @@ public class Settings {
     	new Point(-20.0,  30.0),
     	new Point(-20.0, -30.0),
     	new Point(-20.0,  15.0),
-    	new Point(-20.0, -15.0)   // Player 11
+    	new Point(-52.5,   0.0)  // Player 11
     };
     
     public static final Point[] FREE_KICK_L_FORMATION = {
         new Point(  0.0,   0.0),  // Center of field
-    	new Point(-52.5,   0.0),  // Player 1
+        new Point(-20.0, -15.0),  // Player 1
     	new Point(-30.0,  20.0),
     	new Point(-30.0, -20.0),
     	new Point(-30.0,   0.0),
@@ -193,12 +193,13 @@ public class Settings {
     	new Point(-20.0,  30.0),
     	new Point(-20.0, -30.0),
     	new Point(-20.0,  15.0),
-    	new Point(-20.0, -15.0)   // Player 11
+    	new Point(-52.5,   0.0)
+    	   // Player 11
     };
     
     public static final Point[] FREE_KICK_R_FORMATION = {
         new Point(  0.0,   0.0),  // Center of field
-    	new Point(-52.5,   0.0),  // Player 1
+        new Point(-20.0, -15.0),  // Player 1
     	new Point(-30.0,  20.0),
     	new Point(-30.0, -20.0),
     	new Point(-30.0,   0.0),
@@ -208,12 +209,13 @@ public class Settings {
     	new Point(-20.0,  30.0),
     	new Point(-20.0, -30.0),
     	new Point(-20.0,  15.0),
-    	new Point(-20.0, -15.0)   // Player 11
+    	new Point(-52.5,   0.0)
+    	   // Player 11
     };
     
     public static final Point[] CORNER_KICK_L_FORMATION = {
         new Point(  0.0,   0.0),  // Center of field
-    	new Point(-52.5,   0.0),  // Player 1
+        new Point(-20.0, -15.0) ,  // Player 1
     	new Point(-30.0,  20.0),
     	new Point(-30.0, -20.0),
     	new Point(-30.0,   0.0),
@@ -223,12 +225,13 @@ public class Settings {
     	new Point(-20.0,  30.0),
     	new Point(-20.0, -30.0),
     	new Point(-20.0,  15.0),
-    	new Point(-20.0, -15.0)   // Player 11
+    	new Point(-52.5,   0.0)
+    	  // Player 11
     };
     
     public static final Point[] CORNER_KICK_R_FORMATION = {
         new Point(  0.0,   0.0),  // Center of field
-    	new Point(-52.5,   0.0),  // Player 1
+        new Point(-20.0, -15.0) ,  // Player 1
     	new Point(-30.0,  20.0),
     	new Point(-30.0, -20.0),
     	new Point(-30.0,   0.0),
@@ -238,7 +241,8 @@ public class Settings {
     	new Point(-20.0,  30.0),
     	new Point(-20.0, -30.0),
     	new Point(-20.0,  15.0),
-    	new Point(-20.0, -15.0)   // Player 11
+    	new Point(-52.5,   0.0)
+    	  // Player 11
     };
     
     // Groupings of stationary flags
