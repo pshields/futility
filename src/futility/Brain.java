@@ -42,7 +42,8 @@ public class Brain implements Runnable {
         GET_BETWEEN_BALL_AND_GOAL,
         PRE_FREE_KICK_POSITION,
         PRE_CORNER_KICK_POSITION,
-        TEST_TURNS
+        TEST_TURNS,
+        KICK_BALL_OUT_OF_PENELTY_AREA
     }
 	
     ///////////////////////////////////////////////////////////////////////////
@@ -150,7 +151,7 @@ public class Brain implements Runnable {
         	if ( isPositioned )
         	{
         	    utility = this.player.team.side == 'r' ?
-        			      ( this.canSee("(b)") ? 0.0 : 1.0 ) : 0.0;
+        			      ( this.canSee(Ball.ID) ? 0.0 : 1.0 ) : 0.0;
             }
         	break;
         case DRIBBLE_KICK: // Unimplemented
@@ -177,7 +178,7 @@ public class Brain implements Runnable {
             }
             else {
                 // Utility is high if the player is within ~ 5.0 meters of the ball
-                utility = Math.min(0.95, Math.pow(this.getOrCreate("(b)").curInfo.distance / 5.0, -1.0));
+                utility = Math.max(1.0, Math.pow(this.getOrCreate(Ball.ID).curInfo.distance / 5.0, -1.0));
             }
             break;
         case LOOK_AROUND:
@@ -195,21 +196,20 @@ public class Brain implements Runnable {
             }
             break;
         case GET_BETWEEN_BALL_AND_GOAL:
-        	FieldObject ball = this.getOrCreate("(b)");
         	// estimate our confidence of where the ball and the player are on the field
-        	double ballConf = ball.position.getConfidence(this.time);
+        	double ballConf = this.getOrCreate(Ball.ID).position.getConfidence(this.time);
         	double playerConf = this.player.position.getConfidence(this.time);
         	double conf = (ballConf + playerConf) / 2;
 
         	double initial = 1;
         	if (this.player.team.side == Settings.LEFT_SIDE) {
-        		if (ball.position.getX() < this.player.position.getX()) {
+        		if (this.getOrCreate(Ball.ID).position.getX() < this.player.position.getX()) {
         			initial = 0.6;
         		} else {
         			initial = 0.9;
         		}
         	} else {
-        		if (ball.position.getX() > this.player.position.getX()) {
+        		if (this.getOrCreate(Ball.ID).position.getX() > this.player.position.getX()) {
         			initial = 0.6;
         		} else {
         			initial = 0.9;
@@ -236,6 +236,17 @@ public class Brain implements Runnable {
                 utility = 0.0;
             }
             break;
+        case KICK_BALL_OUT_OF_PENELTY_AREA:
+        	if(PlayerRole.isOnDefenseAndNotGoalie(role)){
+	    		final Rectangle myPeneltyBox = getMyPeneltyArea();
+	    		if(myPeneltyBox.contains(getOrCreate(Ball.ID))){
+	    			utility = 0.9;
+	    		}
+        	}
+        	else{
+        		utility = 0.1;
+        	}
+        	break;
         default:
             utility = 0;
             break;
@@ -268,7 +279,7 @@ public class Brain implements Runnable {
         if (!player.inRectangle(Settings.FIELD)) {
             return false;
         }
-        FieldObject ball = this.getOrCreate("(b)");
+        FieldObject ball = this.getOrCreate(Ball.ID);
         if (ball.curInfo.time != time) {
             return false;
         }
@@ -352,7 +363,8 @@ public class Brain implements Runnable {
      * @param strategy the strategy to execute
      */
     private final void executeStrategy(Strategy strategy) {
-    	FieldObject ball = this.getOrCreate("(b)");
+    	FieldObject ball = this.getOrCreate(Ball.ID);
+        FieldObject goal = this.getOrCreate(this.player.getOpponentGoalId());
     	// Opponent goal
         FieldObject opGoal = this.getOrCreate(this.player.getOpponentGoalId());
         // Our goal
@@ -498,6 +510,20 @@ public class Brain implements Runnable {
         case TEST_TURNS:
             turn(7.0);
             break;
+        case KICK_BALL_OUT_OF_PENELTY_AREA:
+        	if(canSee(Ball.ID)){
+    			if(canKickBall()){
+    				kick(100, player.relativeAngleTo(goal));
+    			}
+    			else{
+    				moveTowards(ball.position.getPosition());
+    			}
+        	}
+        	else{
+        		//can't see the ball so do nothing
+        		break;
+        	}
+        	break;
         default:
             break;
         }
@@ -941,6 +967,14 @@ public class Brain implements Runnable {
         }
         // TODO Handle other cases
         Log.e("Did not update position or direction at time " + this.time);
+    }
+    
+    /**
+     * @return {@link Settings#PENALTY_AREA_LEFT} if player is on the left team, or {@link Settings#PENALTY_AREA_RIGHT} if on the right team.
+     */
+    final public Rectangle getMyPeneltyArea(){
+    	if(player.team == null) throw new NullPointerException("Player team not initialized while getting penelty area.");
+    	return player.team.side == 'l' ? Settings.PENALTY_AREA_LEFT : Settings.PENALTY_AREA_RIGHT; 
     }
     
     /**
