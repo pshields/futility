@@ -7,26 +7,27 @@ import org.junit.Before;
 import org.junit.Test;
 
 public class BrainTest {
-    Process rcssserver;
+    RCSSServer server;
     Client client;
-
+    Trainer trainer;
+    
+    public BrainTest() {
+        
+    }
+    
     @Before
-    public void setUp() throws Exception {
-        try {
-            Runtime runtime = Runtime.getRuntime();
-            this.rcssserver = runtime.exec("rcssserver");
-            String[] args = {};
-            this.client = new Client(args);
-            this.client.init();
-        }
-        catch (Throwable t) {
-            t.printStackTrace();
-        }
+    public void setUp() {
+        this.server = new RCSSServer();
+        this.server.start();
+        String[] args = {};
+        this.client = new Client(args);
+        this.client.init();
     }
     
     @After
-    public void tearDown() throws Exception {
-        this.rcssserver.destroy();
+    public void tearDown() {
+        this.server.stop();
+        this.client.quit();
     }
     
     /**
@@ -36,6 +37,9 @@ public class BrainTest {
     @Test
     public void testTurnCommandsUpdateBeliefs() {
         this.client.player.brain.overrideStrategy(Brain.Strategy.TEST_TURNS);
+        this.client.player.brain.parseMessage(this.client.receiveMessage());
+        int time = this.client.player.brain.time;
+        // TODO
         assertEquals(true, true);
     }
 }
