@@ -10,4 +10,5 @@ package futility;
  * Extension of MobileObject that represents a ball on the visible playing field.
  */
 public class Ball extends MobileObject {
+	public static final String ID = "(b)";
 }
