@@ -36,7 +36,7 @@ public class BrainTest {
      */
     @Test
     public void testTurnCommandsUpdateBeliefs() {
-        this.client.player.brain.overrideStrategy(Brain.Strategy.TEST_TURNS);
+//        this.client.player.brain.overrideStrategy(Brain.Strategy.TEST_TURNS);
         this.client.player.brain.parseMessage(this.client.receiveMessage());
         int time = this.client.player.brain.time;
         // TODO

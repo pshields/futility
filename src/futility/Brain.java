@@ -10,6 +10,8 @@ import java.util.ArrayDeque;
 import java.util.HashMap;
 import java.util.LinkedList;
 
+import futility.PlayerRole.Role;
+
 /**
  * This class contains the player's sensory data parsing and strategy computation algorithms.
  */
@@ -176,7 +178,10 @@ public class Brain implements Runnable {
         	}
         	break;
         case DASH_TOWARDS_BALL_AND_KICK:
-            if (this.role == PlayerRole.Role.STRIKER) {
+        	if(role == PlayerRole.Role.GOALIE){
+        		utility = 0.0;
+        	}
+        	else if (this.role == PlayerRole.Role.STRIKER) {
                 utility = 0.95;
             }
             else {
@@ -814,7 +819,7 @@ public class Brain implements Runnable {
                 Log.e("Could not parse teamSide.");
             }
             player.number = Integer.parseInt(parts[2]);
-            this.role = Settings.PLAYER_ROLES[this.player.number - 1];
+            if(role != Role.GOALIE) this.role = Settings.PLAYER_ROLES[this.player.number - 1];
             playMode = parts[3].split("\\)")[0];
         }
         else if (message.startsWith("(server_param")) {
@@ -917,11 +922,12 @@ public class Brain implements Runnable {
      * @param power to move at
      */
     private final void moveTowards(Point point, double power){
-    	final double x = player.position.getX() - point.getX();
-    	final double y = player.position.getY() - point.getY();
-    	final double theta = Math.toDegrees(Math.atan2(y, x));
-    	turnTo(theta);
-    	dash(power);
+    	if(Math.abs(this.player.relativeAngleTo(point)) > 10.0) {
+    		turn(this.player.relativeAngleTo(point));
+    	}
+    	else {
+    		dash(power);
+    	}
     }
     
     /**
