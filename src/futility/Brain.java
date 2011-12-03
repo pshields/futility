@@ -658,6 +658,7 @@ public class Brain implements Runnable {
      */
     public void move(double x, double y) {
         client.sendCommand(Settings.Commands.MOVE, Double.toString(x), Double.toString(y));
+        this.player.position.update(x, y, 1.0, this.time);
     }
     
     /**
