@@ -42,7 +42,8 @@ public class Brain implements Runnable {
         GET_BETWEEN_BALL_AND_GOAL,
         PRE_FREE_KICK_POSITION,
         PRE_CORNER_KICK_POSITION,
-        TEST_TURNS
+        TEST_TURNS,
+        WING_POSITION
     }
 	
     ///////////////////////////////////////////////////////////////////////////
@@ -153,6 +154,13 @@ public class Brain implements Runnable {
         			      ( this.canSee("(b)") ? 0.0 : 1.0 ) : 0.0;
             }
         	break;
+        case WING_POSITION:
+        	if ( ( role == PlayerRole.Role.LEFT_WING
+        		 || role == PlayerRole.Role.RIGHT_WING ) )
+        	{
+        		utility = 0.95;
+        	}
+        	break;	
         case DRIBBLE_KICK: // Unimplemented
         	Rectangle OPP_PENALTY_AREA = ( this.player.team.side == 'l' ) ?
         			Settings.PENALTY_AREA_RIGHT : Settings.PENALTY_AREA_LEFT;
@@ -407,6 +415,26 @@ public class Brain implements Runnable {
         	break;
         case PRE_KICK_OFF_ANGLE:
         	this.turn(30);
+        	break;
+        case WING_POSITION:
+        	// If ball is close, dash toward it.
+        	// Otherwise, stay off to side.
+        	if ( !canSee("(b)") )
+        	{
+        		turn(7.0);
+        	}
+        	else if ( ball.curInfo.distance < 7.0d )
+        	{
+        		dash(30.0, Futil.simplifyAngle(player.relativeAngleTo(ball) ));
+        	}
+        	else
+        	{
+        		// Stay near ball, but not too close.
+        		Point b_future = Futil.estimatePositionOf(ball, 3, time).getPosition();
+        		Vector2D new_pos = b_future.asVector().addPolar(
+        				               ( role == PlayerRole.Role.LEFT_WING ? 90.0 : -90.0 ), 14.0);
+        		dash(5.0 * new_pos.magnitude(), new_pos.direction());
+        	}
         	break;
         case DRIBBLE_KICK:
         	/*
