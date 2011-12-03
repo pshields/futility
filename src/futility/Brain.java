@@ -210,13 +210,6 @@ public class Brain implements Runnable {
         		}
         	}
         	
-        	// If we're close to the ball, don't try to run away from it.
-        	if (this.canKickBall()) {
-        		initial -= .4;
-        	}
-        	
-        	initial = .99;
-        	
         	if (!this.canSee("(b)")) {
         		initial = 0;
         	}
