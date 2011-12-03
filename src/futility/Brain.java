@@ -36,13 +36,11 @@ public class Brain implements Runnable {
     	PRE_KICK_OFF_ANGLE,
         DRIBBLE_KICK,
         ACTIVE_INTERCEPT,
-        DASH_AROUND_THE_FIELD_CLOCKWISE,
         DASH_TOWARDS_BALL_AND_KICK,
         LOOK_AROUND,
         GET_BETWEEN_BALL_AND_GOAL,
         PRE_FREE_KICK_POSITION,
-        PRE_CORNER_KICK_POSITION,
-        TEST_TURNS
+        PRE_CORNER_KICK_POSITION
     }
 	
     ///////////////////////////////////////////////////////////////////////////
@@ -168,9 +166,6 @@ public class Brain implements Runnable {
         				  0.95 : 0.0;
         	}
         	break;
-        case DASH_AROUND_THE_FIELD_CLOCKWISE:
-            utility = 0.93;
-            break;
         case DASH_TOWARDS_BALL_AND_KICK:
             if (this.role == PlayerRole.Role.STRIKER) {
                 utility = 0.95;
@@ -228,14 +223,6 @@ public class Brain implements Runnable {
         	
         	utility = initial * conf;
         	break;
-        case TEST_TURNS:
-            if (this.currentStrategy == Strategy.TEST_TURNS && !this.updateStrategy) {
-                utility = 0.0;
-            }
-            else {
-                utility = 0.0;
-            }
-            break;
         default:
             utility = 0;
             break;
@@ -428,37 +415,6 @@ public class Brain implements Runnable {
 			Log.i("Kick trajectory power: " + traj_power);
 			kick( traj_power, Futil.simplifyAngle( Math.toDegrees(v_ball.direction()) ) );
         	break;
-        case DASH_AROUND_THE_FIELD_CLOCKWISE:
-            double x = player.position.getPosition().getX();
-            double y = player.position.getPosition().getY();
-            double targetDirection = 0;
-            if (player.inRectangle(Settings.FIELD)) {
-                targetDirection = -90;
-            }
-            // Then run around clockwise between the physical boundary and the field
-            else if (y <= Settings.FIELD.getTop() && x <= Settings.FIELD.getRight()) {
-                targetDirection = 0;        
-            }
-            else if (x >= Settings.FIELD.getRight() && y <= Settings.FIELD.getBottom()) {
-                targetDirection = 90;
-            }
-            else if (y >= Settings.FIELD.getBottom() && x >= Settings.FIELD.getLeft()) {
-                targetDirection = 180;
-            }
-            else if (x <= Settings.FIELD.getLeft() && y >= Settings.FIELD.getTop()) {
-                targetDirection = -90;
-            }
-            else {
-                Log.e("Strategy " + strategy + " doesn't know how to handle position " + this.player.position.getPosition().render() + ".");
-            }
-            double offset = Math.abs(this.player.relativeAngleTo(targetDirection)); 
-            if (offset > 10) {
-                this.turnTo(targetDirection);
-            }
-            else {
-                this.dash(50, this.player.relativeAngleTo(targetDirection));
-            }
-            break;
         case DASH_TOWARDS_BALL_AND_KICK:
             Log.d("Estimated ball position: " + ball.position.render(this.time));
             Log.d("Estimated opponent goal position: " + opGoal.position.render(this.time));
@@ -495,9 +451,6 @@ public class Brain implements Runnable {
         	this.moveTowards(midpoint);
 
         	break;
-        case TEST_TURNS:
-            turn(7.0);
-            break;
         default:
             break;
         }
