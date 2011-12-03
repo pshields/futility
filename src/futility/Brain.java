@@ -177,7 +177,7 @@ public class Brain implements Runnable {
         	}
         	break;
         case DASH_AROUND_THE_FIELD_CLOCKWISE:
-            utility = 0.93;
+            utility = 0.0;
             break;
         case DASH_TOWARDS_BALL_AND_KICK:
             if (this.role == PlayerRole.Role.STRIKER) {
@@ -419,21 +419,21 @@ public class Brain implements Runnable {
         case WING_POSITION:
         	// If ball is close, dash toward it.
         	// Otherwise, stay off to side.
-        	if ( !canSee("(b)") )
+        	if ( ball.position.getConfidence(this.time) <= 0.1 )
         	{
         		turn(7.0);
         	}
-        	else if ( ball.curInfo.distance < 7.0d )
+        	else if ( ball.curInfo.distance < 5.0d || canUseMove() )
         	{
-        		dash(30.0, Futil.simplifyAngle(player.relativeAngleTo(ball) ));
+        		dash(40.0, Futil.simplifyAngle(player.relativeAngleTo(ball) ));
         	}
         	else
         	{
         		// Stay near ball, but not too close.
         		Point b_future = Futil.estimatePositionOf(ball, 3, time).getPosition();
         		Vector2D new_pos = b_future.asVector().addPolar(
-        				               ( role == PlayerRole.Role.LEFT_WING ? 90.0 : -90.0 ), 14.0);
-        		dash(5.0 * new_pos.magnitude(), new_pos.direction());
+        				               ( role == PlayerRole.Role.LEFT_WING ? 40.0 : -40.0 ), 8.0);
+        		dash( Math.min(4, ball.curInfo.distance / 3.0d ) * new_pos.magnitude(), new_pos.direction());
         	}
         	break;
         case DRIBBLE_KICK:
