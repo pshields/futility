@@ -209,12 +209,25 @@ public class Brain implements Runnable {
         			initial = 0.9;
         		}
         	}
+        	
+        	if (!this.canSee("(b)")) {
+        		initial = 0;
+        	}
 
         	if (!this.player.isGoalie) {
         		initial *= 0.9;
         	}
         	
         	utility = initial * conf;
+        	break;
+        case GOALIE_CATCH_BALL:
+        	if (this.canCatchBall()) {
+        		utility = 0.98;
+        	} else {
+        		utility = 0.0;
+        	}
+        	
+        	
         	break;
         case TEST_TURNS:
             if (this.currentStrategy == Strategy.TEST_TURNS && !this.updateStrategy) {
@@ -368,7 +381,10 @@ public class Brain implements Runnable {
      */
     private final void executeStrategy(Strategy strategy) {
     	FieldObject ball = this.getOrCreate("(b)");
-        FieldObject goal = this.getOrCreate(this.player.getOpponentGoalId());
+    	// Opponent goal
+        FieldObject opGoal = this.getOrCreate(this.player.getOpponentGoalId());
+        // Our goal
+        FieldObject ourGoal = this.getOrCreate(this.player.getGoalId());
     	
         switch (strategy) {
         case PRE_FREE_KICK_POSITION:
@@ -473,10 +489,10 @@ public class Brain implements Runnable {
             break;
         case DASH_TOWARDS_BALL_AND_KICK:
             Log.d("Estimated ball position: " + ball.position.render(this.time));
-            Log.d("Estimated goal position: " + goal.position.render(this.time));
+            Log.d("Estimated opponent goal position: " + opGoal.position.render(this.time));
             if (this.canKickBall()) {
                 if (this.canSee(this.player.getOpponentGoalId())) {
-                    kick(100.0, this.player.relativeAngleTo(goal));
+                    kick(100.0, this.player.relativeAngleTo(opGoal));
                 }
                 else {
                     dash(30.0, 90.0);
@@ -500,7 +516,12 @@ public class Brain implements Runnable {
             turn(7);
             break;
         case GET_BETWEEN_BALL_AND_GOAL:
-        	//TODO
+        	double xmid = (ball.position.getX() + ourGoal.position.getX()) / 2;
+        	double ymid = (ball.position.getY() + ourGoal.position.getY()) / 2;
+        	Point midpoint = new Point(xmid, ymid);
+        	
+        	this.moveTowards(midpoint);
+
         	break;
         case GOALIE_CATCH_BALL:
         	//TODO
