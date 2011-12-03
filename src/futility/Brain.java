@@ -40,7 +40,6 @@ public class Brain implements Runnable {
         DASH_TOWARDS_BALL_AND_KICK,
         LOOK_AROUND,
         GET_BETWEEN_BALL_AND_GOAL,
-        GOALIE_CATCH_BALL,
         PRE_FREE_KICK_POSITION,
         PRE_CORNER_KICK_POSITION,
         TEST_TURNS,
@@ -161,7 +160,7 @@ public class Brain implements Runnable {
         
         	// If the agent is a goalie, don't dribble!
         	// If we're in the opponent's strike zone, don't dribble! Go for score!
-        	if ( this.player.isGoalie || this.player.inRectangle(OPP_PENALTY_AREA) ) {
+        	if ( this.role == PlayerRole.Role.GOALIE || this.player.inRectangle(OPP_PENALTY_AREA) ) {
         		utility = 0.0;
         	}
         	else {
@@ -187,7 +186,13 @@ public class Brain implements Runnable {
                 utility = 1.0;
             }
             else {
-                utility = 1 - this.player.position.getConfidence(this.time);
+                double conf = this.player.position.getConfidence(this.time);
+                if (conf > 0.01) {
+                    utility = 1.0 - conf;
+                }
+                else {
+                    utility = 0.0;
+                }
             }
             break;
         case GET_BETWEEN_BALL_AND_GOAL:
@@ -210,16 +215,22 @@ public class Brain implements Runnable {
         			initial = 0.9;
         		}
         	}
+        	
+            if (this.role == PlayerRole.Role.GOALIE || this.role == PlayerRole.Role.LEFT_DEFENDER || this.role == PlayerRole.Role.RIGHT_DEFENDER) {
+                initial *= 1;
+            } else {
+            	initial *= 0.25;
+            }
 
-        	if (!this.player.isGoalie) {
-        		initial *= 0.9;
+        	if (!this.canSee("(b)")) {
+        		initial = 0;
         	}
         	
         	utility = initial * conf;
         	break;
         case TEST_TURNS:
             if (this.currentStrategy == Strategy.TEST_TURNS && !this.updateStrategy) {
-                utility = 1.0;
+                utility = 0.0;
             }
             else {
                 utility = 0.0;
@@ -258,33 +269,6 @@ public class Brain implements Runnable {
     		   ); 
     }
     
-    /** 
-     * A rough estimate of whether the player can catch the ball, dependent
-     * on their distance to the ball, whether they are a goalie, and whether
-     * they are within their own penalty area.
-     *
-     * @return true if the player can catch the ball
-     */
-    public final boolean canCatchBall() {
-    	if (!player.isGoalie) {
-    		return false;
-    	}
-
-    	//TODO: check if ball is within catchable distance
-
-        if (player.team.side == Settings.LEFT_SIDE) {
-        	if (player.inRectangle(Settings.PENALTY_AREA_LEFT)) {
-        		return true;
-        	}
-        } else {
-        	if (player.inRectangle(Settings.PENALTY_AREA_RIGHT)) {
-        		return true;
-        	}
-        }
-
-        return false;
-    }
-
     /**
      * A rough estimate of whether the player can kick the ball, dependent
      * on its distance to the ball and whether it is inside the playing field.
@@ -381,6 +365,10 @@ public class Brain implements Runnable {
     private final void executeStrategy(Strategy strategy) {
     	FieldObject ball = this.getOrCreate(Ball.ID);
         FieldObject goal = this.getOrCreate(this.player.getOpponentGoalId());
+    	// Opponent goal
+        FieldObject opGoal = this.getOrCreate(this.player.getOpponentGoalId());
+        // Our goal
+        FieldObject ourGoal = this.getOrCreate(this.player.getGoalId());
     	
         switch (strategy) {
         case PRE_FREE_KICK_POSITION:
@@ -485,10 +473,10 @@ public class Brain implements Runnable {
             break;
         case DASH_TOWARDS_BALL_AND_KICK:
             Log.d("Estimated ball position: " + ball.position.render(this.time));
-            Log.d("Estimated goal position: " + goal.position.render(this.time));
+            Log.d("Estimated opponent goal position: " + opGoal.position.render(this.time));
             if (this.canKickBall()) {
                 if (this.canSee(this.player.getOpponentGoalId())) {
-                    kick(100.0, this.player.relativeAngleTo(goal));
+                    kick(100.0, this.player.relativeAngleTo(opGoal));
                 }
                 else {
                     dash(30.0, 90.0);
@@ -512,10 +500,12 @@ public class Brain implements Runnable {
             turn(7);
             break;
         case GET_BETWEEN_BALL_AND_GOAL:
-        	//TODO
-        	break;
-        case GOALIE_CATCH_BALL:
-        	//TODO
+        	double xmid = (ball.position.getX() + ourGoal.position.getX()) / 2;
+        	double ymid = (ball.position.getY() + ourGoal.position.getY()) / 2;
+        	Point midpoint = new Point(xmid, ymid);
+        	
+        	this.moveTowards(midpoint);
+
         	break;
         case TEST_TURNS:
             turn(7.0);
@@ -663,6 +653,7 @@ public class Brain implements Runnable {
      */
     public void move(double x, double y) {
         client.sendCommand(Settings.Commands.MOVE, Double.toString(x), Double.toString(y));
+        this.player.position.update(x, y, 1.0, this.time);
     }
     
     /**

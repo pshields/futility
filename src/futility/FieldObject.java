@@ -190,11 +190,11 @@ public abstract class FieldObject extends GameObject {
         this.curInfo.time = time;
         String[] args = Futil.extractArgs(info);
         int offset = 0;  // indicates number of optional parameters read so far
-        if (args.length > 3 && args[args.length - 1].equals("t")) {
+        if (args.length >= 3 && args[args.length - 1].equals("t")) {
             this.curInfo.tackling = true;
             offset++;
         }
-        else if (args.length > 3 && args[args.length - 1].equals("k")) {
+        else if (args.length >= 3 && args[args.length - 1].equals("k")) {
             this.curInfo.kicking = true;
             offset++;
         }

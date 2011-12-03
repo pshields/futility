@@ -14,7 +14,6 @@ public class Player extends MobileObject {
     public Brain brain = null;
     public Client client = null;
     public int number;
-    public Boolean isGoalie = false;
     public Team otherTeam = new Team();
     public Team team = new Team();
 
@@ -47,9 +46,6 @@ public class Player extends MobileObject {
     	default:
     		Log.e("Error parsing a player unexpected number of attributes. " + id);
     	}
-    	if (this.number == 1) {
-    		this.isGoalie = true;
-    	}
     }
     
     /**
@@ -69,13 +65,14 @@ public class Player extends MobileObject {
     public Player(Client client) {
         brain = new Brain(this, client);
         this.client = client;
-    	if (this.number == 1) {
-    		this.isGoalie = true;
-    	}
     }
     
     public String getOpponentGoalId() {
         return new String("(g " + (this.team.side == 'r' ? "l" : "r") + ")");
+    }
+    
+    public String getGoalId() {
+        return new String("(g " + this.team.side + ")");
     }
     
     /**
