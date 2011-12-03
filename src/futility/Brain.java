@@ -186,7 +186,13 @@ public class Brain implements Runnable {
                 utility = 1.0;
             }
             else {
-                utility = 1 - this.player.position.getConfidence(this.time);
+                double conf = this.player.position.getConfidence(this.time);
+                if (conf > 0.01) {
+                    utility = 1.0 - conf;
+                }
+                else {
+                    utility = 0.0;
+                }
             }
             break;
         case GET_BETWEEN_BALL_AND_GOAL:
