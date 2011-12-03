@@ -159,7 +159,7 @@ public class Brain implements Runnable {
         
         	// If the agent is a goalie, don't dribble!
         	// If we're in the opponent's strike zone, don't dribble! Go for score!
-        	if ( this.player.isGoalie || this.player.inRectangle(OPP_PENALTY_AREA) ) {
+        	if ( this.role == PlayerRole.Role.GOALIE || this.player.inRectangle(OPP_PENALTY_AREA) ) {
         		utility = 0.0;
         	}
         	else {
@@ -185,7 +185,13 @@ public class Brain implements Runnable {
                 utility = 1.0;
             }
             else {
-                utility = 1 - this.player.position.getConfidence(this.time);
+                double conf = this.player.position.getConfidence(this.time);
+                if (conf > 0.01) {
+                    utility = 1.0 - conf;
+                }
+                else {
+                    utility = 0.0;
+                }
             }
             break;
         case GET_BETWEEN_BALL_AND_GOAL:
@@ -621,6 +627,7 @@ public class Brain implements Runnable {
      */
     public void move(double x, double y) {
         client.sendCommand(Settings.Commands.MOVE, Double.toString(x), Double.toString(y));
+        this.player.position.update(x, y, 1.0, this.time);
     }
     
     /**
