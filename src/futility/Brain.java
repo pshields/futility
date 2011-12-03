@@ -52,6 +52,7 @@ public class Brain implements Runnable {
     Client client;
     Player player;
     public int time;
+    public PlayerRole.Role role;
     
     // Self info & Play mode
     private String playMode;
@@ -172,7 +173,13 @@ public class Brain implements Runnable {
             utility = 0.93;
             break;
         case DASH_TOWARDS_BALL_AND_KICK:
-            utility = 0.94;
+            if (this.role == PlayerRole.Role.STRIKER) {
+                utility = 0.95;
+            }
+            else {
+                // Utility is high if the player is within ~ 5.0 meters of the ball
+                utility = Math.max(1.0, Math.pow(this.getOrCreate("(b)").curInfo.distance / 5.0, -1.0));
+            }
             break;
         case LOOK_AROUND:
             if (this.player.position.getPosition().isUnknown()) {
@@ -837,6 +844,7 @@ public class Brain implements Runnable {
                 Log.e("Could not parse teamSide.");
             }
             player.number = Integer.parseInt(parts[2]);
+            this.role = Settings.PLAYER_ROLES[this.player.number - 1];
             playMode = parts[3].split("\\)")[0];
         }
         else if (message.startsWith("(server_param")) {

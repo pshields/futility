@@ -150,6 +150,20 @@ public class Settings {
     		"offside_r"
     ));
     
+    public static final PlayerRole.Role[] PLAYER_ROLES = {
+        PlayerRole.Role.LEFT_WING,
+        PlayerRole.Role.RIGHT_WING,
+        PlayerRole.Role.STRIKER,
+        PlayerRole.Role.LEFT_MIDFIELDER,
+        PlayerRole.Role.CENTER_MIDFIELDER,
+        PlayerRole.Role.RIGHT_MIDFIELDER,
+        PlayerRole.Role.LEFT_DEFENDER,
+        PlayerRole.Role.RIGHT_DEFENDER,
+        PlayerRole.Role.SWEEPER,
+        PlayerRole.Role.CENTER_MIDFIELDER,
+        PlayerRole.Role.GOALIE
+    };
+    
     // Starting formation for pre kick off game states
     // Index 0 is unused; index 1 onward corresponds to a uniform number.
     public static final Point[] FORMATION = {
