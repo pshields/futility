@@ -15,6 +15,7 @@ public final class Log {
 	public static int DEBUG = 2;
     public static int INFO = 1;
     public static int ERROR = 0;
+    public static int NONE = -1;
     
     /**
      * Basic logging shortcut.
@@ -41,7 +42,7 @@ public final class Log {
                 log("INFO: " + message);
             }
             else if (verbosity == Log.ERROR) {
-                System.err.println("ERROR: " + message);
+                log("ERROR: " + message);
             }
             else {
                 log(String.format("UNKNOWN VERBOSITY LEVEL %d", verbosity) + message);
