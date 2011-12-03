@@ -40,7 +40,6 @@ public class Brain implements Runnable {
         DASH_TOWARDS_BALL_AND_KICK,
         LOOK_AROUND,
         GET_BETWEEN_BALL_AND_GOAL,
-        GOALIE_CATCH_BALL,
         PRE_FREE_KICK_POSITION,
         PRE_CORNER_KICK_POSITION,
         TEST_TURNS
@@ -196,48 +195,42 @@ public class Brain implements Runnable {
             }
             break;
         case GET_BETWEEN_BALL_AND_GOAL:
+        	FieldObject ball = this.getOrCreate("(b)");
         	// estimate our confidence of where the ball and the player are on the field
-        	double ballConf = this.getOrCreate("(b)").position.getConfidence(this.time);
+        	double ballConf = ball.position.getConfidence(this.time);
         	double playerConf = this.player.position.getConfidence(this.time);
         	double conf = (ballConf + playerConf) / 2;
 
         	double initial = 1;
         	if (this.player.team.side == Settings.LEFT_SIDE) {
-        		if (this.getOrCreate("(b)").position.getX() < this.player.position.getX()) {
+        		if (ball.position.getX() < this.player.position.getX()) {
         			initial = 0.6;
         		} else {
         			initial = 0.9;
         		}
         	} else {
-        		if (this.getOrCreate("(b)").position.getX() > this.player.position.getX()) {
+        		if (ball.position.getX() > this.player.position.getX()) {
         			initial = 0.6;
         		} else {
         			initial = 0.9;
         		}
         	}
         	
+            if (this.role == PlayerRole.Role.GOALIE || this.role == PlayerRole.Role.LEFT_DEFENDER || this.role == PlayerRole.Role.RIGHT_DEFENDER) {
+                initial *= 1;
+            } else {
+            	initial *= 0.25;
+            }
+
         	if (!this.canSee("(b)")) {
         		initial = 0;
-        	}
-
-        	if (this.role != PlayerRole.Role.GOALIE) {
-        		initial *= 0.9;
         	}
         	
         	utility = initial * conf;
         	break;
-        case GOALIE_CATCH_BALL:
-        	if (this.canCatchBall()) {
-        		utility = 0.98;
-        	} else {
-        		utility = 0.0;
-        	}
-        	
-        	
-        	break;
         case TEST_TURNS:
             if (this.currentStrategy == Strategy.TEST_TURNS && !this.updateStrategy) {
-                utility = 1.0;
+                utility = 0.0;
             }
             else {
                 utility = 0.0;
@@ -265,33 +258,6 @@ public class Brain implements Runnable {
     		   ); 
     }
     
-    /** 
-     * A rough estimate of whether the player can catch the ball, dependent
-     * on their distance to the ball, whether they are a goalie, and whether
-     * they are within their own penalty area.
-     *
-     * @return true if the player can catch the ball
-     */
-    public final boolean canCatchBall() {
-    	if (this.role != PlayerRole.Role.GOALIE) {
-    		return false;
-    	}
-
-    	//TODO: check if ball is within catchable distance
-
-        if (player.team.side == Settings.LEFT_SIDE) {
-        	if (player.inRectangle(Settings.PENALTY_AREA_LEFT)) {
-        		return true;
-        	}
-        } else {
-        	if (player.inRectangle(Settings.PENALTY_AREA_RIGHT)) {
-        		return true;
-        	}
-        }
-
-        return false;
-    }
-
     /**
      * A rough estimate of whether the player can kick the ball, dependent
      * on its distance to the ball and whether it is inside the playing field.
@@ -528,9 +494,6 @@ public class Brain implements Runnable {
         	
         	this.moveTowards(midpoint);
 
-        	break;
-        case GOALIE_CATCH_BALL:
-        	//TODO
         	break;
         case TEST_TURNS:
             turn(7.0);

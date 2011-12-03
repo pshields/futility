@@ -158,7 +158,7 @@ public class PositionEstimate extends Estimate {
         this.position.update(x, y);
         double distance = this.position.distanceTo(oldPosition);
         if (distance > 10) {
-            System.err.println("Updated position by " + Double.toString(distance));
+            Log.i("Updated position by " + Double.toString(distance));
         }
     }
 }
