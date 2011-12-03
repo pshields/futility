@@ -51,6 +51,7 @@ public class Main {
    public static final void initClient(String[] args) {
        Client client = new Client(args);
        client.init();
+       client.playForever();
    }
    
    /**
@@ -63,6 +64,7 @@ public class Main {
        Client client = new Client(args);
        client.player.team.name = teamName;
        client.init();
+       client.playForever();
    }
    
    /**

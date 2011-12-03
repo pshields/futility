@@ -90,11 +90,16 @@ public class Client {
         
         sendCommand(Settings.Commands.INIT, player.team.name, String.format("(version %s)", Settings.SOCCER_SERVER_VERSION));
         // Start reading input from the server
+    }
+    
+    /**
+     * Puts the client into an infinite loop for gameplay.
+     */
+    public final void playForever() {
         while(true){
             player.brain.parseMessage(receiveMessage());
         }
     }
-    
 
     /**
      * Disconnects from the server.
