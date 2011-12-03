@@ -42,6 +42,10 @@ public class Client {
                         Settings.VERBOSITY = Log.DEBUG;
                     }
                 }
+                if (args[i].equals("--goalie")) {
+                    // This client is for the goalie
+                    this.player.brain.role = PlayerRole.Role.GOALIE;
+                }
                 if (args[i].equals("-s") || args[i].equals("--strategy")) {
                     try {
                         this.player.brain.overrideStrategy(Brain.Strategy.valueOf(args[i+1]));
@@ -88,7 +92,13 @@ public class Client {
             e.printStackTrace();
         }
         
-        sendCommand(Settings.Commands.INIT, player.team.name, String.format("(version %s)", Settings.SOCCER_SERVER_VERSION));
+        String version = String.format("(version %s)", Settings.SOCCER_SERVER_VERSION);
+        if (this.player.brain.role != PlayerRole.Role.GOALIE) {
+            sendCommand(Settings.Commands.INIT, player.team.name, version);
+        }
+        else {
+            sendCommand(Settings.Commands.INIT, player.team.name, version, "(goalie)");
+        }
         // Start reading input from the server
     }
     
