@@ -51,7 +51,7 @@ public class Brain implements Runnable {
     ///////////////////////////////////////////////////////////////////////////    
     Client client;
     Player player;
-    private int time;
+    public int time;
     
     // Self info & Play mode
     private String playMode;
