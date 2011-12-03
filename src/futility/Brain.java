@@ -211,30 +211,28 @@ public class Brain implements Runnable {
         		}
         	}
         	
+            if (this.role == PlayerRole.Role.GOALIE || this.role == PlayerRole.Role.LEFT_DEFENDER || this.role == PlayerRole.Role.RIGHT_DEFENDER) {
+                initial *= 1;
+            } else {
+            	initial *= 0.25;
+            }
+
         	if (!this.canSee("(b)")) {
         		initial = 0;
-        	}
-
-        	initial = .99;
-        	
-        	if (!this.player.isGoalie) {
-        		initial *= 0.9;
         	}
         	
         	utility = initial * conf;
         	break;
         case GOALIE_CATCH_BALL:
         	if (this.canCatchBall()) {
-        		utility = 0.98;
+        		utility = 0.95;
         	} else {
         		utility = 0.0;
         	}
-        	
-        	
         	break;
         case TEST_TURNS:
             if (this.currentStrategy == Strategy.TEST_TURNS && !this.updateStrategy) {
-                utility = 1.0;
+                utility = 0.0;
             }
             else {
                 utility = 0.0;
@@ -270,23 +268,25 @@ public class Brain implements Runnable {
      * @return true if the player can catch the ball
      */
     public final boolean canCatchBall() {
-    	if (!player.isGoalie) {
+    	if (this.role != PlayerRole.Role.GOALIE) {
     		return false;
     	}
 
+    	return false;
+    	
     	//TODO: check if ball is within catchable distance
 
-        if (player.team.side == Settings.LEFT_SIDE) {
-        	if (player.inRectangle(Settings.PENALTY_AREA_LEFT)) {
-        		return true;
-        	}
-        } else {
-        	if (player.inRectangle(Settings.PENALTY_AREA_RIGHT)) {
-        		return true;
-        	}
-        }
-
-        return false;
+//        if (player.team.side == Settings.LEFT_SIDE) {
+//        	if (player.inRectangle(Settings.PENALTY_AREA_LEFT)) {
+//        		return true;
+//        	}
+//        } else {
+//        	if (player.inRectangle(Settings.PENALTY_AREA_RIGHT)) {
+//        		return true;
+//        	}
+//        }
+//
+//        return false;
     }
 
     /**
@@ -527,7 +527,13 @@ public class Brain implements Runnable {
 
         	break;
         case GOALIE_CATCH_BALL:
-        	//TODO
+        	// instead of catching (which would then require more work for throwing and such),
+        	// kick the ball at max power toward opponent goal or toward mid field
+            if (this.canSee(this.player.getOpponentGoalId())) {
+                kick(100.0, this.player.relativeAngleTo(opGoal));
+            } else {
+            	kick(100.0, this.player.relativeAngleTo(this.getOrCreate("(f c)")));
+            }
         	break;
         case TEST_TURNS:
             turn(7.0);
