@@ -43,6 +43,7 @@ public class Brain implements Runnable {
         PRE_FREE_KICK_POSITION,
         PRE_CORNER_KICK_POSITION,
         TEST_TURNS,
+        WING_POSITION,
         KICK_BALL_OUT_OF_PENELTY_AREA
     }
 	
@@ -154,6 +155,13 @@ public class Brain implements Runnable {
         			      ( this.canSee(Ball.ID) ? 0.0 : 1.0 ) : 0.0;
             }
         	break;
+        case WING_POSITION:
+        	if ( ( role == PlayerRole.Role.LEFT_WING
+        		 || role == PlayerRole.Role.RIGHT_WING ) )
+        	{
+        		utility = 0.95;
+        	}
+        	break;	
         case DRIBBLE_KICK: // Unimplemented
         	Rectangle OPP_PENALTY_AREA = ( this.player.team.side == 'l' ) ?
         			Settings.PENALTY_AREA_RIGHT : Settings.PENALTY_AREA_LEFT;
@@ -170,7 +178,7 @@ public class Brain implements Runnable {
         	}
         	break;
         case DASH_AROUND_THE_FIELD_CLOCKWISE:
-            utility = 0.93;
+            utility = 0.0;
             break;
         case DASH_TOWARDS_BALL_AND_KICK:
             if (this.role == PlayerRole.Role.STRIKER) {
@@ -419,6 +427,26 @@ public class Brain implements Runnable {
         	break;
         case PRE_KICK_OFF_ANGLE:
         	this.turn(30);
+        	break;
+        case WING_POSITION:
+        	// If ball is close, dash toward it.
+        	// Otherwise, stay off to side.
+        	if ( ball.position.getConfidence(this.time) <= 0.1 )
+        	{
+        		turn(7.0);
+        	}
+        	else if ( ball.curInfo.distance < 5.0d || canUseMove() )
+        	{
+        		dash(40.0, Futil.simplifyAngle(player.relativeAngleTo(ball) ));
+        	}
+        	else
+        	{
+        		// Stay near ball, but not too close.
+        		Point b_future = Futil.estimatePositionOf(ball, 3, time).getPosition();
+        		Vector2D new_pos = b_future.asVector().addPolar(
+        				               ( role == PlayerRole.Role.LEFT_WING ? 40.0 : -40.0 ), 8.0);
+        		dash( Math.min(4, ball.curInfo.distance / 3.0d ) * new_pos.magnitude(), new_pos.direction());
+        	}
         	break;
         case DRIBBLE_KICK:
         	/*
