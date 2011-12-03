@@ -178,7 +178,7 @@ public class Brain implements Runnable {
             }
             else {
                 // Utility is high if the player is within ~ 5.0 meters of the ball
-                utility = Math.max(1.0, Math.pow(this.getOrCreate("(b)").curInfo.distance / 5.0, -1.0));
+                utility = Math.min(0.95, Math.pow(this.getOrCreate("(b)").curInfo.distance / 5.0, -1.0));
             }
             break;
         case LOOK_AROUND:
