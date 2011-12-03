@@ -160,7 +160,7 @@ public class Brain implements Runnable {
         
         	// If the agent is a goalie, don't dribble!
         	// If we're in the opponent's strike zone, don't dribble! Go for score!
-        	if ( this.player.isGoalie || this.player.inRectangle(OPP_PENALTY_AREA) ) {
+        	if ( this.role == PlayerRole.Role.GOALIE || this.player.inRectangle(OPP_PENALTY_AREA) ) {
         		utility = 0.0;
         	}
         	else {
@@ -214,7 +214,7 @@ public class Brain implements Runnable {
         		initial = 0;
         	}
 
-        	if (!this.player.isGoalie) {
+        	if (this.role != PlayerRole.Role.GOALIE) {
         		initial *= 0.9;
         	}
         	
@@ -267,7 +267,7 @@ public class Brain implements Runnable {
      * @return true if the player can catch the ball
      */
     public final boolean canCatchBall() {
-    	if (!player.isGoalie) {
+    	if (this.role != PlayerRole.Role.GOALIE) {
     		return false;
     	}
 

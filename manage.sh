@@ -2,9 +2,6 @@
 # Team management tasks
 
 function start_player() {
-  # $0 is team name
-  # $1 is debug switch
-  # $2 is player # in series
   DEBUG_TEXT=""
   PLAYER="one player"
   if [ $# -ge 3 ]; then
@@ -15,15 +12,17 @@ function start_player() {
 }
 
 function start_team() {
-  for (( i=1; i<=12; i++ )); do
+  for (( i=1; i<=10; i++ )); do
     start_player $@ $i
   done
+  start_player $@ 11 --goalie
 }
 
 function start_three() {
-  for (( i=1; i<=3; i++ )); do
+  for (( i=1; i<=2; i++ )); do
     start_player $@ $i
   done
+  start_player $@ 3 --goalie
 }
 
 function stop_players() {
