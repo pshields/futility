@@ -40,7 +40,6 @@ public class Brain implements Runnable {
         DASH_TOWARDS_BALL_AND_KICK,
         LOOK_AROUND,
         GET_BETWEEN_BALL_AND_GOAL,
-        GOALIE_CATCH_BALL,
         PRE_FREE_KICK_POSITION,
         PRE_CORNER_KICK_POSITION,
         TEST_TURNS
@@ -223,13 +222,6 @@ public class Brain implements Runnable {
         	
         	utility = initial * conf;
         	break;
-        case GOALIE_CATCH_BALL:
-        	if (this.canCatchBall()) {
-        		utility = 0.95;
-        	} else {
-        		utility = 0.0;
-        	}
-        	break;
         case TEST_TURNS:
             if (this.currentStrategy == Strategy.TEST_TURNS && !this.updateStrategy) {
                 utility = 0.0;
@@ -260,35 +252,6 @@ public class Brain implements Runnable {
     		   ); 
     }
     
-    /** 
-     * A rough estimate of whether the player can catch the ball, dependent
-     * on their distance to the ball, whether they are a goalie, and whether
-     * they are within their own penalty area.
-     *
-     * @return true if the player can catch the ball
-     */
-    public final boolean canCatchBall() {
-    	if (this.role != PlayerRole.Role.GOALIE) {
-    		return false;
-    	}
-
-    	return false;
-    	
-    	//TODO: check if ball is within catchable distance
-
-//        if (player.team.side == Settings.LEFT_SIDE) {
-//        	if (player.inRectangle(Settings.PENALTY_AREA_LEFT)) {
-//        		return true;
-//        	}
-//        } else {
-//        	if (player.inRectangle(Settings.PENALTY_AREA_RIGHT)) {
-//        		return true;
-//        	}
-//        }
-//
-//        return false;
-    }
-
     /**
      * A rough estimate of whether the player can kick the ball, dependent
      * on its distance to the ball and whether it is inside the playing field.
@@ -525,15 +488,6 @@ public class Brain implements Runnable {
         	
         	this.moveTowards(midpoint);
 
-        	break;
-        case GOALIE_CATCH_BALL:
-        	// instead of catching (which would then require more work for throwing and such),
-        	// kick the ball at max power toward opponent goal or toward mid field
-            if (this.canSee(this.player.getOpponentGoalId())) {
-                kick(100.0, this.player.relativeAngleTo(opGoal));
-            } else {
-            	kick(100.0, this.player.relativeAngleTo(this.getOrCreate("(f c)")));
-            }
         	break;
         case TEST_TURNS:
             turn(7.0);
