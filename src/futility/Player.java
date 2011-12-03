@@ -78,6 +78,10 @@ public class Player extends MobileObject {
         return new String("(g " + (this.team.side == 'r' ? "l" : "r") + ")");
     }
     
+    public String getGoalId() {
+        return new String("(g " + this.team.side + ")");
+    }
+    
     /**
      * Returns true if this Player has a brain associated with it.
      * 
