@@ -18,17 +18,7 @@ import futility.PlayerRole.Role;
 public class Brain implements Runnable {
     
     /**
-     * Enumerator representing the possible strategies that may be used by this
-     * player agent.
-     * 
-     * DASH_TOWARDS_THE_BALL_AND KICK implements a simple soccer strategy:
-     * 1. Run towards the ball.
-     * 2. Rotate around it until you can see the opponent's goal.
-     * 3. Kick the ball towards said goal.
-     *
-     * LOOK_AROUND tells the player to look around in a circle.
-     * 
-     * GET_BETWEEN_BALL_AND_GOAL is pretty self explanatory
+     * Enumerator representing the possible strategies that may be used by this player agent.
      */
     public enum Strategy {
     	PRE_KICK_OFF_POSITION,
@@ -100,28 +90,7 @@ public class Brain implements Runnable {
     
     ///////////////////////////////////////////////////////////////////////////
     // GAME LOGIC
-    ///////////////////////////////////////////////////////////////////////////
-    
-    /**
-     * Returns this player's acceleration along the x axis. Shortcut function. Remember that
-     * accelerations are usually reset to 0 by the soccer server at the beginning of each time
-     * step.
-     * 
-     * @return this player's acceleration along the x axis
-     */
-    private final double accelX() {
-        return this.acceleration.getX();
-    }
-    
-    /**
-     * Returns this player's acceleration along the y axis. Shortcut function.
-     * 
-     * @return this player's acceleration along the y axis
-     */
-    private final double accelY() {
-        return this.acceleration.getY();
-    }
-    
+    ///////////////////////////////////////////////////////////////////////////        
     /**
      * Returns the direction, in radians, of the player at the current time.
      */
@@ -235,9 +204,9 @@ public class Brain implements Runnable {
     }
 
     /**
-     * Checks if the play mode allows Move commands
+     * Checks if the play mode allows Move commands.
      * 
-     * @return true if move commands can be issued.
+     * @return true if move commands can be issued
      */
     private final boolean canUseMove() {
     	return (
@@ -250,7 +219,7 @@ public class Brain implements Runnable {
     }
     
     /**
-     * A rough estimate of whether the player can kick the ball, dependent
+     * Returns an estimate of whether the player can kick the ball, dependent
      * on its distance to the ball and whether it is inside the playing field.
      *
      * @return true if the player is on the field and within kicking distance
@@ -418,7 +387,7 @@ public class Brain implements Runnable {
                     targetFacingDir = -180.0;
                     x = x * -1.0;
                 }
-                if (Math.abs(this.dir() - targetFacingDir) > 10.0) {
+                if (Math.abs(this.player.direction.getDirection() - targetFacingDir) > 10.0) {
                     this.turnTo(targetFacingDir);
                 }
                 else {
@@ -461,8 +430,7 @@ public class Brain implements Runnable {
     }
     
     /**
-     * Finds the optimum angle to kick the ball toward within a kickable
-     * area.
+     * Finds the optimal angle to kick the ball toward within a kickable area.
      * 
      * @param p Point to build angle from
      * @return the vector to dribble toward.
@@ -514,7 +482,7 @@ public class Brain implements Runnable {
     }
     
     /**
-     * Gets a field object from fieldObjects, or creates it if it doesn't yet exist.
+     * Gets the requested `FieldObject` from fieldObjects, or creates it if it doesn't yet exist.
      * 
      * @param id the object's id
      * @return the field object
@@ -560,7 +528,6 @@ public class Brain implements Runnable {
         this.player.direction.update(Futil.simplifyAngle(direction), 0.95, this.time);
         double x = o1.position.getX() - o1.curInfo.distance * Math.cos(Math.toRadians(direction + o1.curInfo.direction));
         double y = o1.position.getY() - o1.curInfo.distance * Math.sin(Math.toRadians(direction + o1.curInfo.direction));
-        double distance = this.player.position.getPosition().distanceTo(new Point(x, y)); 
         this.player.position.update(x, y, 0.95, this.time);
     }
     
@@ -574,7 +541,7 @@ public class Brain implements Runnable {
     }
 
     /**
-     * Moves the player to the specified coordinates (server coords).
+     * Moves the player to the specified soccer server coordinates.
      * 
      * @param p the Point object to pass coordinates with (must be in server coordinates).
      */
@@ -584,7 +551,7 @@ public class Brain implements Runnable {
     }
     
     /**
-     * Moves the player to the specified coordinates (server coords).
+     * Moves the player to the specified soccer server coordinates.
      * 
      * @param x x-coordinate
      * @param y y-coordinate
@@ -868,17 +835,19 @@ public class Brain implements Runnable {
     }
     
     /**
-     * Send commands to move the player to a point at maximum power
-     * @param point the point to move to
+     * Directs the player to dash to a given point, turning if necessary.
+     * 
+     * @param point the point to dash to
      */
     private final void dashTo(Point point){
     	dashTo(point, 50.0);
     }
     
     /**
-     * Send commands to move the player to a point with the given power
-     * @param point to move towards
-     * @param power to move at
+     *  Directs the player to dash to a given point, turning if necessary.
+     * 
+     * @param point the point to dash to
+     * @param power the power at which to dash
      */
     private final void dashTo(Point point, double power){
         double tolerance = Math.max(10.0, 100.0 / this.player.position.getPosition().distanceTo(point));
@@ -921,41 +890,5 @@ public class Brain implements Runnable {
     final public Rectangle getMyPenaltyArea(){
     	if(player.team == null) throw new NullPointerException("Player team not initialized while getting penelty area.");
     	return player.team.side == 'l' ? Settings.PENALTY_AREA_LEFT : Settings.PENALTY_AREA_RIGHT; 
-    }
-    
-    /**
-     * Returns this player's x velocity. Shortcut function.
-     * 
-     * @return this player's x velocity
-     */
-    private final double velX() {
-        return this.velocity.getX();
-    }
-    
-    /**
-     * Returns this player's y velocity. Shortcut function.
-     * 
-     * @return this player's y velocity
-     */
-    private final double velY() {
-        return this.velocity.getY();
-    }
-    
-    /**
-     * Returns this player's x.
-     * 
-     * @return this player's x-coordinate
-     */
-    private final double x() {
-        return this.player.position.getPosition().getX();
-    }
-    
-    /**
-     * Returns this player's y.
-     * 
-     * @return this player's y coordinate
-     */
-    private final double y() {
-        return this.player.position.getPosition().getY();
     }
 }

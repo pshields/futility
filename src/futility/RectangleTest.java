@@ -1,3 +1,9 @@
+/** @file RectangleTest.java
+ * `Rectangle` tests.
+ * 
+ * @author Team F(utility)
+ */
+
 package futility;
 
 import static org.junit.Assert.*;
@@ -11,6 +17,9 @@ import futility.MobileObject;
 import futility.Point;
 import futility.Rectangle;
 
+/**
+ * Container for `Rectangle` tests.
+ */
 public class RectangleTest {
 
 	@Before
@@ -21,6 +30,9 @@ public class RectangleTest {
 	public void tearDown() throws Exception {
 	}
 
+	/**
+	 * Tests Rectangle constructor.
+	 */
 	@Test
 	public void testRectangle() {
 		Rectangle rect = new Rectangle(1, 2, 3, 4);
@@ -30,6 +42,9 @@ public class RectangleTest {
 		assertEquals(4, rect.getLeft(), 0);
 	}
 
+	/**
+	 * Tests Rectangle::contains method.
+	 */
 	@Test
 	public void testContains() {
 		Rectangle rect = new Rectangle(4, 4, 1, 1);

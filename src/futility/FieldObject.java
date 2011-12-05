@@ -91,7 +91,7 @@ public abstract class FieldObject extends GameObject {
      * Calculates the absolute angle from this object to the given field
      * object.
      * 
-     * @param object the given field object to calculate an angle against.
+     * @param p the point to calculate an angle against.
      * @return the angle to the object in degrees
      */
     public final double absoluteAngleTo(Point p) {

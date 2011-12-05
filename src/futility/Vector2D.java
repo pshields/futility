@@ -1,5 +1,14 @@
+/** @file Vector2D.java
+ * Generic 2D Vector class.
+ * 
+ * @author Team F(utility)
+ */
+
 package futility;
 
+/**
+ * Generic 2D Vector class.
+ */
 public class Vector2D {
     private double x;
     private double y;
@@ -7,6 +16,9 @@ public class Vector2D {
     ///////////////////////////////////////////////////////////////////////////
     // CONSTRUCTORS
     ///////////////////////////////////////////////////////////////////////////
+    /**
+     * Empty constructor.
+     */
     public Vector2D() {
         this.reset();
     }
@@ -21,6 +33,12 @@ public class Vector2D {
         this.x = magnitude;
     }
     
+    /**
+     * Constructor takign x and y parameters.
+     * 
+     * @param x the x-coordinate of the vector
+     * @param y the y-coordinate of the vector
+     */
     public Vector2D(double x, double y) {
         this.x = x;
         this.y = y;
@@ -29,6 +47,11 @@ public class Vector2D {
     ///////////////////////////////////////////////////////////////////////////
     // METHODS
     ///////////////////////////////////////////////////////////////////////////
+    /**
+     * Returns the zero vector.
+     * 
+     * @return the zero vector
+     */
     public static Vector2D ZeroVector() {
         return new Vector2D(0.0, 0.0);
     }
@@ -36,22 +59,47 @@ public class Vector2D {
     ///////////////////////////////////////////////////////////////////////////
     // GETTERS AND SETTERS
     ///////////////////////////////////////////////////////////////////////////
+    /**
+     * Gets the x-coordinate of this vector.
+     * 
+     * @return the x-coordinate of this vector
+     */
     public final double getX() {
         return this.x;
     }
     
+    /**
+     * Sets the x-coordinate of this vector.
+     * 
+     * @param x the value for x
+     */
     protected final void setX(double x) {
         this.x = x;
     }
     
+    /**
+     * Gets the y-coordinate of this vector.
+     * 
+     * @return the y-coordinate of this vector
+     */
     public final double getY() {
         return this.y;
     }
     
+    /**
+     * Sets the y-coordinate of this vector.
+     * 
+     * @param y the value for y
+     */
     protected final void setY(double y) {
         this.y = y;
     }
     
+    /**
+     * Returns this vector's magnitude.
+     * 
+     * @return this vector's magnitude
+     */
     public final double magnitude() {
         return Math.hypot(x, y);
     }
