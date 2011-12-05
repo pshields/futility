@@ -10,4 +10,4 @@ To see it in action (assuming rcssserver and rcssmonitor are installed):
 3. Run `rcssserver` and `rcssmonitor`.
 4. Run `./manage.sh compete` from the project root!
     1. For a less computationally-intensive example, run `./manage.sh scrimmage`.
-    2. To spin up just one team (e.g. for a competition), run `./manage.sh start`
+    2. To spin up just one team (e.g. for a competition), run `./manage.sh start`.
