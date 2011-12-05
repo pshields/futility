@@ -31,7 +31,8 @@ public class Brain implements Runnable {
         PRE_FREE_KICK_POSITION,
         PRE_CORNER_KICK_POSITION,
         WING_POSITION,
-        CLEAR_BALL
+        CLEAR_BALL,
+        RUN_TO_STARTING_POSITION
     }
 	
     ///////////////////////////////////////////////////////////////////////////
@@ -58,6 +59,9 @@ public class Brain implements Runnable {
     private long timeLastSenseBody = 0;
     private int lastRan = -1;
 
+    private int noSeeBallCount = 0;
+    private final int noSeeBallCountMax = 45;
+    
     private Strategy currentStrategy = Strategy.LOOK_AROUND;
     private boolean updateStrategy = true;
 
@@ -196,6 +200,10 @@ public class Brain implements Runnable {
        	    else {
        	        utility = 0.45;
        	    }
+      	    break;
+        case RUN_TO_STARTING_POSITION:
+        	utility = noSeeBallCount / (noSeeBallCountMax + 2);
+        	break;
         default:
             utility = 0;
             break;
@@ -423,6 +431,20 @@ public class Brain implements Runnable {
    			        this.dashTo(target, 80.0);
    			    }
    			}
+        	break;
+        case RUN_TO_STARTING_POSITION:
+        	//TODO remove this call
+        	System.out.println("player " + player.number + " running to starting point");
+        	if(noSeeBallCount > noSeeBallCountMax){
+        		//wall run bandaid
+        		this.turn(180);
+        		noSeeBallCount = 0;
+        		break;
+        	}
+        	if(Settings.FORMATION[player.number].distanceTo(player.position.getPosition()) < 10){
+        		noSeeBallCount = 0;
+        	}
+        	this.dashTo(Settings.FORMATION[player.number]);
         	break;
         default:
             break;
@@ -716,6 +738,14 @@ public class Brain implements Runnable {
                 this.responseHistory.add(Settings.RESPONSE.SEE);
                 this.responseHistory.removeLast();
             }
+            //Keep track of steps since the ball was last seen
+            if(canSee(Ball.ID)){
+            	noSeeBallCount = 0;
+            }
+            else{
+            	noSeeBallCount++;
+            }
+            
         }
         // Handle init messages
         else if (message.startsWith("(init")) {
@@ -851,8 +881,9 @@ public class Brain implements Runnable {
      */
     private final void dashTo(Point point, double power){
         double tolerance = Math.max(10.0, 100.0 / this.player.position.getPosition().distanceTo(point));
-    	if (Math.abs(this.player.relativeAngleTo(point)) > tolerance) {
-    		turn(this.player.relativeAngleTo(point));
+        final double angle = this.player.relativeAngleTo(point);
+    	if (Math.abs(angle) > tolerance) {
+    		turn(angle);
     	}
     	else {
     		dash(power);
