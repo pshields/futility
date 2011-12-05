@@ -145,7 +145,7 @@ public class Brain implements Runnable {
         	break;
         case DASH_TOWARDS_BALL_AND_KICK:
             // The striker(s) should usually execute this strategy.
-            // The wings, midfielders and defenders should generally execute this strategy when
+            // The wings, mid-fielders and defenders should generally execute this strategy when
             // they are close to the ball.
             if (ball.position.getPosition().isUnknown() || this.role == Role.GOALIE) {
                 utility = 0.0;
@@ -167,7 +167,7 @@ public class Brain implements Runnable {
             }
             else {
                 double playerPosConf = this.player.position.getConfidence(this.time);
-                double ballPosConf = this.getOrCreate(Ball.ID).position.getConfidence(this.time);
+                double ballPosConf = this.getOrCreate(Ball.ID).position.getConfidence(this.time) / 2.0;
                 double overallConf = Math.min(playerPosConf, ballPosConf);
                 utility = 1.0 - overallConf;
             }
@@ -196,6 +196,7 @@ public class Brain implements Runnable {
        	    else {
        	        utility = 0.45;
        	    }
+      	    break;
         default:
             utility = 0;
             break;
@@ -365,8 +366,8 @@ public class Brain implements Runnable {
                 this.kick(100.0, this.player.relativeAngleTo(opponentGoal));
             }
             else {
-                double approachAngle = Futil.simplifyAngle(this.player.relativeAngleTo(ball));
-                double dashPower = Math.min(100.0, 800.0 / this.player.distanceTo(ball));
+                double approachAngle = this.player.relativeAngleTo(ball);
+                double dashPower = Math.min(100.0, Math.max(40.0, 800.0 / ball.curInfo.distance));
                 double tolerance = Math.max(10.0, 100.0 / ball.curInfo.distance);
                 if (Math.abs(approachAngle) > tolerance) {
                     this.turn(approachAngle);
@@ -387,7 +388,7 @@ public class Brain implements Runnable {
                     targetFacingDir = -180.0;
                     x = x * -1.0;
                 }
-                if (Math.abs(this.player.direction.getDirection() - targetFacingDir) > 10.0) {
+                if (Math.abs(Futil.simplifyAngle(this.player.direction.getDirection() - targetFacingDir)) > 10.0) {
                     this.turnTo(targetFacingDir);
                 }
                 else {
