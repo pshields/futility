@@ -210,7 +210,6 @@ public class ServerParams_Player {
 		// SETTERS
 		///////////////////////////////////////////////////////////////////////
 		/**
-		 * 
 		 * @param val Kickable margin
 		 */
 	    public static void set_kickable_margin(double val) {
@@ -218,7 +217,6 @@ public class ServerParams_Player {
 		}
 
 		/**
-		 * 
 		 * @param player_accel_max Maximum acceleration
 		 */
 	    public static void set_accel_max(double player_accel_max) {
@@ -226,7 +224,6 @@ public class ServerParams_Player {
 		}
 	    
 	    /**
-	     * 
 	     * @param player_speed_max Maximum velocity
 	     */
 		public static void set_speed_max(double player_speed_max) {
@@ -258,7 +255,6 @@ public class ServerParams_Player {
 		}
 		
 		/**
-		 * 
 		 * @param val Maximum dash power
 		 */
 		public static void set_dash_power_max(double val) {
@@ -266,7 +262,6 @@ public class ServerParams_Player {
 		}
 		
 		/**
-		 * 
 		 * @param val Minimum dash power
 		 */
 		public static void set_dash_power_min(double val) {
@@ -274,7 +269,6 @@ public class ServerParams_Player {
 		}
 		
 		/**
-		 * 
 		 * @param val Maximum dash angle, degrees
 		 */
 		public static void set_dash_angle_max(double val) {
@@ -282,7 +276,6 @@ public class ServerParams_Player {
 		}
 		
 		/**
-		 * 
 		 * @param val Minimum dash angle, degrees
 		 */
 		public static void set_dash_angle_min(double val) {
@@ -290,7 +283,6 @@ public class ServerParams_Player {
 		}
 		
 		/**
-		 * 
 		 * @param moment_max Maximum player moment, degrees
 		 */
 		public static void set_moment_max(double moment_max) {
@@ -298,7 +290,6 @@ public class ServerParams_Player {
 		}
 		
 		/**
-		 * 
 		 * @param moment_min Minimum player moment, degrees
 		 */
 		public static void set_moment_min(double moment_min) {
@@ -306,7 +297,6 @@ public class ServerParams_Player {
 		}
 		
 		/**
-		 * 
 		 * @param neck_angle_min Minimum neck angle, degrees
 		 */
 		public static void set_neck_angle_min(double neck_angle_min) {
@@ -314,7 +304,6 @@ public class ServerParams_Player {
 		}
 		
 		/**
-		 * 
 		 * @param neck_angle_max Maximum neck angle, degrees
 		 */
 		public static void set_neck_angle_max(double neck_angle_max) {
@@ -322,7 +311,6 @@ public class ServerParams_Player {
 		}
 		
 		/**
-		 * 
 		 * @param neck_moment_min Minimum neck moment, degrees
 		 */
 		public static void set_neck_moment_min(double neck_moment_min) {
@@ -330,7 +318,6 @@ public class ServerParams_Player {
 		}
 		
 		/**
-		 * 
 		 * @param neck_moment_max Maximum neck moment, degrees
 		 */
 		public static void set_neck_moment_max(double neck_moment_max) {
@@ -338,7 +325,6 @@ public class ServerParams_Player {
 		}
 		
 		/**
-		 * 
 		 * @param power_max Maximum kicking power
 		 */
 		public static void set_power_max(double power_max) {
@@ -346,7 +332,6 @@ public class ServerParams_Player {
 		}
 		
 		/**
-		 * 
 		 * @param power_min Minimum kicking power
 		 */
 		public static void set_power_min(double power_min) {
@@ -354,7 +339,6 @@ public class ServerParams_Player {
 		}
 		
 		/**
-		 * 
 		 * @param stamina_capacity Player's stamina capacity
 		 */
 		public static void set_stamina_capacity(double stamina_capacity) {
@@ -362,7 +346,6 @@ public class ServerParams_Player {
 		}
 		
 		/**
-		 * 
 		 * @param player_accel_max Player's maximum stamina increment
 		 */
 		public static void set_stamina_inc_max(double stamina_inc_max) {
@@ -370,7 +353,6 @@ public class ServerParams_Player {
 		}
 		
 		/**
-		 * 
 		 * @param stamina_max Player's maximum stamina
 		 */
 		public static void set_stamina_max(double stamina_max) {

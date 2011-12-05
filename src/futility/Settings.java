@@ -76,9 +76,20 @@ public class Settings {
         NONE
     }
     
+    /**
+     * Gets the dash power rate.
+     * 
+     * @return the dash power rate
+     */
     public static double getDashPowerRate() {
         return DASH_POWER_RATE;
     }
+    
+    /**
+     * Sets the dash power rate.
+     * 
+     * @param rate the dash power rate
+     */
     public static void setDashPowerRate(double rate) {
         DASH_POWER_RATE = rate;
     }

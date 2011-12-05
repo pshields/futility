@@ -67,10 +67,20 @@ public class Player extends MobileObject {
         this.client = client;
     }
     
+    /**
+     * Returns the ObjectId of the opponent team's goal.
+     * 
+     * @return the ObjectId of the opponent team's goal
+     */
     public String getOpponentGoalId() {
         return new String("(g " + (this.team.side == 'r' ? "l" : "r") + ")");
     }
     
+    /**
+     * Returns the ObjectId of this team's goal.
+     * 
+     * @return the ObjectId of this team's goal
+     */
     public String getGoalId() {
         return new String("(g " + this.team.side + ")");
     }

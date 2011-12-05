@@ -10,11 +10,22 @@ package futility;
  * Extension of StationaryObject that represents an object on the visible playing field.
  */
 public class Flag extends StationaryObject {
+    
+    /**
+     * This constructor automatically assign's the flag's position based on its ObjectId.
+     * 
+     * @param id the flag's ObjectId
+     */
     public Flag(String id) {
         this.id = id;
         this.position = this.setPosition();
     }
 
+    /**
+     * Returns this flag's position based on its ObjectId.
+     * 
+     * @return this flag's position based on its ObjectId
+     */
     protected PositionEstimate setPosition() {
     	//A switch{} would be better, but not sure if we will have JRE 1.7 available
     	if (this.id == "(f t l 50)") {

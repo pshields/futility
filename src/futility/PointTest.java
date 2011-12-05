@@ -1,3 +1,8 @@
+/** @file PointTest.java
+ * `Point` tests.
+ *
+ * @author Team F(utility)
+ */
 package futility;
 
 import static org.junit.Assert.*;
@@ -6,8 +11,14 @@ import org.junit.Test;
 
 import futility.Point;
 
+/**
+ * Container class for `Point` tests.
+ */
 public class PointTest {
 
+    /**
+     * Tests the point constructor.
+     */
 	@Test
 	public void testPoint() {
 		Point newPoint = new Point(0, 1);
@@ -15,6 +26,9 @@ public class PointTest {
 		assertEquals(1, newPoint.getY(), 0);
 	}
 
+	/**
+	 *  Tests the absoluteAngleTo method.
+	 */
 	@Test
     public void testAngleTo() {
 		Point[] otherPoints = {
@@ -30,6 +44,9 @@ public class PointTest {
 		}
     }
     
+	/**
+	 * Tests updating a point with another point's coordinates.
+	 */
 	@Test
 	public void testUpdateFromAnotherPoint() {
 		Point newPoint = new Point(0, 1);
@@ -39,6 +56,9 @@ public class PointTest {
 		assertEquals(3, newPoint.getY(), 0);
 	}
 
+	/**
+	 * Tests updating a point with given coordinates.
+	 */
 	@Test
     public void testUpdateFromXYCoords() {
 		double[] x = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 5.5, 4.5, 3.5, 2.5, 1.5, 0.5};
@@ -53,6 +73,9 @@ public class PointTest {
 		}
 	}
     
+	/**
+	 * Tests the isEqual method.
+	 */
     @Test
     public void testIsEqual() {
 		Point[] otherPoints = {
@@ -86,45 +109,5 @@ public class PointTest {
 		for (int i = 0; i < otherPoints.length; i++) {
 			assertEquals(expectations[i], thisPoint.isEqual(otherPoints[i]));
 		}
-    }
-    
-    @Test
-    public void testDeltaX() {
-    	//deltaX(Point otherPoint)
-        //return otherPoint.getX() - this.getX();
-
-		fail("Not implemented yet");
-    }
-    
-    @Test
-    public void testDeltaY() {
-    	//deltaY(Point otherPoint)
-        //return otherPoint.getY() - this.getY();
-
-		fail("Not implemented yet");
-    }
-    
-    @Test
-    public void testDistanceTo() {
-    	//distanceTo(Point otherPoint)
-        //return Math.hypot(this.deltaX(otherPoint), this.deltaY(otherPoint));
-
-		fail("Not implemented yet");
-    }
-    
-    @Test
-    public void testMidpointTo() {
-    	//Point midpointTo(Point otherPoint)
-        //return new Point(this.getX() + this.deltaX(otherPoint) / 2, this.getY() + this.deltaY(otherPoint) /2);
-
-		fail("Not implemented yet");
-    }
-    
-    @Test
-    public void testRender() {
-    	//String render()
-        //return String.format("(%f, %f)", this.x - Settings.CENTER_FIELD.getX(), this.y - Settings.CENTER_FIELD.getY());
-
-		fail("Not implemented yet");
     }
 }

@@ -1,5 +1,14 @@
+/** @file RCSSServer.java
+ * Class for interacting with the 'rcssserver' software.
+ * 
+ * @author Team F(utility)
+ */
+
 package futility;
 
+/**
+ * An rcssserver process.
+ */
 public class RCSSServer {
     public Process process;
     
@@ -24,6 +33,9 @@ public class RCSSServer {
         this.start();
     }
     
+    /**
+     * Stops an rcssserver process.
+     */
     public void stop() {
         this.process.destroy();
     }

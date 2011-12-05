@@ -1,5 +1,10 @@
-package futility;
+/** @file FlagTest.java
+ * `Flag` tests.
+ * 
+ * @author Team F(utility)
+ */
 
+package futility;
 
 import static org.junit.Assert.*;
 
@@ -10,6 +15,9 @@ import org.junit.Test;
 import futility.FieldObject;
 import futility.Flag;
 
+/**
+ * `Flag` tests.
+ */
 public class FlagTest {
 
 	@Before
@@ -20,6 +28,9 @@ public class FlagTest {
 	public void tearDown() throws Exception {
 	}
 
+	/**
+	 * Tests that flags are assigned the correct coordinates.
+	 */
 	@Test
 	public void testFlag() {
 		String[] flags = {

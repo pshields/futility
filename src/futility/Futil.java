@@ -64,6 +64,14 @@ public final class Futil {
         return result; 
     }
     
+    /**
+     * Estimates the acceleration of a FieldObject.
+     * 
+     * @param obj the object to estimate the acceleration of
+     * @param timeOffset time step offset from the current soccer server time step
+     * @param currentTime the current soccer server time step
+     * @return estimated acceleration of the player in the given time step offset by the given offset
+     */
     public static AccelerationVector estimateAccelerationOf(FieldObject obj, int timeOffset, int currentTime) {
         if (timeOffset < -1) {
             return AccelerationVector.ZeroVector();
@@ -85,9 +93,10 @@ public final class Futil {
     /**
      * Estimates the position of a FieldObject.
      * 
+     * @param obj the object to estimate the position of
      * @param timeOffset time step offset from the current soccer server time step
      * @param currentTime the current soccer server time step
-     * @return estimated position of the player in the next time step
+     * @return estimated position of the player in the given time step offset by the given offset
      */
     public static PositionEstimate estimatePositionOf(FieldObject obj, int timeOffset, int currentTime) {
         if (timeOffset < -1) {
@@ -313,8 +322,8 @@ public final class Futil {
      * Given a target angle, returns the closest similar angle within the minimum and maximum 
      * moment. Assumes maximum moment <= 180.0 degrees and minimum moment >= -180.0 degrees.
      * 
-     * @param moment
-     * @return
+     * @param angle target angle
+     * @return valid moment
      */
     public static final double toValidMoment(double angle) {
         angle = simplifyAngle(angle);

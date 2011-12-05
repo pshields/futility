@@ -63,6 +63,7 @@ public class ServerParams_Ball {
 		 * Where Name is the name of a parameter as specified by the server,
 		 * and Value is the given value for that parameter. Used in parsing. <br> <br>
 		 * Any notable exceptions are automatically logged.
+		 * 
 		 * @param args String array containing a parameter and its value.
 		 */
 		public static void dataParser(String[] args)
@@ -109,6 +110,7 @@ public class ServerParams_Ball {
 		}
 		
 		/**
+		 * Sets the size of the ball.
 		 * 
 		 * @param ball_size The size of the ball
 		 */
@@ -117,15 +119,15 @@ public class ServerParams_Ball {
 		}
 		
 		/**
+		 * Sets the velocity decay of the ball.
 		 * 
-		 * @param ball_decay Velocity decay of the ball (correct?)
+		 * @param ball_decay velocity decay of the ball
 		 */
 		public static void set_decay(double ball_decay) {
 			BALL_DECAY = ball_decay;
 		}
 		
 		/**
-		 * 
 		 * @param ball_rand Ball rand flag (unknown purpose)
 		 */
 		public static void set_rand(double ball_rand) {
@@ -133,7 +135,6 @@ public class ServerParams_Ball {
 		}
 		
 		/**
-		 * 
 		 * @param ball_weight Weight of the ball
 		 */
 		public static void set_weight(double ball_weight) {
@@ -141,7 +142,6 @@ public class ServerParams_Ball {
 		}
 		
 		/**
-		 * 
 		 * @param ball_speed_max Maximum velocity of the ball
 		 */
 		public static void set_speed_max(double ball_speed_max) {
@@ -149,7 +149,6 @@ public class ServerParams_Ball {
 		}
 		
 		/**
-		 * 
 		 * @param ball_accel_max Maximum acceleration of the ball
 		 */
 		public static void set_accel_max(double ball_accel_max) {
@@ -157,7 +156,6 @@ public class ServerParams_Ball {
 		}
 		
 		/**
-		 * 
 		 * @param ball_stuck_area "stuck" region size of the ball
 		 */
 		public static void set_stuck_area(double ball_stuck_area) {
