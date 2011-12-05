@@ -173,6 +173,16 @@ public class Point {
     }
     
     /**
+     * Returns the midpoint between this point and another.
+     * 
+     * @param p the other point
+     * @return the midpoint between this point and the other
+     */
+    public final Point midpointTo(Point p) {
+        return new Point( (this.x + p.getX()) / 2.0, (this.y + p.getY()) / 2.0);
+    }
+    
+    /**
      * Builds a formatted textual representation of this Point object.
      * 
      * @return a formatted string representation

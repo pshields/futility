@@ -21,9 +21,6 @@ public class Brain implements Runnable {
      * Enumerator representing the possible strategies that may be used by this
      * player agent.
      * 
-     * DASH_AROUND_THE_FIELD_CLOCKWISE tells the player to dash around
-     *   the field boundaries clockwise.
-     * 
      * DASH_TOWARDS_THE_BALL_AND KICK implements a simple soccer strategy:
      * 1. Run towards the ball.
      * 2. Rotate around it until you can see the opponent's goal.
@@ -44,7 +41,7 @@ public class Brain implements Runnable {
         PRE_FREE_KICK_POSITION,
         PRE_CORNER_KICK_POSITION,
         WING_POSITION,
-        KICK_BALL_OUT_OF_PENELTY_AREA
+        CLEAR_BALL
     }
 	
     ///////////////////////////////////////////////////////////////////////////
@@ -139,33 +136,33 @@ public class Brain implements Runnable {
      * @return an assessment of the strategy's utility in the range [0.0, 1.0]
      */
     private final double assessUtility(Strategy strategy) {
+        FieldObject ball = this.getOrCreate(Ball.ID);
         double utility = 0;
         switch (strategy) {
         case PRE_FREE_KICK_POSITION:
         case PRE_CORNER_KICK_POSITION:
         case PRE_KICK_OFF_POSITION:
-        	// Check play mode, reposition as necessary.
-        	if ( canUseMove() )
+        	// Check play mode and reposition as necessary.
+        	if (this.canUseMove()) {
         		utility = 1 - (isPositioned ? 1 : 0);
+        	}
         	break;
         case PRE_KICK_OFF_ANGLE:
-        	if ( isPositioned )
-        	{
+        	if (this.isPositioned) {
         	    utility = this.player.team.side == 'r' ?
         			      ( this.canSee(Ball.ID) ? 0.0 : 1.0 ) : 0.0;
             }
         	break;
         case WING_POSITION:
-        	if ( ( role == PlayerRole.Role.LEFT_WING
-        		 || role == PlayerRole.Role.RIGHT_WING ) )
-        	{
-        		utility = 0.95;
+        	if (PlayerRole.isWing(this.role)) {
+        	    // A wing should use this strategy if another player on the wing's team
+        	    // is closer to the ball, or something like that.
+        	    utility = 0.70;
         	}
         	break;	
-        case DRIBBLE_KICK: // Unimplemented
+        case DRIBBLE_KICK:
         	Rectangle OPP_PENALTY_AREA = ( this.player.team.side == 'l' ) ?
         			Settings.PENALTY_AREA_RIGHT : Settings.PENALTY_AREA_LEFT;
-        
         	// If the agent is a goalie, don't dribble!
         	// If we're in the opponent's strike zone, don't dribble! Go for score!
         	if ( this.role == PlayerRole.Role.GOALIE || this.player.inRectangle(OPP_PENALTY_AREA) ) {
@@ -178,75 +175,58 @@ public class Brain implements Runnable {
         	}
         	break;
         case DASH_TOWARDS_BALL_AND_KICK:
-        	if(role == PlayerRole.Role.GOALIE){
-        		utility = 0.0;
-        	}
+            // The striker(s) should usually execute this strategy.
+            // The wings, midfielders and defenders should generally execute this strategy when
+            // they are close to the ball.
+            if (ball.position.getPosition().isUnknown() || this.role == Role.GOALIE) {
+                utility = 0.0;
+            }
         	else if (this.role == PlayerRole.Role.STRIKER) {
-                utility = 0.95;
+                utility = 0.97;
             }
             else {
                 // Utility is high if the player is within ~ 5.0 meters of the ball
-                utility = Math.max(1.0, Math.pow(this.getOrCreate(Ball.ID).curInfo.distance / 5.0, -1.0));
+                utility = Math.min(0.98, Math.pow(this.getOrCreate(Ball.ID).curInfo.distance / 10.0, -1.0));
             }
             break;
         case LOOK_AROUND:
-            if (this.player.position.getPosition().isUnknown()) {
-                utility = 1.0;
+            // This strategy is almost never necessary. It's used to re-orient players that have
+            // become very confused about where they are. This might happen if they are at the edge
+            // of the physical boundary, looking out.
+            if (this.player.position.getPosition().isUnknown() || this.getOrCreate(Ball.ID).position.getPosition().isUnknown()) {
+                utility = 0.98;
             }
             else {
-                double conf = this.player.position.getConfidence(this.time);
-                if (conf > 0.01) {
-                    utility = 1.0 - conf;
-                }
-                else {
-                    utility = 0.0;
-                }
+                double playerPosConf = this.player.position.getConfidence(this.time);
+                double ballPosConf = this.getOrCreate(Ball.ID).position.getConfidence(this.time);
+                double overallConf = Math.min(playerPosConf, ballPosConf);
+                utility = 1.0 - overallConf;
             }
             break;
         case GET_BETWEEN_BALL_AND_GOAL:
-        	// estimate our confidence of where the ball and the player are on the field
-        	double ballConf = this.getOrCreate(Ball.ID).position.getConfidence(this.time);
-        	double playerConf = this.player.position.getConfidence(this.time);
-        	double conf = (ballConf + playerConf) / 2;
-
-        	double initial = 1;
-        	if (this.player.team.side == Settings.LEFT_SIDE) {
-        		if (this.getOrCreate(Ball.ID).position.getX() < this.player.position.getX()) {
-        			initial = 0.6;
-        		} else {
-        			initial = 0.9;
-        		}
-        	} else {
-        		if (this.getOrCreate(Ball.ID).position.getX() > this.player.position.getX()) {
-        			initial = 0.6;
-        		} else {
-        			initial = 0.9;
-        		}
+            // The sweeper(s) should usually execute this strategy. The goalie should also usually
+            // execute this strategy, though it's implementation may be slightly different.
+        	if (this.role == Role.SWEEPER || this.role == Role.GOALIE) {
+        	    if (this.player.distanceTo(ball) > 5.0) {
+        	        utility = 0.97;
+        	    }
+        	    else {
+        	        utility = 0.45;
+        	    }
         	}
-        	
-            if (this.role == PlayerRole.Role.GOALIE || this.role == PlayerRole.Role.LEFT_DEFENDER || this.role == PlayerRole.Role.RIGHT_DEFENDER) {
-                initial *= 1;
-            } else {
-            	initial *= 0.25;
-            }
-
-        	if (!this.canSee("(b)")) {
-        		initial = 0;
+        	else {
+        	    utility = 0.4;
         	}
-        	
-        	utility = initial * conf;
+            
         	break;
-        case KICK_BALL_OUT_OF_PENELTY_AREA:
-        	if(PlayerRole.isOnDefenseAndNotGoalie(role)){
-	    		final Rectangle myPeneltyBox = getMyPeneltyArea();
-	    		if(myPeneltyBox.contains(getOrCreate(Ball.ID))){
-	    			utility = 0.9;
-	    		}
-        	}
-        	else{
-        		utility = 0.1;
-        	}
-        	break;
+        case CLEAR_BALL:
+            // Defenders should do this if the ball is in their penalty area.
+      	    if (this.ownPenaltyArea().contains(ball)) {
+       	        return 0.99;
+       	    }
+       	    else {
+       	        utility = 0.45;
+       	    }
         default:
             utility = 0;
             break;
@@ -276,26 +256,18 @@ public class Brain implements Runnable {
      * @return true if the player is on the field and within kicking distance
      */
     public final boolean canKickBall() {
-        if (!player.inRectangle(Settings.FIELD)) {
-            return false;
-        }
         FieldObject ball = this.getOrCreate(Ball.ID);
-        if (ball.curInfo.time != time) {
-            return false;
-        }
-        return ball.curInfo.distance < Futil.kickable_radius();
+        return this.player.inRectangle(Settings.FIELD) && ball.curInfo.time >= this.time - 1 &&
+                ball.curInfo.distance < Futil.kickable_radius();
     }
 
     /**
-     * True if and only if the ball was seen in the most recently-parsed 'see' message.
+     * Returns an indication of whether a given ObjectId was seen in the current time step.
+     * 
+     * @return true if the given ObjectId was seen in the current soccer server time step
      */
     public final boolean canSee(String id) {
-        if (!this.fieldObjects.containsKey(id)) {
-            Log.e("Can't see " + id + "!");
-            return false;
-        }
-        FieldObject obj = this.fieldObjects.get(id);
-        return obj.curInfo.time == this.time;
+        return this.getOrCreate(id).curInfo.time == this.time;
     }
 
     /**
@@ -329,8 +301,8 @@ public class Brain implements Runnable {
      */
     private final Strategy determineOptimalStrategy() {
         Strategy optimalStrategy = this.currentStrategy;
+        double bestUtility = 0;
         if (this.updateStrategy) {
-            double bestUtility = 0;
             for (Strategy strategy : Strategy.values()) {
                 double utility = this.assessUtility(strategy);
                 if (utility > bestUtility) {
@@ -339,6 +311,7 @@ public class Brain implements Runnable {
                 }
             }
         }
+        Log.d("Picked strategy " + optimalStrategy + " with utility " + bestUtility);
         return optimalStrategy;
     }
     /**
@@ -364,81 +337,42 @@ public class Brain implements Runnable {
      */
     private final void executeStrategy(Strategy strategy) {
     	FieldObject ball = this.getOrCreate(Ball.ID);
-        FieldObject goal = this.getOrCreate(this.player.getOpponentGoalId());
-    	// Opponent goal
-        FieldObject opGoal = this.getOrCreate(this.player.getOpponentGoalId());
-        // Our goal
-        FieldObject ourGoal = this.getOrCreate(this.player.getGoalId());
+        FieldObject opponentGoal = this.getOrCreate(this.player.getOpponentGoalId());
+        FieldObject ownGoal = this.ownGoal();
     	
         switch (strategy) {
         case PRE_FREE_KICK_POSITION:
         	if (playMode.equals("free_kick_l")) {
-        		if (this.player.team.side == Settings.LEFT_SIDE) {
-        			//TODO
-        		} else {
-        			//TODO
-        		}
             	this.move(Settings.FREE_KICK_L_FORMATION[player.number]);
         	} else {
-        		if (this.player.team.side == Settings.LEFT_SIDE) {
-        			//TODO
-        		} else {
-        			//TODO
-        		}
             	this.move(Settings.FREE_KICK_R_FORMATION[player.number]);
         	}
-        	this.isPositioned = true;
-        	// Since we have now moved back into formation, derivatives
-        	// strategies such as LOOK_AROUND should become dominant.        
+        	this.isPositioned = true;       
         	break;
         case PRE_CORNER_KICK_POSITION:
         	if (playMode.equals("corner_kick_l")) {
-        		if (this.player.team.side == Settings.LEFT_SIDE) {
-        			//TODO
-        		} else {
-        			//TODO
-        		}
             	this.move(Settings.CORNER_KICK_L_FORMATION[player.number]);
         	} else {
-        		if (this.player.team.side == Settings.LEFT_SIDE) {
-        			//TODO
-        		} else {
-        			//TODO
-        		}
             	this.move(Settings.CORNER_KICK_R_FORMATION[player.number]);
         	}
-        	this.isPositioned = true;
-        	// Since we have now moved back into formation, derivatives
-        	// strategies such as LOOK_AROUND should become dominant.        
+        	this.isPositioned = true;   
         	break;
         case PRE_KICK_OFF_POSITION:
         	this.move(Settings.FORMATION[player.number]);
-        	this.isPositioned = true;
-        	// Since we have now moved back into formation, derivatives
-        	// strategies such as LOOK_AROUND should become dominant.        
+        	this.isPositioned = true;     
         	break;
         case PRE_KICK_OFF_ANGLE:
         	this.turn(30);
         	break;
         case WING_POSITION:
-        	// If ball is close, dash toward it.
-        	// Otherwise, stay off to side.
-        	if ( ball.position.getConfidence(this.time) <= 0.1 )
-        	{
-        		turn(7.0);
+        	Point position = Futil.estimatePositionOf(ball, 3, this.time).getPosition();
+        	if (this.role == PlayerRole.Role.LEFT_WING) {
+        	    position.update(position.getX(), position.getY() + 4.0);
         	}
-        	else if ( ball.curInfo.distance < 5.0d || canUseMove() )
-        	{
-        		dash(40.0, Futil.simplifyAngle(player.relativeAngleTo(ball) ));
+        	else {
+        	    position.update(position.getX(), position.getY() - 4.0);
         	}
-        	else
-        	{
-        		// Stay near ball, but not too close.
-        		Point b_future = Futil.estimatePositionOf(ball, 3, time).getPosition();
-        		Vector2D new_pos = b_future.asVector().addPolar(
-        				               ( role == PlayerRole.Role.LEFT_WING ? 40.0 : -40.0 ), 8.0);
-        		dash( Math.min(4, ball.curInfo.distance / 3.0d ) * new_pos.magnitude(), new_pos.direction());
-        	}
+        	this.dashTo(position);
         	break;
         case DRIBBLE_KICK:
         	/*
@@ -455,60 +389,71 @@ public class Brain implements Runnable {
         	
 			double traj_power = Math.min(Settings.PLAYER_PARAMS.POWER_MAX,
 	                ( v_ball.magnitude() / (1 + Settings.BALL_PARAMS.BALL_DECAY ) ) * 10); // values of 1 or 2 do not give very useful kicks.
-			
-			// Kick!
-			Log.i("Kick trajectory power: " + traj_power);
-			kick( traj_power, Futil.simplifyAngle( Math.toDegrees(v_ball.direction()) ) );
+			this.kick(traj_power, Futil.simplifyAngle(Math.toDegrees(v_ball.direction())));
         	break;
         case DASH_TOWARDS_BALL_AND_KICK:
-            Log.d("Estimated ball position: " + ball.position.render(this.time));
-            Log.d("Estimated opponent goal position: " + opGoal.position.render(this.time));
             if (this.canKickBall()) {
-                if (this.canSee(this.player.getOpponentGoalId())) {
-                    kick(100.0, this.player.relativeAngleTo(opGoal));
-                }
-                else {
-                    dash(30.0, 90.0);
-                }
+                this.kick(100.0, this.player.relativeAngleTo(opponentGoal));
             }
-            else if (ball.position.getConfidence(this.time) > 0.1) {
-                double approachAngle;
-                approachAngle = Futil.simplifyAngle(this.player.relativeAngleTo(ball));
-                if (Math.abs(approachAngle) > 10) {
+            else {
+                double approachAngle = Futil.simplifyAngle(this.player.relativeAngleTo(ball));
+                double dashPower = Math.min(100.0, 800.0 / this.player.distanceTo(ball));
+                double tolerance = Math.max(10.0, 100.0 / ball.curInfo.distance);
+                if (Math.abs(approachAngle) > tolerance) {
                     this.turn(approachAngle);
                 }
                 else {
-                    dash(50.0, approachAngle);
+                    dash(dashPower, approachAngle);
                 }
-            }
-            else {
-                turn(7.0);
             }
             break;
         case LOOK_AROUND:
-            turn(7);
+            turn(90.0);
             break;
         case GET_BETWEEN_BALL_AND_GOAL:
-        	double xmid = (ball.position.getX() + ourGoal.position.getX()) / 2;
-        	double ymid = (ball.position.getY() + ourGoal.position.getY()) / 2;
-        	Point midpoint = new Point(xmid, ymid);
-        	
-        	this.moveTowards(midpoint);
-
+            if (this.role == Role.GOALIE) {
+                double targetFacingDir = 0.0;
+                double x = - (Settings.FIELD_WIDTH / 2.0 - 1.0);
+                if (this.player.team.side == 'r') {
+                    targetFacingDir = -180.0;
+                    x = x * -1.0;
+                }
+                if (Math.abs(this.dir() - targetFacingDir) > 10.0) {
+                    this.turnTo(targetFacingDir);
+                }
+                else {
+                    double y = ball.position.getY() / (Settings.FIELD_HEIGHT / Settings.GOAL_HEIGHT);
+                    Point target = new Point(x, y);
+                    if (this.player.position.getPosition().distanceTo(target) > 1.0) {
+                        this.dash(60.0, this.player.relativeAngleTo(target));
+                    }                   
+                }
+            }
+            else {
+            	Point midpoint = ownGoal.position.getPosition().midpointTo(ball.position.getPosition());
+            	double distanceAway = this.player.position.getPosition().distanceTo(midpoint);
+            	if (distanceAway > 5.0) {
+            	    this.dashTo(midpoint, Math.min(100.0, distanceAway * 10.0));
+            	}
+            }
         	break;
-        case KICK_BALL_OUT_OF_PENELTY_AREA:
-        	if(canSee(Ball.ID)){
-    			if(canKickBall()){
-    				kick(100, player.relativeAngleTo(goal));
-    			}
-    			else{
-    				moveTowards(ball.position.getPosition());
-    			}
-        	}
-        	else{
-        		//can't see the ball so do nothing
-        		break;
-        	}
+        case CLEAR_BALL:
+   			if (canKickBall()) {
+   			    double kickDir;
+   			    if (this.player.position.getY() > 0.0) {
+   			        kickDir = this.player.relativeAngleTo(90.0);
+   			    }
+   			    else {
+   			        kickDir = this.player.relativeAngleTo(-90.0);
+   			    }
+   				this.kick(80.0, kickDir);
+   			}
+   			else {
+   			    Point target = Futil.estimatePositionOf(ball, 1, this.time).getPosition();
+   			    if (this.player.position.getPosition().distanceTo(target) > Futil.kickable_radius()) {
+   			        this.dashTo(target, 80.0);
+   			    }
+   			}
         	break;
         default:
             break;
@@ -552,8 +497,6 @@ public class Brain implements Runnable {
     	else if ( this.canSee( this.player.getOpponentGoalId() ) )
     		d_angle += this.player.relativeAngleTo(
     				this.getOrCreate(this.player.getOpponentGoalId()));
-    	
-    	Log.i("Dribble angle chosen: " + d_angle);
     	Vector2D d_vec = new Vector2D(0.0, 0.0);
     	d_vec = d_vec.addPolar(Math.toRadians(d_angle), d_length); // ?!
     	return d_vec;	
@@ -620,6 +563,15 @@ public class Brain implements Runnable {
         double distance = this.player.position.getPosition().distanceTo(new Point(x, y)); 
         this.player.position.update(x, y, 0.95, this.time);
     }
+    
+    /**
+     * Indication of if this player is a defender.
+     * 
+     * @return true if this player is a defender
+     */
+    public boolean isDefender() {
+        return this.role == Role.LEFT_DEFENDER || this.role == Role.RIGHT_DEFENDER;
+    }
 
     /**
      * Moves the player to the specified coordinates (server coords).
@@ -685,12 +637,8 @@ public class Brain implements Runnable {
         	
             this.timeLastSenseBody = timeReceived;
             curSenseInfo.time = Futil.extractTime(message);
-            this.time = curSenseInfo.time;
-            
-        	// TODO better nested parentheses parsing logic; perhaps
-        	//    reconcile with Patrick's parentheses logic?            
-        	
-            Log.d("Received a `sense_body` message at time step " + time + ".");
+            this.time = curSenseInfo.time;       
+
             String parts[] = message.split("\\(");
             for ( String i : parts ) // for each structured argument:
             {
@@ -774,7 +722,6 @@ public class Brain implements Runnable {
         else if (message.startsWith("(see")) {
             this.timeLastSee = timeReceived;
             this.time = Futil.extractTime(message);
-            Log.d("Received `see` message at time step " + this.time);
             LinkedList<String> infos = Futil.extractInfos(message);
             lastSeenOpponents.clear();
             for (String info : infos) {
@@ -790,6 +737,7 @@ public class Brain implements Runnable {
             // Immediately run for the current step. Since our computations takes only a few
             // milliseconds, it's okay to start running over half-way into the 100ms cycle.
             // That means two out of every three time steps will be executed here.
+            this.updatePositionAndDirection();
             this.run();
             // Make sure we stay in sync with the mid-way `see`s
             if (this.timeLastSee - this.timeLastSenseBody > 30) {
@@ -861,29 +809,40 @@ public class Brain implements Runnable {
     }
     
     /**
+     * Returns this player's team's goal.
+     * 
+     * @return this player's team's goal
+     */
+    public final FieldObject ownGoal() {
+        return this.getOrCreate(this.player.getGoalId());
+    }
+    
+    /**
+     * Returns the penalty area of this player's team's goal.
+     * 
+     * @return the penalty area of this player's team's goal
+     */
+    public final Rectangle ownPenaltyArea() {
+        if (this.player.team.side == 'l') {
+            return Settings.PENALTY_AREA_LEFT;
+        }
+        else {
+            return Settings.PENALTY_AREA_RIGHT;
+        }
+    }
+    
+    /**
      * Responds for the current time step.
      */
     public void run() {
-        final long startTime = System.currentTimeMillis();
-        final long endTime;
         int expectedNextRun = this.lastRan + 1;
-        if (this.time > expectedNextRun) {
-            Log.e("Brain did not run during time step " + expectedNextRun + ".");
+        if (this.time > this.lastRan + 1) {
+            Log.e("Brain for player " + this.player.render() + " did not run during time step " + expectedNextRun + ".");
         }
         this.lastRan = this.time;
         this.acceleration.reset();
-        this.updatePositionAndDirection();
         this.currentStrategy = this.determineOptimalStrategy();
-        Log.i("Current strategy: " + this.currentStrategy);
         this.executeStrategy(this.currentStrategy);
-        Log.d("Estimated player position: " + this.player.position.render(this.time) + ".");
-        Log.d("Estimated player direction: " + this.player.direction.render(this.time) + ".");
-        endTime = System.currentTimeMillis();
-        final long duration = endTime - startTime;
-        Log.d("Took " + duration + " ms (plus small overhead) to run at time " + this.time + ".");
-        if (duration > 35) {
-            Log.e("Took " + duration + " ms (plus small overhead) to run at time " + this.time + ".");
-        }
     }
     
     /** 
@@ -912,8 +871,8 @@ public class Brain implements Runnable {
      * Send commands to move the player to a point at maximum power
      * @param point the point to move to
      */
-    private final void moveTowards(Point point){
-    	moveTowards(point, 100d);
+    private final void dashTo(Point point){
+    	dashTo(point, 50.0);
     }
     
     /**
@@ -921,8 +880,9 @@ public class Brain implements Runnable {
      * @param point to move towards
      * @param power to move at
      */
-    private final void moveTowards(Point point, double power){
-    	if(Math.abs(this.player.relativeAngleTo(point)) > 10.0) {
+    private final void dashTo(Point point, double power){
+        double tolerance = Math.max(10.0, 100.0 / this.player.position.getPosition().distanceTo(point));
+    	if (Math.abs(this.player.relativeAngleTo(point)) > tolerance) {
     		turn(this.player.relativeAngleTo(point));
     	}
     	else {
@@ -932,7 +892,8 @@ public class Brain implements Runnable {
     
     /**
      * Updates this this brain's belief about the associated player's position and direction
-     * at the current time step. 
+     * at the current time step. This method should be called immediately after parsing a `see`
+     * message, and only then. 
      */
     private final void updatePositionAndDirection() {
         // Infer from the most-recent `see` if it happened in the current time-step
@@ -952,14 +913,12 @@ public class Brain implements Runnable {
                 }
             }
         }
-        // TODO Handle other cases
-        Log.e("Did not update position or direction at time " + this.time);
-    }
+     }
     
     /**
      * @return {@link Settings#PENALTY_AREA_LEFT} if player is on the left team, or {@link Settings#PENALTY_AREA_RIGHT} if on the right team.
      */
-    final public Rectangle getMyPeneltyArea(){
+    final public Rectangle getMyPenaltyArea(){
     	if(player.team == null) throw new NullPointerException("Player team not initialized while getting penelty area.");
     	return player.team.side == 'l' ? Settings.PENALTY_AREA_LEFT : Settings.PENALTY_AREA_RIGHT; 
     }

@@ -85,6 +85,15 @@ public class Player extends MobileObject {
     }
     
     /**
+     * Returns a string representing this player.
+     * 
+     * @return a string representing this player
+     */
+    public final String render() {
+        return "Player " + String.valueOf(this.number) + " on team " + this.team.name;
+    }
+    
+    /**
      * Returns the estimated velocity of this Player.
      * 
      * @return the estimated velocity of this Player
