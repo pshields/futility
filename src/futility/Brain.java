@@ -173,7 +173,12 @@ public class Brain implements Runnable {
                 double playerPosConf = this.player.position.getConfidence(this.time);
                 double ballPosConf = this.getOrCreate(Ball.ID).position.getConfidence(this.time) / 2.0;
                 double overallConf = Math.min(playerPosConf, ballPosConf);
-                utility = 1.0 - overallConf;
+                if (overallConf > 0.05) {
+                    utility = 0.10;
+                }
+                else {
+                    utility = 1.0 - overallConf;
+                }
             }
             break;
         case GET_BETWEEN_BALL_AND_GOAL:
