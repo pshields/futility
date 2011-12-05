@@ -137,8 +137,12 @@ public class Client {
         catch (IOException e) {
             System.err.println("socket receiving error " + e);
         }
+        String message = new String(buffer);
         if (!this.hideReceivedMessages) {
-            Log.d("RECEIVED: " + new String(buffer));
+            Log.d("RECEIVED: " + message);
+        }
+        if (message.startsWith("(e")) {
+            Log.e(this.player.render() + " RECEIVED: " + message);
         }
         return new String(buffer);
     }

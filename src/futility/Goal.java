@@ -23,7 +23,7 @@ public class Goal extends StationaryObject {
     	else if (this.id == "(goal r)") {
             return new PositionEstimate(52.5, 0, 1.0, -1);
         }
-
+    	// Poor error handling
     	return new PositionEstimate(-1.0, -1.0, 0.0, -1);
     }
 }

@@ -15,12 +15,23 @@ public class PlayerRole {
     }
     
     /**
-     * @param role in question
-     * @return true if the role is a defensive position and not the goalie
+     * Returns an indication of whether a player with a given role is a defender.
+     * 
+     * @param role the player's role
+     * @return true if the player is a defender
      */
-    public static boolean isOnDefenseAndNotGoalie(Role role){
-    	if(role == Role.LEFT_DEFENDER || role == Role.RIGHT_DEFENDER || role == Role.SWEEPER) return true;
-    	else return false;
+    public static final boolean isDefender(Role role) {
+    	return role == Role.LEFT_DEFENDER || role == Role.RIGHT_DEFENDER || role == Role.SWEEPER;
+    }
+    
+    /**
+     * Returns an indiciation of whether a player with a given role is a wing.
+     * 
+     * @param role the player's role
+     * @return true if the player is a wing
+     */
+    public static final boolean isWing(Role role) {
+        return role == Role.LEFT_WING || role == Role.RIGHT_WING;
     }
     
     /**
@@ -28,7 +39,7 @@ public class PlayerRole {
      * @return true if the role is an offensive position 
      */
     public static boolean isOnOffense(Role role){
-    	final boolean onD = isOnDefenseAndNotGoalie(role);
+    	final boolean onD = PlayerRole.isDefender(role);
     	return !onD && role != Role.GOALIE;
     }
 }

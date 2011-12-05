@@ -30,7 +30,7 @@ public class Settings {
     public static final String OTHER_TEAM_NAME = "adversary";
     
     // Field geometry for a standard field
-    private static double GOAL_HEIGHT = 14.02;
+    public static double GOAL_HEIGHT = 14.02;
     public static final double FIELD_WIDTH = 105.0;
     public static final double FIELD_HEIGHT = 68.0;
     public static final double FIELD_BUFFER = 5.0;
@@ -154,13 +154,13 @@ public class Settings {
         PlayerRole.Role.LEFT_WING,
         PlayerRole.Role.RIGHT_WING,
         PlayerRole.Role.STRIKER,
-        PlayerRole.Role.LEFT_MIDFIELDER,
-        PlayerRole.Role.CENTER_MIDFIELDER,
-        PlayerRole.Role.RIGHT_MIDFIELDER,
-        PlayerRole.Role.LEFT_DEFENDER,
-        PlayerRole.Role.RIGHT_DEFENDER,
+        PlayerRole.Role.STRIKER,
+        PlayerRole.Role.STRIKER,
+        PlayerRole.Role.STRIKER,
         PlayerRole.Role.SWEEPER,
-        PlayerRole.Role.CENTER_MIDFIELDER,
+        PlayerRole.Role.SWEEPER,
+        PlayerRole.Role.SWEEPER,
+        PlayerRole.Role.SWEEPER,
         PlayerRole.Role.GOALIE
     };
     
