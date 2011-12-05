@@ -1,14 +1,32 @@
+/** @file AccelerationVector.java
+ * Acceleration vectors for modeling game physics.
+ * 
+ * @author Team F(utility)
+ */
+
 package futility;
 
+/**
+ * Model for the acceleration of various `FieldObject`s in a soccer server time step. 
+ */
 public class AccelerationVector extends Vector2D {
     
     ///////////////////////////////////////////////////////////////////////////
     // CONSTRUCTORS
     ///////////////////////////////////////////////////////////////////////////
+    /**
+     * Empty constructor.
+     */    
     public AccelerationVector() {
         super();
     }
     
+    /**
+     * Constructor for a vector, given an x and y.
+     * 
+     * @param x the x-coordinate of the vector
+     * @param y the y-coordinate of the vector
+     */
     public AccelerationVector(double x, double y) {
         super(x, y);
         this.normalize();

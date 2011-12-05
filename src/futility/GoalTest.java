@@ -1,5 +1,10 @@
-package futility;
+/** @file GoalTest.java
+ * `Goal` tests.
+ *
+ * @author Team F(utility)
+ */
 
+package futility;
 
 import static org.junit.Assert.*;
 
@@ -11,6 +16,9 @@ import org.junit.Before;
 import futility.FieldObject;
 import futility.Goal;
 
+/**
+ * `Goal` testing class.
+ */
 public class GoalTest {
 
 	@Before
@@ -21,6 +29,9 @@ public class GoalTest {
 	public void tearDown() throws Exception {
 	}
 
+	/**
+	 * Tests that the goals have the correct positions.
+	 */
 	@Test
     public void testGoal() {
 		String[] goals = {

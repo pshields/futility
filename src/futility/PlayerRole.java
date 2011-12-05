@@ -1,6 +1,19 @@
+/** @file PlayerRole.java
+ * Strategic player roles.
+ *
+ * @author Team F(utility)
+ */
+
 package futility;
 
+/**
+ * A class for housing information on player roles.
+ */
 public class PlayerRole {
+    
+    /**
+     * The various player roles.
+     */
     public enum Role {
         LEFT_WING,
         RIGHT_WING,

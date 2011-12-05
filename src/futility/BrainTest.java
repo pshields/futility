@@ -1,3 +1,9 @@
+/** @file BrainTest.java
+ * Tests for the `Brain` class.
+ * 
+ * @author Team F(utility)
+ */
+
 package futility;
 
 import static org.junit.Assert.*;
@@ -6,13 +12,20 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+/**
+ * Test class for the `Brain` class.
+ * 
+ * @author Team F(utility) *
+ */
 public class BrainTest {
     RCSSServer server;
     Client client;
-    Trainer trainer;
+    //Trainer trainer;
     
+    /**
+     * Empty constructor.
+     */
     public BrainTest() {
-        
     }
     
     @Before
@@ -36,9 +49,7 @@ public class BrainTest {
      */
     @Test
     public void testTurnCommandsUpdateBeliefs() {
-//        this.client.player.brain.overrideStrategy(Brain.Strategy.TEST_TURNS);
         this.client.player.brain.parseMessage(this.client.receiveMessage());
-        int time = this.client.player.brain.time;
         // TODO
         assertEquals(true, true);
     }

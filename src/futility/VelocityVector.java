@@ -1,23 +1,50 @@
+/** @file VelocityVector.java
+ * Vector representing a velocity.
+ * 
+ * @author Team F(utility)
+ */
+
 package futility;
 
+/**
+ * Velocity vector class.
+ */
 public class VelocityVector extends Vector2D {
 
-    // Constructors
+    ///////////////////////////////////////////////////////////////////////////
+    // CONSTRUCTORS
+    ///////////////////////////////////////////////////////////////////////////
+    /**
+     * Empty constructor.
+     */
     public VelocityVector() {
         super();
     }
     
+    /**
+     * Constructor taking only a magnitude.
+     * 
+     * @param magnitude the desired magnitude of the vector.
+     */
     public VelocityVector(double magnitude) {
         super(magnitude);
         this.normalize();
     }
     
+    /**
+     * Constructor taking x and y parameters.
+     * 
+     * @param x x-coordinate
+     * @param y y-coordinate
+     */
     public VelocityVector(double x, double y) {
         super(x, y);
         this.normalize();
     }
     
-    // Methods
+    ///////////////////////////////////////////////////////////////////////////
+    // METHODS
+    ///////////////////////////////////////////////////////////////////////////
     /**
      * Normalizes this vector's magnitude.
      */
