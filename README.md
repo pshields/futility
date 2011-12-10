@@ -1,7 +1,7 @@
 Futility
 ========
 
-**Futility** is RoboCup 2D Simulation League agent software written by Team F(utility) for the Fall 2011 Software Engineering I semester project at the University of Kansas.
+**Futility** is RoboCup 2D Simulation League agent software written by Bill Parrott, Tom Peterman, Nathan Schwermann and Patrick Shields (collectively "Team F(utility)") for the Fall 2011 Software Engineering I semester project at the University of Kansas. It is no longer in active development.
 
 To see it in action (assuming rcssserver and rcssmonitor are installed):
 
